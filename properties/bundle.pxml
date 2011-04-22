@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pxml>
+  <map>
+    <key>
+      <name>iw_bundle_identifier</name>
+      <type>java.lang.String</type>
+      <value>is.idega.block.saga</value>
+    </key>
+    <key>
+      <name>iw_components</name>
+      <value>
+        <map>
+          <key>
+            <name>is.idega.block.saga.presentation.SagaAdminViewer</name>
+            <value>
+              <map>
+                <key>
+                  <name>component_property_file</name>
+                  <type>java.lang.String</type>
+                  <value>is.idega.block.saga.presentation.SagaAdminViewer.pxml</value>
+                  <simple>false</simple>
+                  <reload>false</reload>
+                </key>
+              </map>
+            </value>
+            <type>map</type>
+          </key>
+        </map>
+      </value>
+      <type>map</type>
+    </key>
+  </map>
+</pxml>
+
