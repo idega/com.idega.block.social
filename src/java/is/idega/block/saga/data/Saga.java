@@ -20,14 +20,10 @@ import org.hibernate.annotations.Index;
 @Table(name="SAGA")
 @NamedQueries(
 		{ 
-			//get all
-			//get by name
-			//get by date
-			//get author
-			@NamedQuery(name = Saga.GET_ALL, query = "SELECT * FROM SAGA"),
-			@NamedQuery(name = Saga.GET_BY_NAME, query = "SELECT * FROM SAGA"),
-			@NamedQuery(name = Saga.GET_BY_DATE, query = "SELECT * FROM SAGA"),
-			@NamedQuery(name = Saga.GET_AUTHOR, query = "SELECT * FROM SAGA")
+			@NamedQuery(name = Saga.GET_ALL, query = "FROM Saga s"),
+			@NamedQuery(name = Saga.GET_BY_NAME, query = "from Saga s where s.name = :"+Saga.nameProp),
+			@NamedQuery(name = Saga.GET_BY_DATE, query = "from Saga s where s.date = :"+Saga.dateProp),
+			@NamedQuery(name = Saga.GET_AUTHOR_BY_ID, query = "from Saga s where s.id = :"+Saga.idProp)
 		}
 )
 public class Saga implements Serializable {
@@ -44,27 +40,34 @@ public class Saga implements Serializable {
 	public static final String GET_ALL = "saga.getAll";
 	public static final String GET_BY_NAME = "saga.getByName";
 	public static final String GET_BY_DATE = "saga.getByDate";
-	public static final String GET_AUTHOR = "saga.getAuthor";
+	public static final String GET_AUTHOR_BY_ID = "saga.getAuthorByID";
 	
+	public static final String idProp = "id_prop";
 	@Id @GeneratedValue(strategy = GenerationType.AUTO)
 	@Index(columnNames={SAGA_ID}, name = "sagaIdIndex")
 	private Long id;
 	
+	public static final String nameProp = "name_prop";
 	@Column(name = "name", nullable = false)
 	@Index(columnNames={SAGA_NAME}, name = "nameIdIndex")
 	private String name;
 	
-	@Column(length = 2000)
+	public static final String descriptionProp = "description_prop";
+	@Column(name = "description", length = 2000)
 	private String description;
     
+	public static final String dateProp = "date_prop";
 	@Temporal(TemporalType.DATE)
+	@Column(name = "date")
 	private Date date;
 	
 	/** authorId documentation reference to the user table*/
+	public static final String authorIdProp = "authorId_prop";
 	@Index(columnNames={SAGA_AUTHOR_ID}, name = "authorIdIndex")
-	@Column(nullable = false)
+	@Column(name = "authorId",nullable = false)
 	private Integer authorId;
 	
+	public static final String payableProp = "payable_prop";
 	@Column(name = "payable")
 	Boolean payable;
 
