@@ -50,7 +50,7 @@ public class Saga implements Serializable {
 	@Index(columnNames={SAGA_ID}, name = "sagaIdIndex")
 	private Long id;
 	
-	@Column(name = "name")
+	@Column(name = "name", nullable = false)
 	@Index(columnNames={SAGA_NAME}, name = "nameIdIndex")
 	private String name;
 	
@@ -62,6 +62,7 @@ public class Saga implements Serializable {
 	
 	/** authorId documentation reference to the user table*/
 	@Index(columnNames={SAGA_AUTHOR_ID}, name = "authorIdIndex")
+	@Column(nullable = false)
 	private Integer authorId;
 	
 	@Column(name = "payable")
