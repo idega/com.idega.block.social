@@ -28,49 +28,48 @@ import org.hibernate.annotations.Index;
 )
 public class Saga implements Serializable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -7986373392792826654L;
-	
-	private static final String SAGA_ID = "SAGA_ID_INDEX";
-	private static final String SAGA_NAME = "SAGA_NAME_INDEX";
-	private static final String SAGA_AUTHOR_ID = "SAGA_AUTHOR_ID_INDEX";
-	
 	public static final String GET_ALL = "saga.getAll";
 	public static final String GET_BY_NAME = "saga.getByName";
 	public static final String GET_BY_DATE = "saga.getByDate";
 	public static final String GET_AUTHOR_BY_ID = "saga.getAuthorByID";
 	
-	public static final String idProp = "id_prop";
+	public static final String SAGA_ID = "SAGA_ID_INDEX";
+	public static final String SAGA_NAME = "SAGA_NAME_INDEX";
+	public static final String SAGA_AUTHOR_ID = "SAGA_AUTHOR_ID_INDEX";
+	
+	private static final long serialVersionUID = -7986373392792826654L;
+	
+	public static final String idProp = "id";
 	@Id @GeneratedValue(strategy = GenerationType.AUTO)
 	@Index(columnNames={SAGA_ID}, name = "sagaIdIndex")
 	private Long id;
 	
-	public static final String nameProp = "name_prop";
-	@Column(name = "name", nullable = false)
+	public static final String nameProp = "name";
+	@Column(name = "NAME", nullable = false)
 	@Index(columnNames={SAGA_NAME}, name = "nameIdIndex")
 	private String name;
 	
-	public static final String descriptionProp = "description_prop";
-	@Column(name = "description", length = 2000)
+	public static final String descriptionProp = "description";
+	@Column(name = "DESCRIPTION", length = 2000)
 	private String description;
     
-	public static final String dateProp = "date_prop";
+	public static final String dateProp = "date";
 	@Temporal(TemporalType.DATE)
-	@Column(name = "date")
+	@Column(name = "DATE")
 	private Date date;
 	
 	/** authorId documentation reference to the user table*/
-	public static final String authorIdProp = "authorId_prop";
+	public static final String authorIdProp = "authorId";
 	@Index(columnNames={SAGA_AUTHOR_ID}, name = "authorIdIndex")
-	@Column(name = "authorId",nullable = false)
+	@Column(name = "AUTHOR_ID",nullable = false)
 	private Integer authorId;
 	
-	public static final String payableProp = "payable_prop";
-	@Column(name = "payable")
+	public static final String payableProp = "payable";
+	@Column(name = "PAYABLE")
 	Boolean payable;
 
+	public Saga() { }
+	
 	public Long getId() {
 		return id;
 	}
