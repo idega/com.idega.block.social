@@ -7,7 +7,8 @@ var SELECTED_GROUP_STYLE = 'bold';
 var SELECTED_GROUP_STYLE_PARAMETER = 'font-weight';
 var ERROR_MESSAGE_CLASS = "error_message_class";
 var GROUP_DUBLICATION_MESSAGE = "A group with this name already exists!";
-var groupDublicationMessageCreated = false;
+var GROUP_NAME_EMPTY_MESSAGE = "Group name field can not be empty";
+var groupNameErrorMessagesCreated = false;
 var groupNameFieldId = null; //used to access group name field
 
 jQuery(document).ready(function(){
@@ -66,20 +67,29 @@ function getSelectedGroup(){
 }
 
 function checkIfNameExists(inputId){
-	if(!groupDublicationMessageCreated){
-		jQuery('#' + groupNameFieldId).after("<span id = 'text_field_error_id' class = '" + ERROR_MESSAGE_CLASS +
+	if(!groupNameErrorMessagesCreated){
+		jQuery('#' + groupNameFieldId).after("<span id = 'group_dublication_message_id' class = '" + ERROR_MESSAGE_CLASS +
 			"' style = 'display: none;'>" + GROUP_DUBLICATION_MESSAGE + "</span>");
 		groupDublicationMessageCreated = true;
+		jQuery('#' + groupNameFieldId).after("<span id = 'group_name_empty_error_id' class = '" + ERROR_MESSAGE_CLASS +
+				"' style = 'display: none;'>" + GROUP_NAME_EMPTY_MESSAGE + "</span>");
+		groupNameErrorMessagesCreated = true;
 	}
 	value = jQuery('#' + groupNameFieldId).val();
+	if(value == ""){
+		jQuery('#group_name_empty_error_id').css('display', 'block');
+		return;
+	}else{
+		jQuery('#group_name_empty_error_id').hide();
+	}
 	SagaServices.isAllowedToSave(value, {
 		callback: function(isGroupNameUnique) {
 			IS_GROUP_NAME_OK = isGroupNameUnique;
 			if(isGroupNameUnique){
-				jQuery('#text_field_error_id').hide();
+				jQuery('#group_dublication_message_id').hide();
 				return;
 			}
-			jQuery('#text_field_error_id').css('display', 'block');
+			jQuery('#group_dublication_message_id').css('display', 'block');
 		}
 	});
 }
