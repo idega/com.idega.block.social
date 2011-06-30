@@ -1,0 +1,13 @@
+@CHARSET "UTF-8";
+
+.rolesclass, .homapageContainerClass, .groupTypesClass, .groupTabClass{
+	display : none;
+}
+
+.groupCreatorGroupNameField{
+	display : block !important;
+}
+
+.error_message_class{
+	color:red;
+}
