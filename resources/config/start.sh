@@ -172,6 +172,8 @@ configure_mysql(){
     cd $USER_CONFIGURATION_FOLDER_NAME$DATABASE_CONFIGURATION_NAME;
     cd "lib/server"
     wget http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.16.zip/from/ftp://ftp.fu-berlin.de/unix/databases/mysql/
+    unzip mysql-connector-java-5.1.16.zip
+    cp mysql-connector-java-5.1.16/mysql-connector-java-5.1.16-bin.jar mysql-connector-java-5.1.16-bin.jar
     cd ..
     cd ..
     cd ..
