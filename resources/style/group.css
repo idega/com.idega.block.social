@@ -1,13 +1,174 @@
 @CHARSET "UTF-8";
-
-.rolesclass, .homapageContainerClass, .groupTypesClass, .groupTabClass{
+/*input[type=button] { 
+	float:right;;
+}*/
+.SimpleGroupCreator{
 	display : none;
 }
 
-.groupCreatorGroupNameField{
-	display : block !important;
+.nameFieldClass, .descriptionClass, .buttonsContainerClass{
+	display : block;
+}
+
+.saveButtonClass, .groupTab, .userEditTab{
+	display : inline;
 }
 
 .error_message_class{
 	color:red;
+}
+
+div#userEditTab, div#groupTab{
+	background-color:white;	
+}
+
+
+
+div.searchResultTableLayer{
+	overflow:auto;
+	width:100%;
+}
+
+/*div.main-search-table-layer{
+	position:relative;
+  	top: 0;
+ 	right: 0;
+  	bottom: 0;
+  	left: 0;
+  	width: 50%;
+  	height: 50%;
+  	margin: auto;
+  	
+	text-align:right;
+	width:100%;
+	z-index:1;
+}*/
+
+img.userImg{
+	width:70px;
+	height:80px;	
+}
+
+
+table
+{
+	margin-bottom: 20px;
+    border-color: #600;
+    border-width: 0 0 1px 1px;
+    border-style: solid;
+    text-align:center;
+    width:100%;
+}
+
+td
+{
+    border-color: #600;
+    border-width: 1px 1px 0 0;
+    border-style: solid;
+    margin: 0;
+    padding: 4px;
+    background-color: #FFC;
+}
+
+input.{
+	position:relative;
+	left:100px;
+	top:150px;
+}
+
+label.table-title{
+	text-align:center;
+}
+
+div.containerLayer{
+	border-color:transparent;	
+}
+/*Tagedit gets very high when you press on it without this style*/
+li.tagedit-listelement-old a.tagedit-close, .tagedit-list li.tagedit-listelement-old 
+	a.tagedit-break, .tagedit-list li.tagedit-listelement-old a.tagedit-delete, .tagedit-list 
+	li.tagedit-listelement-old a.tagedit-save {
+	height:20px !important;	
+}
+.tagedit-list li.tagedit-listelement-new input {
+	height:20px !important;	
+}
+
+
+div.buttonsContainerClass{
+	width:450px;
+}
+
+div.moduleContainer{
+	width:65%;
+}
+
+input.saveButtonClass.SimpleGroupCreator{
+		margin-right:40%
+}
+
+.tagedit-list{
+	width:250px;
+	position:relative;
+	top:-20px;
+	left:100px;
+}
+
+.user-search-input{
+	position:relative;
+	top:-50px;
+	left:375px;
+}
+
+.search-input-label{
+	width:100px;
+}
+
+a.invisibleLink{
+	display:none;	
+}
+
+.tree_drag_drop li {
+	list-style-type:none;
+}
+
+.user-search-layer{
+	z-index:100;
+	float:none;
+}
+
+.user-table-layer{
+	z-index:-1;
+}
+
+.group-tree-container{
+	height:40%;	
+	overflow:auto;
+}
+
+.labeled-component{
+	position:relative;
+	top:-20px;
+	left:120px;
+}
+
+.SimpleGroupCreatorContainer{
+	height:100% !important;	
+	width:100% !important;
+}
+
+.user-search-layer, .main-search-table-layer{
+	height:auto !important;
+}
+
+.user-search-table-layer{
+	height:60%;
+	overflow:auto;
+}
+
+#user-edit-main-layer{
+	height:90%;
+}
+
+.searchFieldLayer{
+	z-index:100;	
 }

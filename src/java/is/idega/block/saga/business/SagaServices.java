@@ -1,7 +1,17 @@
 package is.idega.block.saga.business;
 
+import is.idega.block.saga.Constants;
+import is.idega.block.saga.presentation.group.SagaGroupCreator;
+
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
+
+import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 
 import org.directwebremoting.annotations.Param;
 import org.directwebremoting.annotations.RemoteMethod;
@@ -11,9 +21,26 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import com.idega.builder.business.BuilderLogic;
 import com.idega.core.business.DefaultSpringBean;
+import com.idega.core.component.bean.RenderedComponent;
+import com.idega.data.IDOLookup;
 import com.idega.dwr.business.DWRAnnotationPersistance;
+import com.idega.idegaweb.IWResourceBundle;
+import com.idega.presentation.IWContext;
+import com.idega.presentation.Layer;
+import com.idega.user.bean.UserDataBean;
 import com.idega.user.business.GroupBusiness;
+import com.idega.user.business.UserApplicationEngine;
+import com.idega.user.business.UserBusiness;
+import com.idega.user.data.Group;
+import com.idega.user.data.GroupHome;
+import com.idega.user.data.User;
+import com.idega.user.data.UserHome;
+import com.idega.util.CoreConstants;
+import com.idega.util.CoreUtil;
+import com.idega.util.ListUtil;
+import com.idega.util.expression.ELUtil;
 
 @Service("sagaServices")
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -24,17 +51,332 @@ import com.idega.user.business.GroupBusiness;
 public class SagaServices extends DefaultSpringBean implements
 		DWRAnnotationPersistance {
 
+	private GroupBusiness groupBusiness = null;
+	private UserApplicationEngine userApplicationEngine = null;
+	private UserBusiness userBusiness = null;
+	private IWResourceBundle iwrb = null;
+	private UserHome userHome = null;
+	private GroupHome groupHome = null;
+	/**
+	 * checks if group is allowed to save
+	 * @param name the name of group
+	 * @return
+	 */
 	@RemoteMethod
-	public Boolean isAllowedToSave(String name){
-		GroupBusiness groupBusiness = null;
+	public Boolean isGroupAllowedToSave(String name, String id){
+		Boolean allowed = Boolean.FALSE;
 		try{
-			groupBusiness = this.getServiceInstance(GroupBusiness.class);
-			return  groupBusiness.getGroupsByGroupName(name).isEmpty();
+			Collection<Group>  groupsOfThisName = this.getGroupBusiness().getGroupsByGroupName(name);
+			allowed = ListUtil.isEmpty(groupsOfThisName);
+			for(Group group : groupsOfThisName){
+				if(group.getId().equals(id)){
+					return Boolean.TRUE;
+				}
+			}
 		}catch(RemoteException e){
 			this.getLogger().log(Level.WARNING, "Failed to access GroupBussiness services");
 		}
 
-		return Boolean.FALSE;
+		return allowed;
+	}
+
+	/**
+	 *
+	 * @param userIds Collection of Integer user id
+	 * @return returns Collection of UserDataBean if no result were found than Collection
+	 * is empty
+	 */
+	@RemoteMethod
+	public Collection <UserDataBean> getUserInfoByIds(Collection <Integer> userIds){
+		Collection <UserDataBean> userDataCollection = new ArrayList<UserDataBean>();
+		for(Integer userId : userIds){
+			try{
+				User user = this.getUserBusiness().getUser(userId);
+				userDataCollection.add(this.getUserApplicationEngine().getUserInfo(user));
+			}catch(RemoteException e){
+				this.getLogger().log(Level.WARNING, "Failed getting user info", e);
+				continue;
+			}
+		}
+		return userDataCollection;
+	}
+
+	@SuppressWarnings("unchecked")
+	@RemoteMethod
+	public RenderedComponent saveUsersAndGetUserTable(Integer groupId,Collection <String> usersToAdd){
+		String[] a = new String[0];
+		Collection <User> users = null;
+		GroupBusiness groupBusiness = this.getGroupBusiness();
+		String groupName = null;
+		try{
+			groupName = groupBusiness.getGroupByGroupID(groupId).getName();
+		}catch(Exception e){
+			this.getLogger().log(Level.WARNING, "Failed accessing GroupBusiness services", e);
+			return null;
+		}
+		if(!ListUtil.isEmpty(usersToAdd)){
+			UserBusiness userBusiness = this.getUserBusiness();
+			try{
+				a = usersToAdd.toArray(a);
+				users = userBusiness.getUsers(a);
+			}catch(RemoteException e){
+				this.getLogger().log(Level.WARNING, "Failed userBusiness.getUsers(String)", e);
+				return null;
+			}
+			for(User user : users){
+				try{
+					groupBusiness.addUser(groupId, user);
+
+				}
+				catch(Exception e){
+					this.getLogger().log(Level.WARNING, "Failed accessing GroupBusiness services", e);
+					return null;
+				}
+			}
+		}
+		Layer tableLayer = SagaGroupCreator.createUserTable(groupId, this.getResourceBundle(),groupName);
+		return BuilderLogic.getInstance().getRenderedComponent(tableLayer, null);
+	}
+
+
+	/**
+	 * @param request -	any string.
+	 * @param groupId - group id from which not to select users
+	 * @param maxAmount - 	max amount of results to return, -1 for unlimited. If this value is negative
+	 * and not equal to -1 than result is undefin
+	 * @param startingEntry - user id from which result will be taken.
+	 * @return Collection of UserPropertiesBean
+	 */
+	@RemoteMethod
+	public Collection <String> autocompleteUserSearchRequest(String request, int groupId, int maxAmount, int startingEntry){
+		request = request.toLowerCase();
+		Collection <User> requestedUsers = (this.getUserHome().ejbAutocompleteRequest(request, groupId, maxAmount, startingEntry));
+		UserApplicationEngine userApplicationEngine = this.getUserApplicationEngine();
+		String words[] = request.split(CoreConstants.SPACE);
+		Set <String> strings = new HashSet<String>();
+		int last = words.length - 1;
+		int extractAmount = request.lastIndexOf(CoreConstants.SPACE) == (request.length() - 1) ? 1 : 0;
+		for(User user : requestedUsers){
+			UserDataBean data =  userApplicationEngine.getUserInfo(user);
+			String name = data.getName().toLowerCase();
+			String names[] = name.split(CoreConstants.SPACE);
+			String firstName = names.length > 0 ? names[0] : null;
+			String lastName = names.length == 2 ? names[1] : names.length > 2 ? names[2] : null;
+
+			String email = data.getEmail().toLowerCase();
+			if(email.contains(words[last]) && !request.contains(email)){
+				strings.add(request.substring(0, request.length() - words[last].length() - extractAmount) + email);
+			}
+			else if(name.contains(words[last]) && !request.contains(name)){
+				for(int i = 0;i < names.length;i++){
+					if(!request.contains(names[i])){
+						strings.add(request.substring(0, request.length() - words[last].length() - extractAmount) + names[i]);
+					}
+				}
+			}
+			else if(firstName.contains(words[last]) && !request.contains(firstName)){
+				strings.add(request.substring(0, request.length() - words[last].length() - extractAmount) + firstName);
+			}
+			else if((lastName != null) && lastName.contains(words[last]) && !request.contains(lastName)){
+				strings.add(request.substring(0, request.length() - words[last].length() - extractAmount) + lastName);
+			}
+		}
+		return strings;
+	}
+
+
+	@RemoteMethod
+	public String removeUserFromGroup(Integer userId, Integer groupId){
+		IWContext iwc  = CoreUtil.getIWContext();
+		User currentUser = null;
+		if(iwc.isLoggedOn()){
+			currentUser = iwc.getCurrentUser();
+		}else{
+			try{
+				currentUser = iwc.getAccessController().getAdministratorUser();
+			}catch(Exception e){
+				this.getLogger().log(Level.WARNING, "Failed to get superUser", e);
+				IWResourceBundle bundle = this.getResourceBundle();
+				String serverError = bundle.getLocalizedString("server_error", "Server error");
+				String error = bundle.getLocalizedString("failed_to_get_superUser", "Failed to get superUser");
+				return new StringBuilder(serverError).append(" : ").append(error).toString();
+			}
+		}
+		try{
+			Group group = this.getGroupBusiness().getGroupByGroupID(groupId);
+			this.getUserBusiness().removeUserFromGroup(userId, group, currentUser);
+		}
+		catch(RemoteException e){
+			this.getLogger().log(Level.WARNING, "Failed to call remote method", e);
+			IWResourceBundle bundle = this.getResourceBundle();
+			String serverError = bundle.getLocalizedString("server_error", "Server error");
+			String error = bundle.getLocalizedString("failed_to_call_remote_method", "failed to call remote method");
+			return new StringBuilder(serverError).append(" : ").append(error).toString();
+		}
+		catch(FinderException e){
+			this.getLogger().log(Level.WARNING, "Failed to find EJB bean", e);
+			IWResourceBundle bundle = this.getResourceBundle();
+			String serverError = bundle.getLocalizedString("server_error", "Server error");
+			String error = bundle.getLocalizedString("failed_to_find_ejb_bean", "Failed to find EJB bean");
+			return new StringBuilder(serverError).append(" : ").append(error).toString();
+		}
+		catch(RemoveException e){
+			this.getLogger().log(Level.WARNING, "Failed to remove EJB bean", e);
+			IWResourceBundle bundle = this.getResourceBundle();
+			String serverError = bundle.getLocalizedString("server_error", "Server error");
+			String error = bundle.getLocalizedString("failed_to_remove_ejb_bean", "Failed to remove EJB bean");
+			return new StringBuilder(serverError).append(" : ").append(error).toString();
+		}
+
+		return this.getResourceBundle().getLocalizedString("user_was_successfully_removed", "User was removed");
+	}
+
+	/**
+	 * Returns search result by request. Searches for users that has something <b>like</b> in request
+	 * @param request any String
+	 * @return Collection of UserDataBean that mached request
+	 */
+	@RemoteMethod
+	public RenderedComponent  getUserSearchResultTableBySearchrequest(String request){
+		UserBusiness userBusiness = null;
+		Collection <User> requestedUsers = null;
+		userBusiness = this.getUserBusiness();
+		requestedUsers = userBusiness.getUsersByNameAndEmailAndPhone(request);
+
+		Layer tableLayer = SagaGroupCreator.createSearchResultsArea(requestedUsers, getResourceBundle());
+		return BuilderLogic.getInstance().getRenderedComponent(tableLayer, null);
+	}
+
+	@RemoteMethod
+	public RenderedComponent  getUserSearchResultTableBySearchrequest(Collection<String> requests, int groupId, int maxAmount, int startingEntry){
+		UserHome userHome = this.getUserHome();
+		Collection <User> requestedUsers = (userHome.ejbFindBySearchRequest(requests, groupId,  maxAmount, startingEntry));
+		Layer tableLayer = SagaGroupCreator.createSearchResultsArea(requestedUsers, getResourceBundle());
+
+		return BuilderLogic.getInstance().getRenderedComponent(tableLayer, null);
+	}
+
+	@RemoteMethod
+	public Collection <UserDataBean> getUserSearchResultsBySearchrequest(String request){
+		UserApplicationEngine userApplicationEngine = this.getUserApplicationEngine();
+		UserBusiness userBusiness = null;
+		Collection <User> allUsers = null;
+		userBusiness = this.getUserBusiness();
+		allUsers = userBusiness.getUsersByNameAndEmailAndPhone(request);
+		Collection <UserDataBean> usersData = new ArrayList<UserDataBean>();
+		if(ListUtil.isEmpty(allUsers)){
+			return usersData;
+		}
+		for(User user : allUsers){
+			usersData.add(userApplicationEngine.getUserInfo(user));
+		}
+		return usersData;
+	}
+
+	@RemoteMethod
+	public RenderedComponent getUsersOfSpecifiedGroupTable(int groupId, int maxAmount, int startingEntry){
+		GroupBusiness groupBusiness = this.getGroupBusiness();
+		String groupName = null;
+		try{
+			groupName = groupBusiness.getGroupByGroupID(groupId).getName();
+		}catch(Exception e){
+			this.getLogger().log(Level.WARNING, "Failed accessing GroupBusiness services", e);
+			Layer tableLayer = SagaGroupCreator.createUserTable(groupId, this.getResourceBundle(),"this group");
+			return BuilderLogic.getInstance().getRenderedComponent(tableLayer, null);
+		}
+		Layer tableLayer = SagaGroupCreator.createUserTable(groupId, this.getResourceBundle(),groupName);
+		return BuilderLogic.getInstance().getRenderedComponent(tableLayer, null);
+	}
+
+
+	@RemoteMethod
+	public int getParentGroup(Integer groupId){
+		Collection <Integer> parentgroups = this.getGroupHome().getParentGroups(groupId);
+		if(ListUtil.isEmpty(parentgroups)){
+			return -1;
+		}
+		return parentgroups.iterator().next();
+	}
+
+//	@SuppressWarnings("unchecked")
+//	public List<GroupNode> getChildGroupsRecursive(Integer uniqueId) {
+//		GroupBusiness groupBusiness = getGroupBusiness();
+//		if (groupBusiness == null) {
+//			return null;
+//		}
+//		GroupHelper helper = ELUtil.getInstance().getBean(GroupHelper.class);
+//		try {
+//			return helper.convertGroupsToGroupNodes(groupBusiness.getChildGroups(group), iwc, false, helper.getGroupImageBaseUri(iwc));
+//		} catch (RemoteException e) {
+//			e.printStackTrace();
+//		}
+//
+//		return null;
+//	}
+
+	public Group getSagaRootGroup(){
+		try{
+			@SuppressWarnings("unchecked")
+			Collection <Group> sagaRootGroups = getGroupBusiness().getGroupsByGroupName(Constants.SAGA_ROOT_GROUP_NAME);
+			return sagaRootGroups.iterator().next();
+		}catch(Exception e){
+			this.getLogger().log(Level.WARNING, "Failed getting saga root group", e);
+			return null;
+		}
+
+	}
+
+	public GroupBusiness getGroupBusiness() {
+		if(groupBusiness == null){
+			groupBusiness = this.getServiceInstance(GroupBusiness.class);
+		}
+		return groupBusiness;
+	}
+
+	public UserApplicationEngine getUserApplicationEngine() {
+		if(userApplicationEngine == null){
+			userApplicationEngine = ELUtil.getInstance().getBean(UserApplicationEngine.class);
+		}
+		return userApplicationEngine;
+	}
+
+
+	public UserBusiness getUserBusiness() {
+		if(userBusiness == null){
+			userBusiness = this.getServiceInstance(UserBusiness.class);
+		}
+		return userBusiness;
+	}
+
+	protected IWResourceBundle getResourceBundle(){
+		if(iwrb == null){
+			iwrb =this.getResourceBundle(this.getBundle(Constants.IW_BUNDLE_IDENTIFIER));
+		}
+		return iwrb;
+	}
+
+	public UserHome getUserHome() {
+		if (this.userHome == null) {
+			try {
+				this.userHome = (UserHome) IDOLookup.getHome(User.class);
+			} catch (RemoteException rme) {
+				this.getLogger().log(Level.WARNING, "Failed getting UserHome", rme);
+			}
+		}
+		return this.userHome;
+	}
+
+	public GroupHome getGroupHome() {
+		if (this.groupHome == null) {
+			try {
+				this.groupHome = (GroupHome) IDOLookup.getHome(Group.class);
+			} catch (RemoteException rme) {
+				this.getLogger().log(Level.WARNING, "Failed getting UserHome", rme);
+			}
+		}
+		return this.groupHome;
 	}
 
 }
+
+
