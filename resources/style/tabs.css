@@ -1,0 +1,52 @@
+@CHARSET "UTF-8";
+.ui-tabs-vertical { width: 55em; }
+.ui-tabs-vertical .ui-tabs-nav { padding: .2em .1em .2em .2em; float: left; width: 20%; }
+.ui-tabs-vertical .ui-tabs-nav li { clear: left; width: 100%; border-bottom-width: 1px !important; border-right-width: 0 !important; margin: 0 -1px .2em 0; }
+.ui-tabs-vertical .ui-tabs-nav li a { display:block; }
+.ui-tabs-vertical .ui-tabs-nav li.ui-tabs-selected { padding-bottom: 0; padding-right: .1em; border-right-width: 1px; border-right-width: 1px; }
+.ui-tabs-vertical .ui-tabs-panel { 
+	padding: 0em; 
+	float: right; 
+	width: 80%;
+	height:100%;
+	
+	position:absolute;
+ 	top:0;
+ 	left:30%;
+ 	overflow:auto;
+}
+.jquery-ui-tab-link{
+	height:1.75em;	
+	width:100%;
+}
+
+.main-tabs-layer{
+	height:100%;	
+	width:100%;
+	position:relative;
+	font-size:18;
+}
+
+.ui-tabs .ui-tabs-nav li a {
+	padding:0em 0em;
+}
+
+.jquery-ui-tab-link *{
+	cursor:inherit;
+}
+
+.tabmenu-accordion-layer{
+	position : absolute;
+	top : 0;
+	left : 0px;
+	width : 30%;
+	height : 100%; 
+}
+
+.main-tabmenu-layer{
+	position : relative;
+}
+
+ul.ui-tabs-nav.ui-helper-reset.ui-helper-clearfix.ui-widget-header.ui-corner-all{
+	display:none !important;
+}

@@ -23,7 +23,6 @@ import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
 import com.idega.presentation.ui.GenericButton;
 import com.idega.user.business.GroupBusiness;
-import com.idega.user.business.GroupNode;
 import com.idega.user.business.UserConstants;
 import com.idega.user.data.Group;
 import com.idega.user.presentation.group.GroupTreeViewer;
@@ -136,18 +135,6 @@ public class GroupEditor extends GroupTreeViewer{
 		treeContainerContent.setStyleAttribute("height :10000px; width:280px;");
 		return treeContainerContent;
 	}
-	//TODO: remove this
-	private static int getIndexOfInsertion(ArrayList <GroupNode> c, Group group){
-		int i = 0;
-		for(GroupNode n : c){
-			if(n.getId().equals(group.getId())){
-				return i;
-			}
-			i++;
-		}
-		return i;
-	}
-
 	private void addErrorMsg(String errorMsg){
 		if(this.errorMsg == null){
 			this.errorMsg = new StringBuilder(errorMsg);

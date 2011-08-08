@@ -293,6 +293,7 @@ public class SagaGroupCreator extends SimpleGroupCreator{
 		return userTable;
 	}
 
+	@SuppressWarnings("unchecked")
 	public static Layer createUserTable(int groupId,IWResourceBundle iwrb, String groupName){
 		Layer tableLayer = new Layer();
 		tableLayer.setStyleClass("user-table-layer");

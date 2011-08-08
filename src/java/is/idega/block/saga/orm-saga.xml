@@ -5,5 +5,7 @@
     version="1.0">
 
     <entity class="is.idega.block.saga.data.Saga" />
+    <entity class="is.idega.block.saga.data.PostEntity" />
+    <entity class="is.idega.block.saga.data.ReceiversEntity" />
         
 </entity-mappings>

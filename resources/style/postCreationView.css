@@ -1,0 +1,53 @@
+@CHARSET "UTF-8";
+
+.post-creation-view-accordion-layer, .message-text-area-layer{
+	display: inline-block;
+	width : 50%;
+	height : 100%;
+	position : absolute;	
+}
+
+.post-creation-view-accordion-layer{
+	top:0;
+	left : 0;
+}
+
+.message-text-area-layer{
+	top:0;
+	left:50%;
+}
+
+.message-text-area{
+	width : 100%;
+	height : 100%;	
+}
+
+.post-creation-view-main-field{
+	position : relative;
+	height : 80%;	
+	padding : 0;
+}
+
+.post-creation-view-form{
+	overflow:auto;
+}
+
+.ui-accordion {
+	height : 100%;
+}
+
+.post-creation-view-accordion-layer * .ui-accordion-content{
+	height : auto;
+}
+
+.post-creation-view-accordion-checkbox{
+	position:absolute;
+	top : 0;
+	right : 0;
+	cursor : inherit;
+	z-index : 100;
+}
+
+.ui-accordion-header{
+	z-index : 1;	
+}

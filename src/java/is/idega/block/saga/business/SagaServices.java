@@ -1,12 +1,15 @@
 package is.idega.block.saga.business;
 
 import is.idega.block.saga.Constants;
+import is.idega.block.saga.data.PostEntity;
+import is.idega.block.saga.data.dao.PostDao;
 import is.idega.block.saga.presentation.group.SagaGroupCreator;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -17,6 +20,7 @@ import org.directwebremoting.annotations.Param;
 import org.directwebremoting.annotations.RemoteMethod;
 import org.directwebremoting.annotations.RemoteProxy;
 import org.directwebremoting.spring.SpringCreator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -57,6 +61,10 @@ public class SagaServices extends DefaultSpringBean implements
 	private IWResourceBundle iwrb = null;
 	private UserHome userHome = null;
 	private GroupHome groupHome = null;
+
+	@Autowired
+	PostDao postDao;
+
 	/**
 	 * checks if group is allowed to save
 	 * @param name the name of group
@@ -66,6 +74,7 @@ public class SagaServices extends DefaultSpringBean implements
 	public Boolean isGroupAllowedToSave(String name, String id){
 		Boolean allowed = Boolean.FALSE;
 		try{
+			@SuppressWarnings("unchecked")
 			Collection<Group>  groupsOfThisName = this.getGroupBusiness().getGroupsByGroupName(name);
 			allowed = ListUtil.isEmpty(groupsOfThisName);
 			for(Group group : groupsOfThisName){
@@ -298,6 +307,18 @@ public class SagaServices extends DefaultSpringBean implements
 		return parentgroups.iterator().next();
 	}
 
+	@RemoteMethod
+	public void savePost(){
+		if(postDao == null){
+			ELUtil.getInstance().autowire(this);
+		}
+		IWContext iwc  = CoreUtil.getIWContext();
+//		String bo
+		Random r = new Random();
+		postDao.updatePost(iwc.getCurrentUserId(),String.valueOf(r.nextInt()), PostEntity.PUBLIC);
+
+	}
+
 //	@SuppressWarnings("unchecked")
 //	public List<GroupNode> getChildGroupsRecursive(Integer uniqueId) {
 //		GroupBusiness groupBusiness = getGroupBusiness();
@@ -349,6 +370,7 @@ public class SagaServices extends DefaultSpringBean implements
 	}
 
 	protected IWResourceBundle getResourceBundle(){
+
 		if(iwrb == null){
 			iwrb =this.getResourceBundle(this.getBundle(Constants.IW_BUNDLE_IDENTIFIER));
 		}
@@ -376,6 +398,7 @@ public class SagaServices extends DefaultSpringBean implements
 		}
 		return this.groupHome;
 	}
+
 
 }
 
