@@ -12,6 +12,7 @@ import java.util.logging.Level;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
 import com.idega.builder.business.BuilderLogic;
 import com.idega.business.IBOLookup;
@@ -176,8 +177,11 @@ public class GroupEditor extends GroupTreeViewer{
 			scripts.add(web2.getBundleUriToHumanizedMessagesScript());
 			styles.add(web2.getBundleUriToHumanizedMessagesStyleSheet());
 
+			JQuery  jQuery = web2.getJQuery();
+			scripts.add(jQuery.getBundleURIToJQueryUILib("1.8.14","js/jquery-ui-1.8.14.custom.min.js"));
 			scripts.addAll(web2.getBundleURIsToTageditLib());
 			styles.addAll(web2.getBundleURIsToTageditStyleFiles());
+			styles.add(jQuery.getBundleURIToJQueryUILib("1.8.14","css/ui-lightness/jquery-ui-1.8.14.custom.css"));
 
 			scripts.add(web2.getBundleUriToMootabsScript());
 			styles.add(web2.getBundleUriToMootabsStyle());

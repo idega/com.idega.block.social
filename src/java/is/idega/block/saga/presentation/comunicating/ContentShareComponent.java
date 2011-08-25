@@ -54,6 +54,12 @@ public class ContentShareComponent  extends IWBaseComponent {
 		this.add(main);
 		main.setStyleClass("main-content-sharing-layer");
 
+//		IWBundle bundlee = getBundle(context, EmailConstants.IW_BUNDLE_IDENTIFIER);
+//		FaceletComponent facelet = (FaceletComponent)context.getApplication().createComponent(FaceletComponent.COMPONENT_TYPE);
+//		facelet.setFaceletURI(bundlee.getFaceletURI("emailSender.xhtml"));
+//		main.add(facelet);
+
+
 		Layer sideTopLayer = new Layer();
 		sideTopLayer.setStyleClass("side-top-layer-of-main");
 		main.add(sideTopLayer);
@@ -73,7 +79,7 @@ public class ContentShareComponent  extends IWBaseComponent {
 		//TODO: add filters of contents
 		Layer inboxFilter = new Layer();
 		tab.addTab(iwrb.getLocalizedString("inbox", "Inbox"),
-				BuilderLogic.getInstance().getUriToObject(SagaGroupCreator.class),inboxFilter);
+				BuilderLogic.getInstance().getUriToObject(PostContentViewer.class),inboxFilter);
 
 		Layer sentFilter = new Layer();
 		tab.addTab(iwrb.getLocalizedString("sent", "Sent"), BuilderLogic.getInstance().getUriToObject(SagaGroupCreator.class),sentFilter);
@@ -197,10 +203,12 @@ public class ContentShareComponent  extends IWBaseComponent {
 		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
 		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/ContentSharingHelper.js"));
 		styles.add(iwb.getVirtualPathWithFileNameString("style/contentShare.css"));
-		styles.add(iwb.getVirtualPathWithFileNameString("style/postCreationView.css"));
 
 		scripts.add("/dwr/engine.js");
 		scripts.add("/dwr/interface/SagaServices.js");
+
+		scripts.addAll(PostCreationView.getNeededScripts(iwc));
+		styles.addAll(PostCreationView.getNeededStyles(iwc));
 
 		PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, scripts);
 		PresentationUtil.addStyleSheetsToHeader(iwc, styles);

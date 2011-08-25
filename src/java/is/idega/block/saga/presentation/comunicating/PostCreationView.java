@@ -2,14 +2,24 @@ package is.idega.block.saga.presentation.comunicating;
 
 import is.idega.block.saga.Constants;
 import is.idega.block.saga.presentation.HeaderWithElements;
+import is.idega.block.saga.presentation.SimpleForm;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.faces.component.UIComponent;
-import javax.faces.component.html.HtmlForm;
 import javax.faces.context.FacesContext;
 
+import com.idega.block.web2.business.JQuery;
+import com.idega.block.web2.business.Web2Business;
+import com.idega.block.web2.business.Web2BusinessBean;
+import com.idega.content.upload.presentation.FileUploadViewer;
+import com.idega.idegaweb.IWBundle;
+import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.IWBaseComponent;
 import com.idega.presentation.IWContext;
@@ -26,20 +36,25 @@ import com.idega.presentation.ui.TextInput;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.PresentationUtil;
+import com.idega.webface.WFUtil;
 
 public class PostCreationView extends IWBaseComponent{
 	public static final String BODY_PARAMETER_NAME = "post_body";
-	public static final String RECEIVERS_PARAMETER_NAME = "post_receivers";
+	public static final String POST_TITLE_PARAMETER = "post_title";
+	public static final String RECEIVERS_PARAMETER_NAME = "receivers_id";
 	public static final String POST_TO_GROUPS_PARAMETER_NAME = "post_to_groups";
 	public static final String WALL_POST_PARAMETER_NAME = "post_on_wall";
-	public static final String PRIVATE_MESSAGE = "private_message";
+	public static final String PRIVATE_MESSAGE_PARAMETER_NAME = "private_message";
+	public static final String POST_ATTACHMENTS_PARAMETER_NAME = "post_attachments";
+
+	private static final String TAGEDIT_NAME = "tag[]";
 
 	private IWResourceBundle iwrb = null;
 	private IWContext iwc = null;
 
 	private FieldSet content = null;
 
-	private HtmlForm form = null;
+	private SimpleForm form = null;
 
 	private Layer main = null;
 
@@ -47,13 +62,17 @@ public class PostCreationView extends IWBaseComponent{
 
 	private Layer accordionLayer = null;
 
+	private String postBodyInputId = null;
+
+	protected Layer privateMsgOptionsLayer = null;
+
 	public PostCreationView(){
 		iwc = CoreUtil.getIWContext();
 
 		main = new Layer();
 		super.add(main);
 
-		form = new HtmlForm();
+		form = new SimpleForm();
 		main.add(form);
 		form.setStyleClass("post-creation-view-form");
 		form.getChildren().clear();
@@ -89,30 +108,62 @@ public class PostCreationView extends IWBaseComponent{
 
 		form.setId("post-creation-view-main-form");
 
-		this.addActions();
+//		IWBundle bundle = getBundle(context, EmailConstants.IW_BUNDLE_IDENTIFIER);
+//		FaceletComponent facelet = (FaceletComponent)context.getApplication().createComponent(FaceletComponent.COMPONENT_TYPE);
+//		facelet.setFaceletURI(bundle.getFaceletURI("emailSender.xhtml"));
 
-		Layer textAreaLayer = new Layer();
-		this.addChild(1, textAreaLayer);
-		textAreaLayer.setStyleClass("message-text-area-layer");
+//		this.main.add(facelet);
 
+		Layer mainFieldsLayer = new Layer();
+		this.addChild(1, mainFieldsLayer);
+		mainFieldsLayer.setStyleClass("post-creation-view-main-fields-layer");
+
+		FieldSet titleField = new FieldSet(iwrb.getLocalizedString("title", "title") + CoreConstants.COLON);
+		mainFieldsLayer.add(titleField);
+		titleField.setStyleClass("post-creation-view-post-title-field");
+
+		TextInput title = new TextInput();
+		titleField.add(title);
+		title.setName(PostCreationView.POST_TITLE_PARAMETER);
+		title.setStyleClass("post-creation-view-post-title-field-input");
+
+		FieldSet textAreaField = new FieldSet(iwrb.getLocalizedString("text", "text") + CoreConstants.COLON);
+		mainFieldsLayer.add(textAreaField);
+		textAreaField.setStyleClass("post-creation-view-post-textArea-field");
 		TextArea textArea = new TextArea();
-		textAreaLayer.add(textArea);
+		textAreaField.add(textArea);
 		textArea.setName(PostCreationView.BODY_PARAMETER_NAME);
 		textArea.setStyleClass("message-text-area");
+		this.postBodyInputId = textArea.getId();
 
+
+		FileUploadViewer uploader = new FileUploadViewer();
+		mainFieldsLayer.add(uploader);
+		uploader.setAllowMultipleFiles(false);
+		uploader.setAutoAddFileInput(false);
+		uploader.setAutoUpload(true);
+		uploader.setShowUploadedFiles(true);
+		uploader.setFormId(form.getId());
+
+		StringBuilder actionafterUpload = new StringBuilder("PostCreationView.createLocationInput('#").append(mainFieldsLayer.getId())
+				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(POST_ATTACHMENTS_PARAMETER_NAME)
+				.append(CoreConstants.JS_STR_PARAM_END);
+		uploader.setActionAfterUploadedToRepository(actionafterUpload.toString());
 
 		// Private message options
-		Layer layer = new Layer();
-		this.addToaccordion(layer, iwrb.getLocalizedString("private_message", "Private Message"),PRIVATE_MESSAGE);
+		this.privateMsgOptionsLayer = new Layer();
+		this.addToaccordion(this.privateMsgOptionsLayer, iwrb.getLocalizedString("private_message", "Private Message"),PRIVATE_MESSAGE_PARAMETER_NAME);
 		Label label = new Label();
-		layer.add(label);
+		this.privateMsgOptionsLayer.add(label);
+//		layer.setId(iwc.getViewRoot().createUniqueId() + "PostCreationView");
 		label.addText(iwrb.getLocalizedString("message_receivers", "Message Receivers") + CoreConstants.COLON);
 		TextInput nameInput = new TextInput();
-		layer.add(nameInput);
-		nameInput.setName(RECEIVERS_PARAMETER_NAME);
+		this.privateMsgOptionsLayer.add(nameInput);
+		nameInput.setName(PostCreationView.TAGEDIT_NAME);
+//		nameInput.setID("lalala");
 
 		// Group message options
-		layer = new Layer();
+		Layer layer = new Layer();
 		this.addToaccordion(layer, iwrb.getLocalizedString("group_message", "Group Message"),POST_TO_GROUPS_PARAMETER_NAME);
 
 		// Wall post options
@@ -127,6 +178,10 @@ public class PostCreationView extends IWBaseComponent{
 //		buttonSubmit.setMarkupAttribute("type", "submit"); //will use revers ajax and js
 
 
+		PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, PostCreationView.getNeededScripts(iwc));
+		PresentationUtil.addStyleSheetsToHeader(iwc, PostCreationView.getNeededStyles(iwc));
+
+		this.addActions();
 	}
 
 	private void addActions(){
@@ -136,9 +191,32 @@ public class PostCreationView extends IWBaseComponent{
 		String action = PresentationUtil.getJavaScriptAction(tabsCreator.toString());
 		main.add(action);
 
-		String checkerScript = PresentationUtil.getJavaScriptAction(
-				"PostCreationView.setTocheckOnClick('.post-creation-view-accordion-checkbox');");
+		StringBuilder checker = new StringBuilder("PostCreationView.setTocheckOnClick('.post-creation-view-accordion-checkbox','#")
+				.append(this.privateMsgOptionsLayer.getId())
+				.append(CoreConstants.JS_STR_PARAM_END);
+		String checkerScript = PresentationUtil.getJavaScriptAction(checker.toString());
 		main.add(checkerScript);
+
+		StringBuilder autogrow = new StringBuilder("PostCreationView.createAutoresizing('#").append(postBodyInputId)
+		.append(CoreConstants.JS_STR_PARAM_END);
+		String autogrowAction = PresentationUtil.getJavaScriptAction(autogrow.toString());
+		main.add(autogrowAction);
+
+
+		StringBuilder actionForm = new StringBuilder("PostCreationView.createAutocompleteWithImages('[name=\"")
+		.append(PostCreationView.TAGEDIT_NAME).append("\"]');");
+		String actionString = PresentationUtil.getJavaScriptAction(actionForm.toString());
+		main.add(actionString);
+
+		actionForm = new StringBuilder("PostCreationView.nontrivialUserDefiningPhraseErrorMsg = '")
+				.append(this.iwrb.getLocalizedString("entered_phrase_does_not_trivially_defines_the_receiver",
+						"Entered phrase does not trivially defines the receiver")).append("';");
+		actionString = PresentationUtil.getJavaScriptAction(actionForm.toString());
+		main.add(actionString);
+
+		actionForm = new StringBuilder("PostCreationView.someHelp();");
+		actionString = PresentationUtil.getJavaScriptAction(actionForm.toString());
+		main.add(actionString);
 
 	}
 
@@ -146,13 +224,13 @@ public class PostCreationView extends IWBaseComponent{
 		buttonsLayer.add(object);
 	}
 
-	public String getActionOnSubmit() {
-		return form.getOnsubmit();
-	}
-
-	public void setActionOnSubmit(String onSubmit){
-		form.setOnsubmit(onSubmit);
-	}
+//	public String getActionOnSubmit() {
+//		return form.getOnsubmit();
+//	}
+//
+//	public void setActionOnSubmit(String onSubmit){
+//		form.setOnsubmit(onSubmit);
+//	}
 
 	@Override
 	public void add(UIComponent object){
@@ -205,16 +283,17 @@ public class PostCreationView extends IWBaseComponent{
 //		Heading3 h = new Heading3(CoreConstants.EMPTY);
 //		h.addToText(new StringBuilder("<a>").append(header).append("</a>").toString());
 		HeaderWithElements h = new HeaderWithElements();
-		h.setId(iwc.getViewRoot().createUniqueId());
+		h.setId(iwc.getViewRoot().createUniqueId() + "PostCreationView");
 		h.setStyleClass("post-creation-view-accordion-header");
 		Link link = new Link();
 		h.add(link);
 		link.addToText(header);
 		link.setStyleClass("post-creation-view-accordion-link");
-		CheckBox checkBox = new CheckBox();
-		checkBox.setName(checkBoxName);
+		CheckBox checkBox = new CheckBox(checkBoxName);
+//		checkBox.setName(checkBoxName);
+//		System.out.println(checkBox.getName());
 		h.getChildren().add(checkBox);
-		checkBox.setName(checkBox.getId());
+//		checkBox.setName(checkBox.getId());
 		checkBox.setStyleClass("post-creation-view-accordion-checkbox");
 		this.accordionLayer.add(h);
 		if(!(content instanceof Layer)){
@@ -266,5 +345,92 @@ public class PostCreationView extends IWBaseComponent{
 		this.accordionLayer.addChild(index,h);
 		this.accordionLayer.addChild(index + 1,contentLayer);
 
+	}
+
+	/**
+	 * Gets the scripts that is need for this element to work
+	 * if this element is loaded dynamically (ajax) and not
+	 * in frame, than containing element have to add theese
+	 * scriptFiles.
+	 * @return script files uris
+	 */
+	public static List<String> getNeededScripts(IWContext iwc){
+		List<String> scripts = new ArrayList<String>();
+
+		scripts.add(CoreConstants.DWR_ENGINE_SCRIPT);
+		scripts.add(CoreConstants.DWR_UTIL_SCRIPT);
+
+		Web2Business web2 = WFUtil.getBeanInstance(iwc, Web2Business.SPRING_BEAN_IDENTIFIER);
+		if (web2 != null) {
+			JQuery  jQuery = web2.getJQuery();
+			scripts.add(jQuery.getBundleURIToJQueryLib());
+
+			scripts.add(jQuery.getBundleURIToJQueryUILib("1.8.14","js/jquery-ui-1.8.14.custom.min.js"));
+			scripts.add(jQuery.getBundleURIToJQueryUILib("1.8.14","development-bundle/ui/jquery.ui.autocomplete.js"));
+			scripts.add(jQuery.getBundleURIToJQueryUILib("1.8.14","development-bundle/ui/jquery-ui-autocomplete-html.js"));
+
+
+			scripts.add(web2.getBundleUriToHumanizedMessagesScript());
+
+//			scripts.addAll(web2.getBundleURIsToTageditLib());
+			try{
+				StringBuilder path = new StringBuilder(Web2BusinessBean.JQUERY_PLUGINS_FOLDER_NAME_PREFIX)
+				.append("/jquery-tagedit-remake.js");
+				scripts.add(web2.getBundleURIWithinScriptsFolder(path.toString()));
+				scripts.add(web2.getBundleURIWithinScriptsFolder(new StringBuilder(Web2BusinessBean.JQUERY_PLUGINS_FOLDER_NAME_PREFIX)
+						.append(CoreConstants.SLASH)
+						.append(Web2BusinessBean.TAGEDIT_SCRIPT_FILE_AUTOGROW).toString()));
+			}catch(RemoteException e){
+				Logger.getLogger("PostcreationView").log(Level.WARNING,CoreConstants.EMPTY,e);
+			}
+
+//			scripts.add(jQuery.getBundleURIToJQueryPlugin(JQueryPlugin.TEXT_AREA_AUTO_GROW));
+//			scripts.add(jQuery.getBundleURIToJQueryPlugin(JQueryPlugin.AUTO_RESIZE));
+//			scripts.add(jQuery.getBundleURIToJQueryPlugin(JQueryPlugin.AUTO_GROW));
+
+		}else{
+			Logger.getLogger("ContentShareComponent").log(Level.WARNING, "Failed getting Web2Business no jQuery and it's plugins files were added");
+		}
+
+		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
+		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/PostCreationHelper.js"));
+
+//		IWBundle iwbemail = iwma.getBundle(EmailConstants.IW_BUNDLE_IDENTIFIER);
+//		scripts.add(iwbemail.getVirtualPathWithFileNameString("javascript/FileUploadHelper.js"));
+
+		return scripts;
+	}
+
+	/**
+	 * Gets the stylesheets that is need for this element to work
+	 * if this element is loaded dynamically (ajax) and not
+	 * in frame, than containing element have to add theese
+	 * files.
+	 * @return style files uris
+	 */
+	public static List<String> getNeededStyles(IWContext iwc){
+		List<String> styles = new ArrayList<String>();
+
+		Web2Business web2 = WFUtil.getBeanInstance(iwc, Web2Business.SPRING_BEAN_IDENTIFIER);
+		if (web2 != null) {
+			JQuery  jQuery = web2.getJQuery();
+
+			styles.add(web2.getBundleURIToFancyBoxStyleFile());
+
+			styles.add(jQuery.getBundleURIToJQueryUILib("1.8.14","css/ui-lightness/jquery-ui-1.8.14.custom.css"));
+
+			styles.add(web2.getBundleUriToHumanizedMessagesStyleSheet());
+
+			styles.addAll(web2.getBundleURIsToTageditStyleFiles());
+
+
+		}else{
+			Logger.getLogger("ContentShareComponent").log(Level.WARNING, "Failed getting Web2Business no jQuery and it's plugins files were added");
+		}
+		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
+		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		styles.add(iwb.getVirtualPathWithFileNameString("style/postCreationView.css"));
+		return styles;
 	}
 }

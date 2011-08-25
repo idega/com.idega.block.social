@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<div xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:content="http://xmlns.idega.com/com.idega.content"
+xmlns="http://www.w3.org/1999/xhtml">
+
+		<t:dataList id="datalist" style="myStyle"
+			var="item"
+			value="#{postContentViewer.postListByHTTPParameters}"
+			layout="unorderedList"> 
+			<h:graphicImage render = "#{item.uriToAuthorPicture != null}" value="#{item.uriToAuthorPicture}"></h:graphicImage>
+			<h:outputText value="#{item.author}" render="#{item.author != null}"/>
+			<h1> #{item.title} </h1>
+			<h:outputText value="#{item.teaser}" render="#{item.teaser != null}"/>
+			<h:outputLink value="#{item.uriToBody}" render="#{item.uriToBody != null}">
+				<h:outputText value="#{localizedStrings['view_all_post']['View all post']}"/>
+			</h:outputLink>		
+		</t:dataList>
+</div>

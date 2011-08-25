@@ -3,7 +3,6 @@ package is.idega.block.saga.data;
 import java.io.Serializable;
 
 import javax.persistence.Column;
-import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -19,7 +18,6 @@ import org.hibernate.annotations.Index;
  */
 @Entity
 @Table(name = "social_post_receivers")
-@Embeddable
 public class ReceiversEntity implements Serializable {
 
 	/**
@@ -30,12 +28,13 @@ public class ReceiversEntity implements Serializable {
 
 	public static final String idProp = "id";
 	@Id @GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name="ID")
 	private Long id;
 
 	public static final String receiverProp = "SOCIAL_POST_RECEIVER";
 	@Index(name = "post_receiver_index")
 	@Column(name="SOCIAL_POST_RECEIVER")
-	private Long receiverId;
+	private int receiverId;
 
 
 	public static final String postProp = "SOCIAL_POST_ID";
@@ -43,10 +42,10 @@ public class ReceiversEntity implements Serializable {
 	@Column(name="SOCIAL_POST_ID")
 	private Long socialPostId;
 
-	public Long getReceiverId() {
+	public int getReceiverId() {
 		return receiverId;
 	}
-	public void setReceiverId(Long receiverId) {
+	public void setReceiverId(int receiverId) {
 		this.receiverId = receiverId;
 	}
 	public Long getSocialPostId() {

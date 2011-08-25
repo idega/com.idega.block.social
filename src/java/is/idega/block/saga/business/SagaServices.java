@@ -3,13 +3,14 @@ package is.idega.block.saga.business;
 import is.idega.block.saga.Constants;
 import is.idega.block.saga.data.PostEntity;
 import is.idega.block.saga.data.dao.PostDao;
+import is.idega.block.saga.presentation.comunicating.PostCreationView;
 import is.idega.block.saga.presentation.group.SagaGroupCreator;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -25,7 +26,11 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import com.idega.block.article.bean.ArticleItemBean;
+import com.idega.block.email.bean.MessageParameters;
+import com.idega.block.email.business.EmailSenderHelper;
 import com.idega.builder.business.BuilderLogic;
+import com.idega.content.bean.ManagedContentBeans;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.component.bean.RenderedComponent;
 import com.idega.data.IDOLookup;
@@ -41,10 +46,12 @@ import com.idega.user.data.Group;
 import com.idega.user.data.GroupHome;
 import com.idega.user.data.User;
 import com.idega.user.data.UserHome;
+import com.idega.util.ArrayUtil;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.ListUtil;
 import com.idega.util.expression.ELUtil;
+import com.idega.webface.WFUtil;
 
 @Service("sagaServices")
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -62,8 +69,16 @@ public class SagaServices extends DefaultSpringBean implements
 	private UserHome userHome = null;
 	private GroupHome groupHome = null;
 
+
 	@Autowired
-	PostDao postDao;
+	private PostDao postDao;
+
+	@Autowired
+	private EmailSenderHelper emailSenderHelper;
+
+	public SagaServices(){
+		ELUtil.getInstance().autowire(this);
+	}
 
 	/**
 	 * checks if group is allowed to save
@@ -152,9 +167,9 @@ public class SagaServices extends DefaultSpringBean implements
 	 * @param request -	any string.
 	 * @param groupId - group id from which not to select users
 	 * @param maxAmount - 	max amount of results to return, -1 for unlimited. If this value is negative
-	 * and not equal to -1 than result is undefin
+	 * and not equal to -1 than result is undefined
 	 * @param startingEntry - user id from which result will be taken.
-	 * @return Collection of UserPropertiesBean
+	 * @return Collection of autocompleted strings
 	 */
 	@RemoteMethod
 	public Collection <String> autocompleteUserSearchRequest(String request, int groupId, int maxAmount, int startingEntry){
@@ -193,6 +208,63 @@ public class SagaServices extends DefaultSpringBean implements
 		return strings;
 	}
 
+	/**
+	 * @param request -	any string.
+	 * @param groupId - group id from which not to select users
+	 * @param maxAmount - 	max amount of results to return, -1 for unlimited. If this value is negative
+	 * and not equal to -1 than result is undefined
+	 * @param startingEntry - user id from which result will be taken.
+	 * @return Collection of autocompleted strings with images
+	 */
+	@RemoteMethod
+	public Collection <String> autocompleteUserSearchWithImagesRequest(String request, int groupId, int maxAmount, int startingEntry){
+		request = request.toLowerCase();
+		Collection <User> requestedUsers = (this.getUserHome().ejbAutocompleteRequest(request, groupId, maxAmount, startingEntry));
+		UserApplicationEngine userApplicationEngine = this.getUserApplicationEngine();
+		String words[] = request.split(CoreConstants.SPACE);
+		ArrayList <String> strings = new ArrayList<String>();
+		int last = words.length - 1;
+		int extractAmount = request.lastIndexOf(CoreConstants.SPACE) == (request.length() - 1) ? 1 : 0;
+
+		StringBuilder phraseBuilding = new StringBuilder(request);
+
+		for(User user : requestedUsers){
+
+			UserDataBean data =  userApplicationEngine.getUserInfo(user);
+
+			StringBuilder responseItem = new StringBuilder("<input type='hidden' name='")
+					.append(PostCreationView.RECEIVERS_PARAMETER_NAME).append("' value='")
+					.append(user.getId()).append("'><table class = 'autocompleted-receiver'><tr><td><img src = '").append(data.getPictureUri()).append("'/></td><td>");
+			StringBuilder autocompleted = phraseBuilding;
+			String name = data.getName().toLowerCase();
+			String names[] = name.split(CoreConstants.SPACE);
+			String firstName = names.length > 0 ? names[0] : null;
+			String lastName = names.length == 2 ? names[1] : names.length > 2 ? names[2] : null;
+
+			String email = data.getEmail().toLowerCase();
+			if(email.contains(words[last]) && !request.contains(email)){
+				autocompleted = new StringBuilder(request.substring(0, request.length() - words[last].length() - extractAmount)).append(email);
+			}
+			else if(name.contains(words[last]) && !request.contains(name)){
+				for(int i = 0;i < names.length;i++){
+					if(!request.contains(names[i])){
+						autocompleted = new StringBuilder(request.substring(0, request.length() - words[last].length() - extractAmount)).append(names[i]);
+					}
+				}
+			}
+			else if(firstName.contains(words[last]) && !request.contains(firstName)){
+				autocompleted = new StringBuilder(request.substring(0, request.length() - words[last].length() - extractAmount)).append(firstName);
+			}
+			else if((lastName != null) && lastName.contains(words[last]) && !request.contains(lastName)){
+				autocompleted = new StringBuilder(request.substring(0, request.length() - words[last].length() - extractAmount)).append(lastName);
+			}
+			responseItem.append(autocompleted);
+			responseItem.append("</td></tr></table>");
+			strings.add(responseItem.toString());
+			strings.add(autocompleted != null ? autocompleted.toString() : CoreConstants.EMPTY);
+		}
+		return strings;
+	}
 
 	@RemoteMethod
 	public String removeUserFromGroup(Integer userId, Integer groupId){
@@ -307,17 +379,139 @@ public class SagaServices extends DefaultSpringBean implements
 		return parentgroups.iterator().next();
 	}
 
+	@SuppressWarnings("unchecked")
 	@RemoteMethod
-	public void savePost(){
-		if(postDao == null){
-			ELUtil.getInstance().autowire(this);
+	public String savePost(/*HttpServletRequest request*/){
+		IWContext iwc  =  CoreUtil.getIWContext();
+//		request.getp
+		if(!iwc.isLoggedOn()){
+			String errorMsg = this.getResourceBundle().getLocalizedString("you_must_be_logged_on_to_perform_this_action",
+					"You must be logged on to perform this action");
+			return errorMsg;
 		}
-		IWContext iwc  = CoreUtil.getIWContext();
-//		String bo
-		Random r = new Random();
-		postDao.updatePost(iwc.getCurrentUserId(),String.valueOf(r.nextInt()), PostEntity.PUBLIC);
+		ArticleItemBean post = (ArticleItemBean) WFUtil.getBeanInstance(ManagedContentBeans.ARTICLE_ITEM_BEAN_ID);
+
+		// Get all sent parameters
+		//TODO: set author and other useful stuff
+		String body = iwc.getParameter(PostCreationView.BODY_PARAMETER_NAME);
+		post.setBody(body);
+		String parameter = iwc.getParameter(PostCreationView.POST_TITLE_PARAMETER);
+		post.setHeadline(parameter);
+
+		User currentUser = iwc.getCurrentUser();
+		UserApplicationEngine userApplicationEngine = this.getUserApplicationEngine();
+		UserDataBean userInfo =  userApplicationEngine.getUserInfo(currentUser);
+		int creatorId = userInfo.getUserId();
+
+		post.setCreatedByUserId(creatorId);
+		String name = userInfo.getName();
+		post.setAuthor(name);
+
+		String [] attachments = iwc.getParameterValues(PostCreationView.POST_ATTACHMENTS_PARAMETER_NAME);
+		if(!ArrayUtil.isEmpty(attachments)){
+			post.setAttachment(Arrays.asList(attachments));
+		}
+
+
+		// Store post as xml article
+		post.store();
+
+
+		// Store post in db
+		String uri = post.getResourcePath();
+		String privateMsg = iwc.getParameter(PostCreationView.PRIVATE_MESSAGE_PARAMETER_NAME);
+
+		String currentUserEmail = userInfo.getEmail();
+		if(privateMsg != null){
+			String [] receiversIds = iwc.getParameterValues(PostCreationView.RECEIVERS_PARAMETER_NAME);
+			if(!ArrayUtil.isEmpty(receiversIds)){
+				Collection<Integer> receivers = new ArrayList<Integer>(receiversIds.length);
+				for(String receiver : receiversIds){
+					receivers.add(Integer.valueOf(receiver));
+				}
+				if(!postDao.updatePost(uri, receivers,creatorId)){
+					return this.getResourceBundle().getLocalizedString("failed_to_save",
+					"Failed to save");
+				}
+				sendMails(currentUserEmail,receivers, body, attachments);
+			}
+		}
+
+		String publicMsg = iwc.getParameter(PostCreationView.POST_TO_GROUPS_PARAMETER_NAME);
+		if(publicMsg != null){
+			Collection <Group> userGroups = null;
+			try{
+				userGroups = this.getUserBusiness().getUserGroups(currentUser);
+			}catch(RemoteException e){
+				this.getLogger().log(Level.WARNING, "Failed saving public post because of failed getting users groups" , e);
+			}
+			if(!ListUtil.isEmpty(userGroups)){
+				ArrayList <Integer> receivers = new ArrayList<Integer>();
+				for(Group group : userGroups){
+					receivers.add(Integer.valueOf(group.getId()));
+				}
+				if(!postDao.updatePost(uri,receivers, PostEntity.PUBLIC,creatorId)){
+					return this.getResourceBundle().getLocalizedString("failed_to_save",
+					"Failed to save");
+				}
+			}
+		}
+
+		String wallPost = iwc.getParameter(PostCreationView.WALL_POST_PARAMETER_NAME);
+		if(wallPost != null){
+			Collection<Integer> receivers = new ArrayList<Integer>(1);
+			receivers.add(Integer.valueOf(Integer.valueOf(currentUser.getId())));
+			if(!postDao.updatePost(uri, receivers,creatorId)){
+				return this.getResourceBundle().getLocalizedString("failed_to_save",
+				"Failed to save");
+			}
+		}
+		return this.getResourceBundle().getLocalizedString("changes_saved","Changes saved");
 
 	}
+
+	private void sendMails(String from, Collection <Integer> userIds,String body, String [] attachments){
+
+		MessageParameters parameters = new MessageParameters();
+		parameters.setFrom(from);
+
+		ArrayList <String> recipients = new ArrayList<String>(userIds.size());
+		UserBusiness userbusiness = this.getUserBusiness();
+		for(Integer userId : userIds){
+			User user = null;
+			try{
+				user = userbusiness.getUser(Integer.valueOf(userId));
+			}catch(RemoteException e){
+				this.getLogger().log(Level.WARNING, "Failed to get user with id " + userId, e);
+			}
+			UserDataBean userInfo =  userApplicationEngine.getUserInfo(user);
+			recipients.add(userInfo.getEmail());
+		}
+		parameters.setAttachments(Arrays.asList(attachments));
+		parameters.setMessage(body);
+		String recipientsString = recipients.toString();
+		parameters.setRecipientTo(recipientsString);
+		this.emailSenderHelper.sendMessage(parameters);
+	}
+
+//	@SuppressWarnings("unchecked")
+//	private void sendMailsToAllUserGroups(User user){
+//		Collection <Group> userGroups = null;
+//		try{
+//			userGroups = this.getGroupBusiness().getParentGroups(user);
+//		}catch(RemoteException e){
+//			this.getLogger().log(Level.WARNING, "failed to get parent groups of user ", e);
+//		}
+//		if(ListUtil.isEmpty(userGroups)){
+//			return;
+//		}
+//		ArrayList <User> users = new ArrayList<User>();
+//		for(Group group : userGroups){
+//			users.addAll();
+//		}
+//		// TODO: not finished
+//	}
+
 
 //	@SuppressWarnings("unchecked")
 //	public List<GroupNode> getChildGroupsRecursive(Integer uniqueId) {

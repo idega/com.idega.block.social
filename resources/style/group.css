@@ -98,9 +98,6 @@ div.buttonsContainerClass{
 	width:450px;
 }
 
-div.moduleContainer{
-	width:65%;
-}
 
 input.saveButtonClass.SimpleGroupCreator{
 		margin-right:40%
@@ -115,7 +112,7 @@ input.saveButtonClass.SimpleGroupCreator{
 
 .user-search-input{
 	position:relative;
-	top:-50px;
+	top:-1em;
 	left:375px;
 }
 
@@ -170,5 +167,6 @@ a.invisibleLink{
 }
 
 .searchFieldLayer{
+	position : relative;
 	z-index:100;	
 }
