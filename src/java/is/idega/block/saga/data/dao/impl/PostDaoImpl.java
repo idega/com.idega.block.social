@@ -5,6 +5,7 @@ package is.idega.block.saga.data.dao.impl;
 import is.idega.block.saga.data.PostEntity;
 import is.idega.block.saga.data.dao.PostDao;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -167,7 +168,7 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 			}
 			inlineQuery.append("( p.postType = :").append(PostEntity.postTypeProp).append(") ");
 		}
-		inlineQuery.append(" ORDER BY a.modificationDate");
+		inlineQuery.append(" ORDER BY a.modificationDate DESC");
 		Query query = this.getQueryInline(inlineQuery.toString());
 		if(max > 0){
 			query.setMaxResults(max);
@@ -215,12 +216,166 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 		}
 		return entities;
 	}
+
+
 	@Override
 	public Collection<PostEntity> getPostsByCreators(
 			Collection<Integer> creators, String type, int max, String uriFrom) {
-		// TODO Auto-generated method stub
-		return null;
+
+		StringBuilder inlineQuery =
+				new StringBuilder("SELECT p FROM PostEntity p JOIN p.article a ");
+
+		boolean creatorsEmpty = ListUtil.isEmpty(creators);
+		boolean addedWhere = false;
+		if(!creatorsEmpty){
+			addedWhere = true;
+			inlineQuery.append(" WHERE (p.postCreator IN (:")
+					.append(PostEntity.postCreatorProp).append(")) ");
+		}
+
+		boolean uriFromEmpty = StringUtil.isEmpty(uriFrom);
+		if(!uriFromEmpty){
+			if(addedWhere){
+				inlineQuery.append(" AND ");
+			}else{
+				addedWhere = true;
+				inlineQuery.append(" WHERE ");
+			}
+			inlineQuery.append("( a.modificationDate <= (SELECT art.modificationDate FROM ArticleEntity art WHERE art.uri = :")
+					.append(ArticleEntity.uriProp).append(")) ");
+		}
+		boolean typeEmpty = StringUtil.isEmpty(type);
+		if(!typeEmpty){
+			if(addedWhere){
+				inlineQuery.append(" AND ");
+			}else{
+				addedWhere = true;
+				inlineQuery.append(" WHERE ");
+			}
+			inlineQuery.append("( p.postType = :").append(PostEntity.postTypeProp).append(") ");
+		}
+		inlineQuery.append(" ORDER BY a.modificationDate DESC");
+		Query query = this.getQueryInline(inlineQuery.toString());
+		if(max > 0){
+			query.setMaxResults(max);
+		}
+		List <PostEntity> entities = null;
+		if(creatorsEmpty){
+			if(uriFromEmpty){
+				if(typeEmpty){
+					entities = query.getResultList(PostEntity.class);
+				}
+				else{
+					entities = query.getResultList(PostEntity.class, new Param(PostEntity.postTypeProp, type));
+				}
+			}else{
+				if(typeEmpty){
+					entities = query.getResultList(PostEntity.class, new Param(ArticleEntity.uriProp, uriFrom));
+				}
+				else{
+					entities = query.getResultList(PostEntity.class, new Param(PostEntity.postTypeProp, type),
+							 new Param(ArticleEntity.uriProp, uriFrom));
+				}
+			}
+		}else{
+			if(uriFromEmpty){
+				if(typeEmpty){
+					entities = query.getResultList(PostEntity.class, new Param(PostEntity.postCreatorProp,creators));
+				}
+				else{
+					entities = query.getResultList(PostEntity.class, new Param(PostEntity.postCreatorProp,creators),
+							 new Param(PostEntity.postTypeProp, type));
+				}
+			}else{
+				if(typeEmpty){
+					entities = query.getResultList(PostEntity.class,
+							new Param(PostEntity.postCreatorProp,creators),
+							new Param(ArticleEntity.uriProp, uriFrom));
+				}
+				else{
+					entities = query.getResultList(PostEntity.class,
+							new Param(PostEntity.postCreatorProp,creators),
+							new Param(ArticleEntity.uriProp, uriFrom),
+							new Param(PostEntity.postTypeProp, type));
+				}
+			}
+		}
+		return entities;
+
+	}
+	@Override
+	public Collection<PostEntity> getPosts(Collection<Integer> creators,
+			Collection<Integer> receivers, Collection<String> types, int max, String uriFrom) {
+
+		StringBuilder inlineQuery =
+				new StringBuilder("SELECT p FROM PostEntity p JOIN p.article a ");
+
+		ArrayList <Param> params = new ArrayList<Param>();
+
+		boolean addedWhere = false;
+		boolean receiversEmpty = ListUtil.isEmpty(receivers);
+		if(!receiversEmpty){
+			addedWhere = true;
+			inlineQuery.append(" JOIN p.receivers r WHERE (r IN (:").append(PostEntity.receiversProp).append(")) ");
+			Param parameter = new Param(PostEntity.receiversProp,receivers);
+			params.add(parameter);
+		}
+
+		boolean creatorsEmpty = ListUtil.isEmpty(creators);
+		if(!creatorsEmpty){
+			if(addedWhere){
+				inlineQuery.append(" AND ");
+			}else{
+				addedWhere = true;
+				inlineQuery.append(" WHERE ");
+			}
+			inlineQuery.append(" (p.postCreator IN (:")
+					.append(PostEntity.postCreatorProp).append(")) ");
+			Param parameter = new Param(PostEntity.postCreatorProp,creators);
+			params.add(parameter);
+		}
+
+		boolean uriFromEmpty = StringUtil.isEmpty(uriFrom);
+		if(!uriFromEmpty){
+			if(addedWhere){
+				inlineQuery.append(" AND ");
+			}else{
+				addedWhere = true;
+				inlineQuery.append(" WHERE ");
+			}
+			inlineQuery.append("( a.modificationDate <= (SELECT art.modificationDate FROM ArticleEntity art WHERE art.uri = :")
+					.append(ArticleEntity.uriProp).append(")) ");
+			Param parameter = new Param(ArticleEntity.uriProp,uriFrom);
+			params.add(parameter);
+		}
+		boolean typeEmpty = ListUtil.isEmpty(types);
+		if(!typeEmpty){
+			if(addedWhere){
+				inlineQuery.append(" AND ");
+			}else{
+				addedWhere = true;
+				inlineQuery.append(" WHERE ");
+			}
+			inlineQuery.append("( p.postType IN (:").append(PostEntity.postTypeProp).append(")) ");
+			Param parameter = new Param(PostEntity.postTypeProp,types);
+			params.add(parameter);
+		}
+		inlineQuery.append(" ORDER BY a.modificationDate DESC");
+		Query query = this.getQueryInline(inlineQuery.toString());
+		if(max > 0){
+			query.setMaxResults(max);
+		}
+		return query.getResultList(PostEntity.class,params);
 	}
 
+
+//	private class QueryParameters {
+//		Collection<Integer> receivers = null;
+//		String type = null;
+//		int max = 0;
+//		String uriFrom = null;
+//		Collection<Integer> creators = null;
+//		int maxResult = 0;
+//	}
 
 }

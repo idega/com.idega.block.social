@@ -4,18 +4,50 @@
     xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:t="http://myfaces.apache.org/tomahawk"
 	xmlns:content="http://xmlns.idega.com/com.idega.content"
-xmlns="http://www.w3.org/1999/xhtml">
-
-		<t:dataList id="datalist" style="myStyle"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ic="http://xmlns.idega.com/com.idega.core"
+xmlns="http://www.w3.org/1999/xhtml" >
+		<!--
+		<div>
+			<form id = "#{postContentViewer.postCreationFormId}">
+				<textarea name = "#{postContentViewer.postCreationBodyParameterName}"/>
+				<input type = "hidden" name = "#{postContentViewer.postCreationPostToGroupsParameterName}" value = "true"/>
+				<input type = "button" id = "#{postContentViewer.postCreationButtonId}" action = "#{postContentViewer.postCreationAction}" 
+						value = "#{localizedStrings['post']['Post']}" 
+						title = "#{localizedStrings['post_your_message_to_all_groups_you_are_in']['Post your message to all groups you are in']}"/>
+			</form>
+		</div>
+		-->
+		<t:dataList
 			var="item"
 			value="#{postContentViewer.postListByHTTPParameters}"
-			layout="unorderedList"> 
-			<h:graphicImage render = "#{item.uriToAuthorPicture != null}" value="#{item.uriToAuthorPicture}"></h:graphicImage>
-			<h:outputText value="#{item.author}" render="#{item.author != null}"/>
+			layout="unorderedList"
+			styleClass = "posts-contents-list"> 
+			<div class = "post-creation-info">
+				<h:graphicImage rendered = "#{item.uriToAuthorPicture != null}" value="#{item.uriToAuthorPicture}" alt = ""></h:graphicImage>
+				<h:outputText value="#{item.author}" rendered="#{item.author != null}"/>
+				<label class = "post-update-date">
+					<h:outputText value="#{item.date}" title = "#{item.date}" rendered="#{item.date != null}"/>
+				</label>
+			</div>
+			<div class = "post-info">
 			<h1> #{item.title} </h1>
-			<h:outputText value="#{item.teaser}" render="#{item.teaser != null}"/>
-			<h:outputLink value="#{item.uriToBody}" render="#{item.uriToBody != null}">
-				<h:outputText value="#{localizedStrings['view_all_post']['View all post']}"/>
-			</h:outputLink>		
+				<h:outputText value="#{item.teaser}" rendered="#{item.teaser != null}"/>
+			</div>	
+			<div class = "post-content-view-post-footer">
+				<h:outputLink value="#{item.uriToBody}" rendered="#{item.uriToBody != null}" class = "post-content-viewer-post-preview">
+					<h:outputText value="#{localizedStrings['is.idega.block.saga']['view_all_post']}"/>
+				</h:outputLink>	
+				<span class = "post-attachments-span">
+					<h:outputText value="#{localizedStrings['is.idega.block.saga']['attachments']}" 
+						rendered="#{not empty item.attachments}"/>
+					<t:dataList var="attachment" value="#{item.attachments}" layout="unorderedList" styleClass = "post-attachments-list">
+						<ic:DownloadLink value="#{attachment}" rendered="#{not empty item.attachments}">
+							<f:param name="rel_fpath" value="#{attachment}"/>
+							<f:param name="alt_f_name" value="#{attachment}"/>
+						</ic:DownloadLink>
+					</t:dataList>
+				</span>
+			</div>
 		</t:dataList>
 </div>

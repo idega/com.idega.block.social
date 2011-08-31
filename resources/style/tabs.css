@@ -7,12 +7,12 @@
 .ui-tabs-vertical .ui-tabs-panel { 
 	padding: 0em; 
 	float: right; 
-	width: 80%;
+	width: 75%;
 	height:100%;
 	
 	position:absolute;
  	top:0;
- 	left:30%;
+ 	left:25%;
  	overflow:auto;
 }
 .jquery-ui-tab-link{
@@ -39,7 +39,7 @@
 	position : absolute;
 	top : 0;
 	left : 0px;
-	width : 30%;
+	width : 25%;
 	height : 100%; 
 }
 

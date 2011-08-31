@@ -1,6 +1,7 @@
 package is.idega.block.saga.presentation.comunicating;
 
 import is.idega.block.saga.Constants;
+import is.idega.block.saga.business.PostBusiness;
 import is.idega.block.saga.presentation.HeaderWithElements;
 import is.idega.block.saga.presentation.SimpleForm;
 
@@ -39,13 +40,12 @@ import com.idega.util.PresentationUtil;
 import com.idega.webface.WFUtil;
 
 public class PostCreationView extends IWBaseComponent{
-	public static final String BODY_PARAMETER_NAME = "post_body";
-	public static final String POST_TITLE_PARAMETER = "post_title";
-	public static final String RECEIVERS_PARAMETER_NAME = "receivers_id";
-	public static final String POST_TO_GROUPS_PARAMETER_NAME = "post_to_groups";
-	public static final String WALL_POST_PARAMETER_NAME = "post_on_wall";
-	public static final String PRIVATE_MESSAGE_PARAMETER_NAME = "private_message";
-	public static final String POST_ATTACHMENTS_PARAMETER_NAME = "post_attachments";
+//	public static final String BODY_PARAMETER_NAME = "post_body";
+//	public static final String POST_TITLE_PARAMETER = "post_title";
+//	public static final String RECEIVERS_PARAMETER_NAME = "receivers_id";
+//	public static final String POST_TO_GROUPS_PARAMETER_NAME = "post_to_groups";
+//	public static final String PRIVATE_MESSAGE_PARAMETER_NAME = "private_message";
+//	public static final String POST_ATTACHMENTS_PARAMETER_NAME = "post_attachments";
 
 	private static final String TAGEDIT_NAME = "tag[]";
 
@@ -124,7 +124,7 @@ public class PostCreationView extends IWBaseComponent{
 
 		TextInput title = new TextInput();
 		titleField.add(title);
-		title.setName(PostCreationView.POST_TITLE_PARAMETER);
+		title.setName(PostBusiness.ParameterNames.POST_TITLE_PARAMETER);
 		title.setStyleClass("post-creation-view-post-title-field-input");
 
 		FieldSet textAreaField = new FieldSet(iwrb.getLocalizedString("text", "text") + CoreConstants.COLON);
@@ -132,7 +132,7 @@ public class PostCreationView extends IWBaseComponent{
 		textAreaField.setStyleClass("post-creation-view-post-textArea-field");
 		TextArea textArea = new TextArea();
 		textAreaField.add(textArea);
-		textArea.setName(PostCreationView.BODY_PARAMETER_NAME);
+		textArea.setName(PostBusiness.ParameterNames.BODY_PARAMETER_NAME);
 		textArea.setStyleClass("message-text-area");
 		this.postBodyInputId = textArea.getId();
 
@@ -146,13 +146,14 @@ public class PostCreationView extends IWBaseComponent{
 		uploader.setFormId(form.getId());
 
 		StringBuilder actionafterUpload = new StringBuilder("PostCreationView.createLocationInput('#").append(mainFieldsLayer.getId())
-				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(POST_ATTACHMENTS_PARAMETER_NAME)
+				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(PostBusiness.ParameterNames.POST_ATTACHMENTS_PARAMETER_NAME)
 				.append(CoreConstants.JS_STR_PARAM_END);
 		uploader.setActionAfterUploadedToRepository(actionafterUpload.toString());
 
 		// Private message options
 		this.privateMsgOptionsLayer = new Layer();
-		this.addToaccordion(this.privateMsgOptionsLayer, iwrb.getLocalizedString("private_message", "Private Message"),PRIVATE_MESSAGE_PARAMETER_NAME);
+		this.addToaccordion(this.privateMsgOptionsLayer, iwrb.getLocalizedString("private_message", "Private Message"),
+				PostBusiness.ParameterNames.PRIVATE_MESSAGE_PARAMETER_NAME);
 		Label label = new Label();
 		this.privateMsgOptionsLayer.add(label);
 //		layer.setId(iwc.getViewRoot().createUniqueId() + "PostCreationView");
@@ -164,11 +165,8 @@ public class PostCreationView extends IWBaseComponent{
 
 		// Group message options
 		Layer layer = new Layer();
-		this.addToaccordion(layer, iwrb.getLocalizedString("group_message", "Group Message"),POST_TO_GROUPS_PARAMETER_NAME);
-
-		// Wall post options
-		layer = new Layer();
-		this.addToaccordion(layer, iwrb.getLocalizedString("wall_post", "Post on your wall"),WALL_POST_PARAMETER_NAME);
+		this.addToaccordion(layer, iwrb.getLocalizedString("group_message", "Group Message"),
+				PostBusiness.ParameterNames.POST_TO_GROUPS_PARAMETER_NAME);
 
 
 		// Submit button
@@ -217,6 +215,7 @@ public class PostCreationView extends IWBaseComponent{
 		actionForm = new StringBuilder("PostCreationView.someHelp();");
 		actionString = PresentationUtil.getJavaScriptAction(actionForm.toString());
 		main.add(actionString);
+
 
 	}
 

@@ -35,6 +35,8 @@ public class TabMenu extends IWBaseComponent {
 	private Layer accordionLayer = null;
 	private Layer main = null;
 
+	private int tabCount = 0;
+
 	public TabMenu(){
 		iwc = CoreUtil.getIWContext();
 
@@ -127,6 +129,46 @@ public class TabMenu extends IWBaseComponent {
 		main.add(action);
 
 	}
+
+	public void addTab(String tabView,String url,UIComponent accordionContent,String uriGenerationFunction){
+		ListItem li = new ListItem();
+		tabs.add(li);
+		Link link = new Link();
+		li.add(link);
+		if(url != null){
+			link.setURL(url);
+		}
+		link.setStyleClass("jquery-ui-tab-link");
+
+		Heading3 h = new Heading3(CoreConstants.EMPTY);
+		h.setId(iwc.getViewRoot().createUniqueId());
+		h.setValueExpression("styleClass", WFUtil.createValueExpression(iwc.getELContext(),
+				"tabmenu-accordion-header-content",String.class));
+		accordionLayer.add(h);
+		Link accordionLink = new Link();
+		String tabLinkId = accordionLink.getId() + "link" + this.tabCount;
+
+		h.addToText(new StringBuilder("<a id= '").append(tabLinkId)
+				.append("'>").append(tabView).append("</a>").toString());
+		String accordionContentId = null;
+		if(accordionContent != null){
+			accordionLayer.add(accordionContent);
+			accordionContentId = accordionContent.getId();
+		}
+//		accordionLink.getChildren().add(tabView);
+
+		StringBuilder tabsCreator = new StringBuilder(uriGenerationFunction)
+				.append("('#").append(tabLinkId)
+				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(accordionContentId)
+				.append("');\n")
+				.append("jQuery('#").append(accordionLink.getId() + "link")
+				.append("').click(function(){\n  jQuery('#").append(link.getId())
+				.append("').trigger('click');\n});");
+		String action = PresentationUtil.getJavaScriptAction(tabsCreator.toString());
+		main.add(action);
+
+	}
+
 
 	/**
 	 * Gets the scripts that is need for this element to work

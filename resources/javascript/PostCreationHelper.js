@@ -70,37 +70,65 @@ var PostCreationView = {
 				}
 			});
 		}
+//		,savePost : function(selector){
+////			dwr.engine.beginBatch();
+////			dwr.engine.batch.create();
+//			
+//			var urlSearch = "/dwr/call/plaincall/SagaServices.savePost.dwr" 
+//				+"?scriptSessionId="+ dwr.engine._scriptSessionId
+//				+'&httpSessionId='+ dwr.engine._getHttpSessionId()
+//				+'&page='+ window.location.pathname
+//				+'&windowName='+ window.name
+//				+"&callCount=1"
+//				+"&batchId="+ dwr.engine._nextBatchId
+//				+"&c0-id=0"
+//				+"&c0-scriptName=SagaServices"
+//				+"&c0-methodName=savePost";
+//			
+//			var form = jQuery(selector);
+//			var parameters = form.serialize();
+//			parameters=decodeURIComponent(parameters);
+//			
+//			
+//			urlSearch += "&" + parameters;
+//			
+//			
+//			jQuery.ajax({
+//				url : urlSearch
+//				,type: "POST"
+//				//TODO: should return saved id too for enabling edition of post
+//				,success: function(reply){
+//					var replyPhrases = reply.split("\"");
+//					if(replyPhrases.length < 7){
+//						//the return value is null
+//						return false;
+//					}
+//					var msg = replyPhrases[replyPhrases.length -2];
+//					humanMsg.displayMsg(msg);
+//				}
+//			});
+//			
+////			dwr.engine.endBatch();
+//		}
 		,savePost : function(selector){
-			var urlSearch = "/dwr/call/plaincall/SagaServices.savePost.dwr" 
-				+"?scriptSessionId="+ dwr.engine._scriptSessionId
-				+'&httpSessionId='+ dwr.engine._getHttpSessionId()
-				+'&page='+ window.location.pathname
-				+'&windowName='+ window.name
-				+"&callCount=1"
-				+"&batchId="+ dwr.engine._nextBatchId
-				+"&c0-id=0"
-				+"&c0-scriptName=SagaServices"
-				+"&c0-methodName=savePost";
-			
 			var form = jQuery(selector);
-			var parameters = form.serialize();
-			parameters=decodeURIComponent(parameters);
+			var parameters = form.serializeArray();
 			
-			urlSearch += "&" + parameters;
-			jQuery.ajax({
-				url : urlSearch
-				,type: "POST"
-				//TODO: should return saved id too for enabling edition of post
-				,success: function(reply){
-					var replyPhrases = reply.split("\"");
-					if(replyPhrases.length < 7){
-						//the return value is null
-						return false;
-					}
-					var msg = replyPhrases[replyPhrases.length -2];
-					humanMsg.displayMsg(msg);
+			var map = {};
+			for(var i = 0;i < parameters.length;i++){
+				var element = parameters[i];
+				if(map[element.name] == undefined){
+					map[element.name] = [];
+				}
+				map[element.name].push(element.value);
+			}
+			
+			SagaServices.savePost(map,{
+				callback: function(reply){
+					humanMsg.displayMsg(reply);
 				}
 			});
+			
 		}
 		,createAutoresizing : function(selector){
 			jQuery(document).ready(function(){
@@ -218,8 +246,6 @@ var PostCreationView = {
 		}
 		,uploaderInitialized : false
 };
-
-
 
 
 //autoresize that was in web2 was modified and did not worked for me, so I added this

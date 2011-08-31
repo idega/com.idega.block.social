@@ -2,7 +2,6 @@ package is.idega.block.saga.presentation.comunicating;
 
 import is.idega.block.saga.Constants;
 import is.idega.block.saga.presentation.TabMenu;
-import is.idega.block.saga.presentation.group.SagaGroupCreator;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -17,6 +16,7 @@ import javax.faces.context.FacesContext;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
 import com.idega.block.web2.business.Web2BusinessBean;
+import com.idega.builder.bean.AdvancedProperty;
 import com.idega.builder.business.BuilderLogic;
 import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWMainApplication;
@@ -43,6 +43,13 @@ public class ContentShareComponent  extends IWBaseComponent {
 	protected void initializeComponent(FacesContext context) {
 		super.initializeComponent(context);
 		iwc = CoreUtil.getIWContext();
+		addFiles(iwc);
+		if(!iwc.isLoggedOn()){
+			PostContentViewer contentViewer = new PostContentViewer();
+			this.add(contentViewer);
+			return;
+		}
+
 		ELUtil.getInstance().autowire(this);
 
 		IWBundle bundle = iwc.getIWMainApplication().getBundle(Constants.IW_BUNDLE_IDENTIFIER);
@@ -76,18 +83,25 @@ public class ContentShareComponent  extends IWBaseComponent {
 		bottomMenu.setStyleClass("main-content-sharing-bottom-layer");
 		bottomMenu.add(createPostView());
 
+		ArrayList <AdvancedProperty> parameters = new ArrayList<AdvancedProperty>();
+		parameters.add(new AdvancedProperty(PostContentViewer.Parameters.SHOW_GROUP, CoreConstants.PLUS));
+		parameters.add(new AdvancedProperty(PostContentViewer.Parameters.SHOW_PRIVATE, CoreConstants.PLUS));
+
+		String uri = BuilderLogic.getInstance().getUriToObject(PostContentViewer.class, parameters);
 		//TODO: add filters of contents
 		Layer inboxFilter = new Layer();
-		tab.addTab(iwrb.getLocalizedString("inbox", "Inbox"),
-				BuilderLogic.getInstance().getUriToObject(PostContentViewer.class),inboxFilter);
-
-		Layer sentFilter = new Layer();
-		tab.addTab(iwrb.getLocalizedString("sent", "Sent"), BuilderLogic.getInstance().getUriToObject(SagaGroupCreator.class),sentFilter);
-
-		//TODO: add localized titles on menu
+		tab.addTab(iwrb.getLocalizedString("all_posts", "All posts"), uri, inboxFilter);
 
 
-		addFiles(iwc);
+		if(iwc.isLoggedOn()){
+			parameters = new ArrayList<AdvancedProperty>();
+			parameters.add(new AdvancedProperty(PostContentViewer.Parameters.SENT, CoreConstants.PLUS));
+			uri = BuilderLogic.getInstance().getUriToObject(PostContentViewer.class, parameters);
+			Layer sentFilter = new Layer();
+			tab.addTab(iwrb.getLocalizedString("sent", "Sent"), uri, sentFilter);
+		}
+
+
 	}
 
 
@@ -209,6 +223,9 @@ public class ContentShareComponent  extends IWBaseComponent {
 
 		scripts.addAll(PostCreationView.getNeededScripts(iwc));
 		styles.addAll(PostCreationView.getNeededStyles(iwc));
+
+		scripts.addAll(PostContentViewer.getNeededScripts(iwc));
+		styles.addAll(PostContentViewer.getNeededStyles(iwc));
 
 		PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, scripts);
 		PresentationUtil.addStyleSheetsToHeader(iwc, styles);

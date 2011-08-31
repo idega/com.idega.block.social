@@ -55,39 +55,39 @@
     <resources>
       <resource>
         <targetPath>resources</targetPath>
-        <mergeId>resource-1060</mergeId>
+        <mergeId>resource-0</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/resources</directory>
       </resource>
       <resource>
         <targetPath>properties</targetPath>
-        <mergeId>resource-1061</mergeId>
+        <mergeId>resource-1</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/properties</directory>
       </resource>
       <resource>
         <targetPath>WEB-INF</targetPath>
-        <mergeId>resource-1062</mergeId>
+        <mergeId>resource-2</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/WEB-INF</directory>
       </resource>
       <resource>
         <targetPath>jsp</targetPath>
-        <mergeId>resource-1063</mergeId>
+        <mergeId>resource-3</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/jsp</directory>
       </resource>
       <resource>
         <targetPath>facelets</targetPath>
-        <mergeId>resource-1064</mergeId>
+        <mergeId>resource-4</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/facelets</directory>
       </resource>
       <resource>
         <targetPath>META-INF</targetPath>
-        <mergeId>resource-1065</mergeId>
+        <mergeId>resource-5</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/WEB-INF/tld</directory>
         <includes>
           <include>**/*.tld</include>
         </includes>
       </resource>
       <resource>
-        <mergeId>resource-1066</mergeId>
+        <mergeId>resource-6</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/src/WEB-INF/classes</directory>
         <includes>
           <include>*.properties</include>
@@ -95,7 +95,7 @@
       </resource>
       <resource>
         <targetPath>META-INF</targetPath>
-        <mergeId>resource-1067</mergeId>
+        <mergeId>resource-7</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/WEB-INF/tld</directory>
         <includes>
           <include>**/*.taglib.xml</include>
@@ -103,7 +103,7 @@
       </resource>
       <resource>
         <targetPath>META-INF</targetPath>
-        <mergeId>resource-1068</mergeId>
+        <mergeId>resource-8</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/WEB-INF/classes</directory>
         <includes>
           <include>**/*.xml</include>
@@ -111,56 +111,56 @@
       </resource>
       <resource>
         <targetPath>META-INF</targetPath>
-        <mergeId>resource-1069</mergeId>
+        <mergeId>resource-9</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/WEB-INF</directory>
         <includes>
           <include>faces-config.xml</include>
         </includes>
       </resource>
       <resource>
-        <mergeId>resource-1070</mergeId>
+        <mergeId>resource-10</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/src/java</directory>
         <includes>
           <include>**/*.wsdd</include>
         </includes>
       </resource>
       <resource>
-        <mergeId>resource-1071</mergeId>
+        <mergeId>resource-11</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/src/java</directory>
         <includes>
           <include>**/*.wsdl</include>
         </includes>
       </resource>
       <resource>
-        <mergeId>resource-1072</mergeId>
+        <mergeId>resource-12</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/src/java</directory>
         <includes>
           <include>**/*.xml</include>
         </includes>
       </resource>
       <resource>
-        <mergeId>resource-1073</mergeId>
+        <mergeId>resource-13</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/src/java</directory>
         <includes>
           <include>**/*.hbm.xml</include>
         </includes>
       </resource>
       <resource>
-        <mergeId>resource-1074</mergeId>
+        <mergeId>resource-14</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/src/java</directory>
         <includes>
           <include>**/*.properties</include>
         </includes>
       </resource>
       <resource>
-        <mergeId>resource-1075</mergeId>
+        <mergeId>resource-15</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/src/test/java</directory>
         <includes>
           <include>**/*.xml</include>
         </includes>
       </resource>
       <resource>
-        <mergeId>resource-1076</mergeId>
+        <mergeId>resource-16</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/src/test/java</directory>
         <includes>
           <include>**/*.hbm.xml</include>
@@ -168,7 +168,7 @@
       </resource>
       <resource>
         <targetPath>META-INF</targetPath>
-        <mergeId>resource-1077</mergeId>
+        <mergeId>resource-17</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/WEB-INF</directory>
         <includes>
           <include>persistence.xml</include>
@@ -176,7 +176,7 @@
       </resource>
       <resource>
         <targetPath>META-INF</targetPath>
-        <mergeId>resource-1078</mergeId>
+        <mergeId>resource-18</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/WEB-INF</directory>
         <includes>
           <include>components.xml</include>
@@ -185,7 +185,7 @@
     </resources>
     <testResources>
       <testResource>
-        <mergeId>resource-1079</mergeId>
+        <mergeId>resource-19</mergeId>
         <directory>/home/alex/workspace2/com.idega.block.addon/is.idega.block.saga/src/test/resources</directory>
       </testResource>
     </testResources>

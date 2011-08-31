@@ -1,16 +1,14 @@
 package is.idega.block.saga.business;
 
 import is.idega.block.saga.Constants;
-import is.idega.block.saga.data.PostEntity;
 import is.idega.block.saga.data.dao.PostDao;
-import is.idega.block.saga.presentation.comunicating.PostCreationView;
 import is.idega.block.saga.presentation.group.SagaGroupCreator;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -26,11 +24,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.idega.block.article.bean.ArticleItemBean;
-import com.idega.block.email.bean.MessageParameters;
-import com.idega.block.email.business.EmailSenderHelper;
 import com.idega.builder.business.BuilderLogic;
-import com.idega.content.bean.ManagedContentBeans;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.component.bean.RenderedComponent;
 import com.idega.data.IDOLookup;
@@ -46,12 +40,10 @@ import com.idega.user.data.Group;
 import com.idega.user.data.GroupHome;
 import com.idega.user.data.User;
 import com.idega.user.data.UserHome;
-import com.idega.util.ArrayUtil;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.ListUtil;
 import com.idega.util.expression.ELUtil;
-import com.idega.webface.WFUtil;
 
 @Service("sagaServices")
 @Scope(BeanDefinition.SCOPE_SINGLETON)
@@ -74,7 +66,7 @@ public class SagaServices extends DefaultSpringBean implements
 	private PostDao postDao;
 
 	@Autowired
-	private EmailSenderHelper emailSenderHelper;
+	private PostBusiness postBusiness;
 
 	public SagaServices(){
 		ELUtil.getInstance().autowire(this);
@@ -233,7 +225,7 @@ public class SagaServices extends DefaultSpringBean implements
 			UserDataBean data =  userApplicationEngine.getUserInfo(user);
 
 			StringBuilder responseItem = new StringBuilder("<input type='hidden' name='")
-					.append(PostCreationView.RECEIVERS_PARAMETER_NAME).append("' value='")
+					.append(PostBusiness.ParameterNames.RECEIVERS_PARAMETER_NAME).append("' value='")
 					.append(user.getId()).append("'><table class = 'autocompleted-receiver'><tr><td><img src = '").append(data.getPictureUri()).append("'/></td><td>");
 			StringBuilder autocompleted = phraseBuilding;
 			String name = data.getName().toLowerCase();
@@ -379,120 +371,171 @@ public class SagaServices extends DefaultSpringBean implements
 		return parentgroups.iterator().next();
 	}
 
-	@SuppressWarnings("unchecked")
+//	@SuppressWarnings("unchecked")
+//	@RemoteMethod
+//	public String savePost(/*HttpServletRequest request*/){
+//		IWContext iwc  =  CoreUtil.getIWContext();
+////		request.getp
+//		if(!iwc.isLoggedOn()){
+//			String errorMsg = this.getResourceBundle().getLocalizedString("you_must_be_logged_on_to_perform_this_action",
+//					"You must be logged on to perform this action");
+//			return errorMsg;
+//		}
+//		ArticleItemBean post = (ArticleItemBean) WFUtil.getBeanInstance(ManagedContentBeans.ARTICLE_ITEM_BEAN_ID);
+//
+//		// Get all sent parameters
+//		//TODO: set author and other useful stuff
+//		String body = iwc.getParameter(PostCreationView.BODY_PARAMETER_NAME);
+//		post.setBody(body);
+//		String parameter = iwc.getParameter(PostCreationView.POST_TITLE_PARAMETER);
+//		post.setHeadline(parameter);
+//
+//		User currentUser = iwc.getCurrentUser();
+//		UserApplicationEngine userApplicationEngine = this.getUserApplicationEngine();
+//		UserDataBean userInfo =  userApplicationEngine.getUserInfo(currentUser);
+//		int creatorId = userInfo.getUserId();
+//
+//		post.setCreatedByUserId(creatorId);
+//		String name = userInfo.getName();
+//		post.setAuthor(name);
+//
+//		String [] attachments = iwc.getParameterValues(PostCreationView.POST_ATTACHMENTS_PARAMETER_NAME);
+//		if(!ArrayUtil.isEmpty(attachments)){
+//			post.setAttachment(Arrays.asList(attachments));
+//		}
+//
+//
+//		// Store post as xml article
+////		post.store();
+//
+//
+//		// Store post in db
+//		String uri = null;//post.getResourcePath();
+//		String privateMsg = iwc.getParameter(PostCreationView.PRIVATE_MESSAGE_PARAMETER_NAME);
+//
+//		String currentUserEmail = userInfo.getEmail();
+//		if(privateMsg != null){
+//			String [] receiversIds = iwc.getParameterValues(PostCreationView.RECEIVERS_PARAMETER_NAME);
+//			if(!ArrayUtil.isEmpty(receiversIds)){
+//				Collection<Integer> receivers = new ArrayList<Integer>(receiversIds.length);
+//				for(String receiver : receiversIds){
+//					receivers.add(Integer.valueOf(receiver));
+//				}
+//				if(uri == null){
+//					post.store();
+//					uri = post.getResourcePath();
+//				}
+//				if(!postDao.updatePost(uri, receivers,creatorId)){
+//					return this.getResourceBundle().getLocalizedString("failed_to_save",
+//					"Failed to save");
+//				}
+//
+//				sendMails(currentUserEmail,receivers, body, attachments);
+//			}
+//		}
+//
+//		String publicMsg = iwc.getParameter(PostCreationView.POST_TO_GROUPS_PARAMETER_NAME);
+//		if(publicMsg != null){
+//			Collection <Group> userGroups = null;
+//			try{
+//				userGroups = this.getUserBusiness().getUserGroups(currentUser);
+//			}catch(RemoteException e){
+//				this.getLogger().log(Level.WARNING, "Failed saving public post because of failed getting users groups" , e);
+//			}
+//			if(!ListUtil.isEmpty(userGroups)){
+//				ArrayList <Integer> receivers = new ArrayList<Integer>();
+//				for(Group group : userGroups){
+//					receivers.add(Integer.valueOf(group.getId()));
+//				}
+//				if(uri == null){
+//					post.store();
+//					uri = post.getResourcePath();
+//				}
+//				if(!postDao.updatePost(uri,receivers, PostEntity.PUBLIC,creatorId)){
+//					return this.getResourceBundle().getLocalizedString("failed_to_save",
+//					"Failed to save");
+//				}
+//			}
+//		}
+//		return this.getResourceBundle().getLocalizedString("changes_saved","Changes saved");
+//
+//	}
+
 	@RemoteMethod
-	public String savePost(/*HttpServletRequest request*/){
-		IWContext iwc  =  CoreUtil.getIWContext();
-//		request.getp
-		if(!iwc.isLoggedOn()){
-			String errorMsg = this.getResourceBundle().getLocalizedString("you_must_be_logged_on_to_perform_this_action",
-					"You must be logged on to perform this action");
-			return errorMsg;
-		}
-		ArticleItemBean post = (ArticleItemBean) WFUtil.getBeanInstance(ManagedContentBeans.ARTICLE_ITEM_BEAN_ID);
-
-		// Get all sent parameters
-		//TODO: set author and other useful stuff
-		String body = iwc.getParameter(PostCreationView.BODY_PARAMETER_NAME);
-		post.setBody(body);
-		String parameter = iwc.getParameter(PostCreationView.POST_TITLE_PARAMETER);
-		post.setHeadline(parameter);
-
-		User currentUser = iwc.getCurrentUser();
-		UserApplicationEngine userApplicationEngine = this.getUserApplicationEngine();
-		UserDataBean userInfo =  userApplicationEngine.getUserInfo(currentUser);
-		int creatorId = userInfo.getUserId();
-
-		post.setCreatedByUserId(creatorId);
-		String name = userInfo.getName();
-		post.setAuthor(name);
-
-		String [] attachments = iwc.getParameterValues(PostCreationView.POST_ATTACHMENTS_PARAMETER_NAME);
-		if(!ArrayUtil.isEmpty(attachments)){
-			post.setAttachment(Arrays.asList(attachments));
-		}
-
-
-		// Store post as xml article
-		post.store();
-
-
-		// Store post in db
-		String uri = post.getResourcePath();
-		String privateMsg = iwc.getParameter(PostCreationView.PRIVATE_MESSAGE_PARAMETER_NAME);
-
-		String currentUserEmail = userInfo.getEmail();
-		if(privateMsg != null){
-			String [] receiversIds = iwc.getParameterValues(PostCreationView.RECEIVERS_PARAMETER_NAME);
-			if(!ArrayUtil.isEmpty(receiversIds)){
-				Collection<Integer> receivers = new ArrayList<Integer>(receiversIds.length);
-				for(String receiver : receiversIds){
-					receivers.add(Integer.valueOf(receiver));
-				}
-				if(!postDao.updatePost(uri, receivers,creatorId)){
-					return this.getResourceBundle().getLocalizedString("failed_to_save",
-					"Failed to save");
-				}
-				sendMails(currentUserEmail,receivers, body, attachments);
-			}
-		}
-
-		String publicMsg = iwc.getParameter(PostCreationView.POST_TO_GROUPS_PARAMETER_NAME);
-		if(publicMsg != null){
-			Collection <Group> userGroups = null;
-			try{
-				userGroups = this.getUserBusiness().getUserGroups(currentUser);
-			}catch(RemoteException e){
-				this.getLogger().log(Level.WARNING, "Failed saving public post because of failed getting users groups" , e);
-			}
-			if(!ListUtil.isEmpty(userGroups)){
-				ArrayList <Integer> receivers = new ArrayList<Integer>();
-				for(Group group : userGroups){
-					receivers.add(Integer.valueOf(group.getId()));
-				}
-				if(!postDao.updatePost(uri,receivers, PostEntity.PUBLIC,creatorId)){
-					return this.getResourceBundle().getLocalizedString("failed_to_save",
-					"Failed to save");
-				}
-			}
-		}
-
-		String wallPost = iwc.getParameter(PostCreationView.WALL_POST_PARAMETER_NAME);
-		if(wallPost != null){
-			Collection<Integer> receivers = new ArrayList<Integer>(1);
-			receivers.add(Integer.valueOf(Integer.valueOf(currentUser.getId())));
-			if(!postDao.updatePost(uri, receivers,creatorId)){
-				return this.getResourceBundle().getLocalizedString("failed_to_save",
-				"Failed to save");
-			}
-		}
-		return this.getResourceBundle().getLocalizedString("changes_saved","Changes saved");
-
+	public String savePost(Map <String,ArrayList<String>> parameters){
+		return this.postBusiness.savePost(parameters);
 	}
-
-	private void sendMails(String from, Collection <Integer> userIds,String body, String [] attachments){
-
-		MessageParameters parameters = new MessageParameters();
-		parameters.setFrom(from);
-
-		ArrayList <String> recipients = new ArrayList<String>(userIds.size());
-		UserBusiness userbusiness = this.getUserBusiness();
-		for(Integer userId : userIds){
-			User user = null;
-			try{
-				user = userbusiness.getUser(Integer.valueOf(userId));
-			}catch(RemoteException e){
-				this.getLogger().log(Level.WARNING, "Failed to get user with id " + userId, e);
-			}
-			UserDataBean userInfo =  userApplicationEngine.getUserInfo(user);
-			recipients.add(userInfo.getEmail());
-		}
-		parameters.setAttachments(Arrays.asList(attachments));
-		parameters.setMessage(body);
-		String recipientsString = recipients.toString();
-		parameters.setRecipientTo(recipientsString);
-		this.emailSenderHelper.sendMessage(parameters);
-	}
+//
+//	@SuppressWarnings("unchecked")
+//	private boolean storePrivatePost(Map <String,ArrayList<String>> parameters, String uri,
+//			UserDataBean userInfo,ArticleItemBean post){
+//
+//		ArrayList<String> receiversIds = parameters.get(PostCreationView.RECEIVERS_PARAMETER_NAME);
+//		if(ListUtil.isEmpty(receiversIds)){
+//			return true;
+//		}
+//
+//		Collection<Integer> receivers = new ArrayList<Integer>(receiversIds.size());
+//		for(String receiver : receiversIds){
+//			receivers.add(Integer.valueOf(receiver));
+//		}
+//
+//		if(!postDao.updatePost(uri, receivers,userInfo.getUserId())){
+//			return false;
+//		}
+//
+//		sendMails(userInfo.getEmail(),receivers, post.getBody(), post.getAttachments());
+//		return true;
+//	}
+//
+//	@SuppressWarnings("unchecked")
+//	private boolean storeGroupPost(Map <String,ArrayList<String>> parameters, String uri,User currentUser,
+//			int creatorId){
+//		Collection <Group> userGroups = null;
+//		try{
+//			userGroups = this.getUserBusiness().getUserGroups(currentUser);
+//		}catch(RemoteException e){
+//			this.getLogger().log(Level.WARNING, "Failed saving public post because of failed getting users groups" , e);
+//			return false;
+//		}
+//		if(ListUtil.isEmpty(userGroups)){
+//			return true;
+//		}
+//
+//		ArrayList <Integer> receivers = new ArrayList<Integer>();
+//		for(Group group : userGroups){
+//			receivers.add(Integer.valueOf(group.getId()));
+//		}
+//		if(!postDao.updatePost(uri,receivers, PostEntity.PUBLIC,creatorId)){
+//			return false;
+//		}
+//		return true;
+//	}
+//
+//
+//	private void sendMails(String from, Collection <Integer> userIds,String body, List<String> attachments){
+//
+//		MessageParameters parameters = new MessageParameters();
+//		parameters.setFrom(from);
+//
+//		ArrayList <String> recipients = new ArrayList<String>(userIds.size());
+//		UserBusiness userbusiness = this.getUserBusiness();
+//		for(Integer userId : userIds){
+//			User user = null;
+//			try{
+//				user = userbusiness.getUser(Integer.valueOf(userId));
+//			}catch(RemoteException e){
+//				this.getLogger().log(Level.WARNING, "Failed to get user with id " + userId, e);
+//			}
+//			UserDataBean userInfo =  userApplicationEngine.getUserInfo(user);
+//			recipients.add(userInfo.getEmail());
+//		}
+//		parameters.setAttachments(attachments);
+//		parameters.setMessage(body);
+//		String recipientsString = recipients.toString();
+//		parameters.setRecipientTo(recipientsString);
+//		this.emailSenderHelper.sendMessage(parameters);
+//	}
 
 //	@SuppressWarnings("unchecked")
 //	private void sendMailsToAllUserGroups(User user){

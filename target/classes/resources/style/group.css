@@ -170,3 +170,7 @@ a.invisibleLink{
 	position : relative;
 	z-index:100;	
 }
+
+span.groupsTreeListElement{
+	cursor:pointer;
+}
