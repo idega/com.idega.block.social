@@ -1,0 +1,82 @@
+@CHARSET "UTF-8";
+
+div.post-content-ciewer{
+	overflow-y : auto;
+	overflow-x : hidden;
+}
+
+ul.posts-contents-list{
+	/*height : 80%;
+	overflow-y : auto;
+	overflow-x : hidden;*/
+	padding-left:0px; 
+	list-style : none;
+}
+
+.post-creation-info{
+	position : relative;
+	background-color: #3B5998;
+	width : 100%;
+	height : 3em;
+	font-weight : bold;
+	color : white;
+	z-index :0;
+}
+
+.post-creation-info img, .post-creation-info * img{
+	height : 3em;
+	width :	2em;
+}
+
+.post-content-viewer-post-creation-form-body{
+	width : 100%;
+	height : 1.5em;	
+}
+
+.post-content-view-post-footer{
+	position : relative;
+	text-align : right;
+}
+
+div.post-info{
+	background-color : white;	
+}
+.post-attachments-span{
+	cursor : pointer;
+	text-decoration : underline;
+}
+.post-attachments-span ul{
+	background-color : white;
+	color : blue;
+	display:none;
+	list-style : none;
+	position: absolute;
+	right:0;
+	top:1em;
+	padding-left:0px; 
+}
+
+.post-attachments-span:hover ul, .post-attachments-span.over ul{
+	display:block;
+}
+
+.post-attachments-span:hover ul li{
+	float: none;
+}
+
+.post-attachments-span:hover ul li a{
+	color : blue;
+	text-decoration : underline;
+}
+
+.post-content-view-post-footer *{
+	margin-left : 1em;
+	z-index : 1;
+}
+
+.post-update-date{
+	position : absolute;
+	right : 0;
+	top : 0;
+	font-size : 50%;
+}
