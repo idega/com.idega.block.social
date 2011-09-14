@@ -40,5 +40,5 @@ public interface PostDao  extends GenericDao {
 	public Collection <PostEntity> getPostsByCreators(Collection <Integer> creators,String type,int max,String uriFrom);
 
 	public Collection <PostEntity> getPosts(Collection <Integer> creators, Collection <Integer> receivers,
-			Collection<String> types,int max,String uriFrom);
+			Collection<String> types,int max,String uriFrom,boolean up);
 }

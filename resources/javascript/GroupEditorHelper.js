@@ -10,8 +10,10 @@ var ERROR_MESSAGE_CLASS = "error_message_class";
 var GroupEditorInfo = {};
 var GroupTreeReloadInfo = {};
 var UserSearchAreaInfo = {};
+var SagaGroupCreatorHelper = {};
 
 var uniqueNumberPrefix = -2147483648;
+
 
 function setGlobalVariables(NameFieldId,loadingMsg,savingUsersMsg,currentGroupId,userTablelayerId,searchTableLayerId){
 	GroupEditorInfo.groupNameErrorMessagesCreated = false;
@@ -149,13 +151,13 @@ function getUserSearchResults(requestValue){
 				container: tableLayer,
 				append: true
 			});
+			closeAllLoadingMessages();
 		}
 	});
 	
 	//some dinamic css modificationsCreatorWindowInfo.height = windowinfo.getWindowHeight() * 0.8;
 //	height = windowinfo.getWindowHeight() * 0.8 - jQuery('.searchFieldLayer').height() - 100;
 	jQuery('.user-search-table-layer').height(200);
-	closeAllLoadingMessages();
 }
 
 function generateUniqueNumberPrefix(){
@@ -315,6 +317,10 @@ function searchForUsersByTagEditInputs(){
 	getUserSearchResults(values);
 }
 
+SimpleAppInfo.actionsAfterSave = function(savedGroupId){
+	SimpleAppInfo.currentGroupId = savedGroupId;
+	SagaGroupCreatorHelper.prepareForSaving();
+}
 function prepareForNextSave(groupIdContainerId,parentGroupIdContainerId,parentGroupId){
 	jQuery("#"+groupIdContainerId).attr("value",SimpleAppInfo.currentGroupId);
 	jQuery("#"+parentGroupIdContainerId).attr("value",parentGroupId);

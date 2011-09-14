@@ -3,6 +3,8 @@ package is.idega.block.saga.business;
 import java.util.Date;
 import java.util.List;
 
+import com.idega.util.text.Item;
+
 public class PostInfo {
 	private String uriToAuthorPicture = null;
 	private String author = null;
@@ -11,7 +13,8 @@ public class PostInfo {
 	private String uriToBody = null;
 	private String body = null;
 	private Date date = null;
-	private List <String> attachments = null;
+	private List <Item> attachments = null;
+	private String uriToBodyPreview = null;
 
 	public String getAuthor() {
 		return author;
@@ -55,10 +58,16 @@ public class PostInfo {
 	public void setDate(Date date) {
 		this.date = date;
 	}
-	public List<String> getAttachments() {
+	public List<Item> getAttachments() {
 		return attachments;
 	}
-	public void setAttachments(List<String> attachments) {
+	public void setAttachments(List<Item> attachments) {
 		this.attachments = attachments;
+	}
+	public String getUriToBodyPreview() {
+		return uriToBodyPreview;
+	}
+	public void setUriToBodyPreview(String uriToBodyPreview) {
+		this.uriToBodyPreview = uriToBodyPreview;
 	}
 }

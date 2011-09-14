@@ -75,6 +75,7 @@ public class SagaGroupCreator extends SimpleGroupCreator{
 		}
 
 		setParentGroupId(parentGroupId);
+		this.setType(Constants.SOCIAL_TYPE);
 		super.main(iwc);
 
 		userEditContent = new Layer();
@@ -165,6 +166,12 @@ public class SagaGroupCreator extends SimpleGroupCreator{
 		.append("'); ");
 		String old = this.getActionOnSave();
 		this.setActionOnSave(actionOnKeyUp +  old + actionAfterSave.toString());
+
+		StringBuilder preparation = new StringBuilder("SagaGroupCreatorHelper.prepareForSaving = function(){\n")
+				.append(actionAfterSave).append("}");
+		String preparationScript = PresentationUtil.getJavaScriptAction(preparation.toString());
+		container.add(preparationScript);
+
 
 	}
 

@@ -2,11 +2,13 @@ package is.idega.block.saga.business;
 
 import is.idega.block.saga.Constants;
 import is.idega.block.saga.data.dao.PostDao;
+import is.idega.block.saga.presentation.comunicating.PostContentViewer;
 import is.idega.block.saga.presentation.group.SagaGroupCreator;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -14,6 +16,7 @@ import java.util.logging.Level;
 
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
+import javax.faces.component.UIComponent;
 
 import org.directwebremoting.annotations.Param;
 import org.directwebremoting.annotations.RemoteMethod;
@@ -34,6 +37,7 @@ import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
 import com.idega.user.bean.UserDataBean;
 import com.idega.user.business.GroupBusiness;
+import com.idega.user.business.GroupNode;
 import com.idega.user.business.UserApplicationEngine;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.Group;
@@ -61,6 +65,9 @@ public class SagaServices extends DefaultSpringBean implements
 	private UserHome userHome = null;
 	private GroupHome groupHome = null;
 
+
+//	@Autowired
+//	private GroupHelper groupHelper;
 
 	@Autowired
 	private PostDao postDao;
@@ -152,6 +159,58 @@ public class SagaServices extends DefaultSpringBean implements
 		}
 		Layer tableLayer = SagaGroupCreator.createUserTable(groupId, this.getResourceBundle(),groupName);
 		return BuilderLogic.getInstance().getRenderedComponent(tableLayer, null);
+	}
+
+	@RemoteMethod
+	public String getPosts(String beginUri, Boolean up,
+			String getPrivate, String getGroup, String getSent, Integer maxResult){
+
+		if(maxResult == null){
+			maxResult = 0;
+		}
+		IWContext iwc = CoreUtil.getIWContext();
+		UIComponent postList = PostContentViewer.getPostList(iwc, beginUri, up,
+					getPrivate, getGroup, getSent,maxResult);
+		String html = BuilderLogic.getInstance().getRenderedComponent(postList, null).getHtml();
+		return html;
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@RemoteMethod
+	public Collection <String>  getSagaGroupSearchResultsAsAutoComplete(String request){
+		request = CoreConstants.PERCENT + request.toLowerCase() + CoreConstants.PERCENT;
+		Collection <Group> foundGroups = null;
+		try{
+			foundGroups = this.getGroupHome()
+					.findGroupsByGroupTypeAndLikeName(Constants.SOCIAL_TYPE,
+					request);
+		}catch(FinderException e){
+			this.getLogger().log(Level.WARNING, CoreConstants.EMPTY, e);
+			return Collections.emptyList();
+		}
+		if(ListUtil.isEmpty(foundGroups)){
+			return Collections.emptyList();
+		}
+		int groupsAmmount = foundGroups.size();
+		IWContext iwc = CoreUtil.getIWContext();
+		GroupNode g = new GroupNode();
+		ArrayList <String> strings = new ArrayList<String>(groupsAmmount);
+		for(Group group : foundGroups){
+//			String imgUri = this.groupHelper.getGroupIcon(group,
+//					this.groupHelper.getGroupImageBaseUri(iwc), true);
+			StringBuilder responseItem = new StringBuilder("<input type='hidden' name='")
+					.append(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME).append("' value='")
+					.append(group.getId()).append("'><table class = 'autocompleted-receiver'><tr><td><img src = '")
+					.append("").append("'/></td><td>");
+			String groupName = group.getName();
+			responseItem.append(groupName);
+			responseItem.append("</td></tr></table>");
+			strings.add(responseItem.toString());
+			strings.add(groupName != null ? groupName.toString() : CoreConstants.EMPTY);
+		}
+		return strings;
+
 	}
 
 

@@ -8,5 +8,6 @@ public class Constants {
 	public static final String SAGA_ROOT_GROUP_ROLE = "saga_book_root";
 	public static final String SOCIAL_TYPE = "social";
 
+	public static final String POST_REQUEST_BEAN_ID = "postRequestBean";
 
 }

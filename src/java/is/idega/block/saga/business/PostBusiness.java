@@ -1,19 +1,27 @@
 package is.idega.block.saga.business;
 
 import is.idega.block.saga.Constants;
+import is.idega.block.saga.bean.PostItemBean;
 import is.idega.block.saga.data.PostEntity;
 import is.idega.block.saga.data.dao.PostDao;
+import is.idega.block.saga.presentation.comunicating.PostContentViewer;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.ejb.FinderException;
+
+import org.apache.webdav.lib.Ace;
+import org.apache.webdav.lib.Privilege;
+import org.apache.webdav.lib.WebdavResource;
+import org.directwebremoting.WebContextFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -23,12 +31,18 @@ import com.idega.block.article.bean.ArticleItemBean;
 import com.idega.block.article.bean.ArticleListManagedBean;
 import com.idega.block.email.bean.MessageParameters;
 import com.idega.block.email.business.EmailSenderHelper;
-import com.idega.content.bean.ManagedContentBeans;
+import com.idega.business.IBOLookup;
+import com.idega.business.IBOLookupException;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.data.IDOLookup;
 import com.idega.dwr.business.DWRAnnotationPersistance;
+import com.idega.dwr.reverse.ScriptCaller;
 import com.idega.idegaweb.IWResourceBundle;
+import com.idega.idegaweb.IWUserContext;
 import com.idega.presentation.IWContext;
+import com.idega.slide.business.IWSlideService;
+import com.idega.slide.util.AccessControlList;
+import com.idega.slide.util.IWSlideConstants;
 import com.idega.user.bean.UserDataBean;
 import com.idega.user.business.GroupBusiness;
 import com.idega.user.business.UserApplicationEngine;
@@ -40,8 +54,10 @@ import com.idega.user.data.UserHome;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.ListUtil;
+import com.idega.util.StringHandler;
+import com.idega.util.StringUtil;
 import com.idega.util.expression.ELUtil;
-import com.idega.webface.WFUtil;
+import com.idega.util.text.Item;
 
 
 @Service("postBusiness")
@@ -49,13 +65,9 @@ import com.idega.webface.WFUtil;
 public class PostBusiness extends DefaultSpringBean implements
 DWRAnnotationPersistance {
 
-//	public static final String BODY_PARAMETER_NAME = "post_body";
-//	public static final String POST_TITLE_PARAMETER = "post_title";
-//	public static final String RECEIVERS_PARAMETER_NAME = "receivers_id";
-//	public static final String POST_TO_GROUPS_PARAMETER_NAME = "post_to_groups";
-//	public static final String PRIVATE_MESSAGE_PARAMETER_NAME = "private_message";
-//	public static final String POST_ATTACHMENTS_PARAMETER_NAME = "post_attachments";
 
+
+	private static final String GROUP_ROLE_PREFIX = "saga_role_";
 
 	private GroupBusiness groupBusiness = null;
 	private UserApplicationEngine userApplicationEngine = null;
@@ -76,6 +88,10 @@ DWRAnnotationPersistance {
 		this.articleListManadgedBean = new ArticleListManagedBean();
 	}
 
+
+
+
+	@SuppressWarnings("unchecked")
 	public String savePost(Map <String,ArrayList<String>> parameters){
 
 		IWContext iwc  =  CoreUtil.getIWContext();
@@ -84,10 +100,83 @@ DWRAnnotationPersistance {
 					"You must be logged on to perform this action");
 			return errorMsg;
 		}
-		ArticleItemBean post = (ArticleItemBean) WFUtil.getBeanInstance(ManagedContentBeans.ARTICLE_ITEM_BEAN_ID);
+		String errorMsg = this.getResourceBundle().getLocalizedString("failed_to_save_post",
+		"Failed to save post");
 
-		// Get all sent parameters
-		//TODO: set author and other useful stuff
+		User currentUser = iwc.getCurrentUser();
+		UserApplicationEngine userApplicationEngine = this.getUserApplicationEngine();
+		UserDataBean userInfo =  userApplicationEngine.getUserInfo(currentUser);
+		int creatorId = userInfo.getUserId();
+
+		ArrayList<String> userReceiversIds = parameters.get(PostBusiness.ParameterNames.RECEIVERS_PARAMETER_NAME);
+		int usersReceiversAmmount = 0;
+		Collection<Integer> usersReceivers = null;
+		boolean areUserReceivers = !ListUtil.isEmpty(userReceiversIds);
+		if(areUserReceivers){
+			usersReceiversAmmount = userReceiversIds.size();
+			usersReceivers = new ArrayList<Integer>(usersReceiversAmmount);
+			for(String receiver : userReceiversIds){
+				usersReceivers.add(Integer.valueOf(receiver));
+			}
+		}
+
+		ArrayList<String> groupsReceiversIds = parameters.get(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME);
+		Collection<Integer> groupsReceivers = new ArrayList<Integer>();;
+		if(!ListUtil.isEmpty(groupsReceiversIds)){
+			for(String receiver : groupsReceiversIds){
+				groupsReceivers.add(Integer.valueOf(receiver));
+			}
+		}
+
+		if(areUserReceivers){
+			String msgType = parameters.get(PostBusiness.ParameterNames.MESSAGE_TYPE).get(0);
+			if(msgType.equals(PostBusiness.ParameterNames.PUBLIC_MESSAGE)){
+				for(Integer userId : usersReceivers){
+					Collection <Group> userGroups = null;
+					try{
+						userGroups = this.getUserBusiness().getUserGroups(userId);
+					}catch(RemoteException e){
+						this.getLogger().log(Level.WARNING, "Failed saving public post because of failed getting users groups" , e);
+						return errorMsg;
+					}
+					if(!ListUtil.isEmpty(userGroups)){
+						for(Group group : userGroups){
+							groupsReceivers.add(Integer.valueOf(group.getId()));
+						}
+					}
+					groupsReceivers.add(userId);
+				}
+			}
+		}
+
+
+
+
+//		ArrayList<Integer> receivers = new ArrayList<Integer>(usersReceiversAmmount + groupsReceiversAmmount);
+
+		ArrayList<String> postToAllUserGroups = parameters.get(PostBusiness.ParameterNames.POST_TO_ALL_USER_GROUPS);
+		if(!ListUtil.isEmpty(postToAllUserGroups)){
+			Collection <Group> userGroups = null;
+			try{
+				userGroups = this.getUserBusiness().getUserGroups(currentUser);
+			}catch(RemoteException e){
+				this.getLogger().log(Level.WARNING, "Failed saving public post because of failed getting users groups" , e);
+				return errorMsg;
+			}
+			if(!ListUtil.isEmpty(userGroups)){
+				for(Group group : userGroups){
+					groupsReceivers.add(Integer.valueOf(group.getId()));
+				}
+			}
+		}
+
+		if((usersReceivers == null) && (ListUtil.isEmpty(groupsReceivers))){
+			return iwrb.getLocalizedString("post_has_no_receivers", "Post has no receivers");
+		}
+
+
+		PostItemBean post = new PostItemBean();
+
 		String body = CoreConstants.EMPTY;
 		if(parameters.containsKey(PostBusiness.ParameterNames.BODY_PARAMETER_NAME)){
 			body = parameters.get(PostBusiness.ParameterNames.BODY_PARAMETER_NAME).get(0);
@@ -98,16 +187,6 @@ DWRAnnotationPersistance {
 			post.setHeadline(parameter);
 		}
 
-		User currentUser = iwc.getCurrentUser();
-		try{
-			iwc.getIWMainApplication().getAccessController().getPermissionGroupAdministrator().addGroup(currentUser);
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		UserApplicationEngine userApplicationEngine = this.getUserApplicationEngine();
-		UserDataBean userInfo =  userApplicationEngine.getUserInfo(currentUser);
-		int creatorId = userInfo.getUserId();
-
 		post.setCreatedByUserId(creatorId);
 		String name = userInfo.getName();
 		post.setAuthor(name);
@@ -117,89 +196,83 @@ DWRAnnotationPersistance {
 			post.setAttachment(attachments);
 		}
 
-		// Store post as xml article
-		post.store();
-
 		// Store post in db
 
-		String uri = post.getResourcePath();
-		Collection privateMsg = parameters.get(PostBusiness.ParameterNames.PRIVATE_MESSAGE_PARAMETER_NAME);
-		boolean privateOK = privateMsg == null ? true : storePrivatePost(parameters, uri, userInfo, post);
 
-		Collection publicMsg = parameters.get(PostBusiness.ParameterNames.POST_TO_GROUPS_PARAMETER_NAME);
-		boolean groupOK = publicMsg == null ? true : this.storeGroupPost(parameters, uri, currentUser, creatorId);
+		String resourcePath = post.getResourcePath();
+		StringBuilder errors = null;
+		boolean postupdated = false;
+		boolean privateSaved = true;
 
-		IWResourceBundle iwrb = this.getResourceBundle();
-		if(privateOK && groupOK){
-			return iwrb.getLocalizedString("post_saved", "Post saved");
+		if(!ListUtil.isEmpty(usersReceivers)){
+			privateSaved = postDao.updatePost(resourcePath, usersReceivers,creatorId);
+			if(privateSaved){
+				postupdated = true;
+				sendMails(userInfo.getEmail(),usersReceivers, body, post.getAttachments());
+				ArrayList accessUsers = new ArrayList(usersReceivers.size()+1);
+				accessUsers.add(creatorId);
+				setAccessRights(resourcePath, iwc, accessUsers);
+			}else{
+				errors = new StringBuilder("\n").append(iwrb.getLocalizedString("errors", "errors")).append(":\n")
+						.append(iwrb.getLocalizedString("failed_to_send_post_to_users","Failed to send post to users"));
+			}
+		}
+		boolean groupSaved = true;
+		if(!ListUtil.isEmpty(groupsReceivers)){
+			groupSaved = postDao.updatePost(resourcePath,groupsReceivers, PostEntity.PUBLIC,creatorId);
+			if(groupSaved){
+				setAccessRights(resourcePath, iwc, groupsReceivers);
+				postupdated = true;
+			}else{
+				if(errors == null){
+					errors = new StringBuilder("\n").append(iwrb.getLocalizedString("errors", "errors"))
+							.append(CoreConstants.COLON);
+				}
+				errors.append(CoreConstants.NEWLINE)
+						.append(iwrb.getLocalizedString("failed_to_send_post_to_groups","Failed to send post to groups"));
+			}
+		}
+//		StringBuilder msg = null;new StringBuilder(iwrb.getLocalizedString("post_saved", "Post saved"));
+		if(postupdated){
+			post.store();
+			String successMsg = iwrb.getLocalizedString("post_sent", "Post sent");
+			String returnMsg = errors == null ? successMsg : successMsg + errors.toString();
+			ScriptCaller scriptCaller = new ScriptCaller(WebContextFactory.get(), PostContentViewer.POST_LOAD_SCRIPT, true);
+			scriptCaller.run();
+
+			return  returnMsg;
 		}else{
-			StringBuilder msg = new StringBuilder();
-			if(!privateOK){
-				String info = iwrb.getLocalizedString("failed_saving_private_post",
-						"Failed saving private post");
-				msg.append(info);
-			}
-			if(!groupOK){
-				String info = iwrb.getLocalizedString("failed_saving_group_post",
-				"Failed saving group post");
-				msg.append(info);
-			}
-			return msg.toString();
+			return errorMsg;
 		}
-
-
 
 	}
 
-	@SuppressWarnings("unchecked")
-	private boolean storePrivatePost(Map <String,ArrayList<String>> parameters, String uri,
-			UserDataBean userInfo,ArticleItemBean post){
+	private void setAccessRights(String resourcePath,IWContext iwc,Collection <Integer> groupIds){
+		Collection <String> roleNames = getGroupsRolesForPostsAccess(groupIds);
 
-		ArrayList<String> receiversIds = parameters.get(PostBusiness.ParameterNames.RECEIVERS_PARAMETER_NAME);
-		if(ListUtil.isEmpty(receiversIds)){
-			return true;
-		}
+		Ace ace = new Ace(IWSlideConstants.SUBJECT_URI_AUTHENTICATED);
+		ace.addPrivilege(Privilege.ALL);
+		Ace [] aces = {ace};
+		Ace denied = new Ace(IWSlideConstants.SUBJECT_URI_UNAUTHENTICATED);
 
-		Collection<Integer> receivers = new ArrayList<Integer>(receiversIds.size());
-		for(String receiver : receiversIds){
-			receivers.add(Integer.valueOf(receiver));
-		}
-
-		if(!postDao.updatePost(uri, receivers,userInfo.getUserId())){
-			return false;
-		}
-
-		sendMails(userInfo.getEmail(),receivers, post.getBody(), post.getAttachments());
-		return true;
+	    IWSlideService slideService = getIWSlideService(iwc);
+	    try{
+		    slideService.createAllFoldersInPathAsRoot(resourcePath);
+		    AccessControlList processFolderACL = slideService.getAccessControlList(resourcePath);
+		    processFolderACL.setAces(aces);
+		    processFolderACL = slideService.getAuthenticationBusiness().applyPermissionsToRepository(processFolderACL, roleNames);
+		    slideService.storeAccessControlList(processFolderACL);
+	    }catch(Exception e){
+	    	Logger.getLogger(getClass().getName()).log(Level.WARNING,
+	    			"failed adding access rights to " + resourcePath, e);
+	    }
 	}
-
-	@SuppressWarnings("unchecked")
-	private boolean storeGroupPost(Map <String,ArrayList<String>> parameters, String uri,User currentUser,
-			int creatorId){
-		Collection <Group> userGroups = null;
-		try{
-			userGroups = this.getUserBusiness().getUserGroups(currentUser);
-		}catch(RemoteException e){
-			this.getLogger().log(Level.WARNING, "Failed saving public post because of failed getting users groups" , e);
-			return false;
-		}
-		if(ListUtil.isEmpty(userGroups)){
-			return true;
-		}
-
-		ArrayList <Integer> receivers = new ArrayList<Integer>();
-		for(Group group : userGroups){
-			receivers.add(Integer.valueOf(group.getId()));
-		}
-		if(!postDao.updatePost(uri,receivers, PostEntity.PUBLIC,creatorId)){
-			return false;
-		}
-		return true;
-	}
-
 
 	private void sendMails(String from, Collection <Integer> userIds,String body, List<String> attachments){
 
+		if(StringUtil.isEmpty(from) || ListUtil.isEmpty(userIds)){
+			return;
+		}
 		MessageParameters parameters = new MessageParameters();
 		parameters.setFrom(from);
 
@@ -310,17 +383,26 @@ DWRAnnotationPersistance {
 //		return posts;
 	}
 
+	//TODO: check if works with not logged on users when valdas will fix access problems
 	@SuppressWarnings("unchecked")
-	public Collection <PostInfo> getPosts(PostFilterParameters filterParameters){
+	public List <PostInfo> getPosts(PostFilterParameters filterParameters,IWContext iwc){
 		Collection <PostEntity> postEntities = null;
 		postEntities = this.postDao.getPosts(filterParameters.getCreators(), filterParameters.getReceivers(),
-				filterParameters.getTypes(), filterParameters.getMax(), null);
-		List <ArticleItemBean> articles = this.getArticlesFromPosts(postEntities);
-		Collection<PostInfo> posts = new ArrayList<PostInfo>(postEntities.size());
-		Iterator <PostEntity> postsIter = postEntities.iterator();
-		for(ArticleItemBean article : articles){
+				filterParameters.getTypes(), filterParameters.getMax(), filterParameters.getBeginUri(), filterParameters.getGetUp() != null);
+		List<PostInfo> posts = new ArrayList<PostInfo>(postEntities.size());
+		List <String> uris = new ArrayList<String>(1);
+		this.articleListManadgedBean.setShowAllItems(true);
+		IWSlideService slide = getServiceInstance(IWSlideService.class);
+		for(PostEntity entity : postEntities){
+			uris.add(entity.getArticle().getUri());
+			List <ArticleItemBean> articleItems= this.articleListManadgedBean.getArticlesByURIs(uris,
+					iwc);
+			if(ListUtil.isEmpty(articleItems)){
+				continue;
+			}
+			uris.clear();
+			ArticleItemBean article = articleItems.get(0);
 			PostInfo post = new PostInfo();
-			PostEntity entity = postsIter.next();
 			try{
 				int userId = entity.getPostCreator();
 				User user = this.getUserBusiness().getUser(userId);
@@ -335,7 +417,19 @@ DWRAnnotationPersistance {
 			post.setUriToBody(article.getResourcePath());
 			post.setBody(article.getBody());
 			List <String> attachments = article.getAttachments();
-			post.setAttachments(attachments);
+
+			List<Item> items = new ArrayList<Item>(attachments.size());
+			for(String path : attachments){
+				WebdavResource resource = null;
+				try{
+					resource = slide.getWebdavResourceAuthenticatedAsRoot(path);
+				}catch(Exception e){
+					this.getLogger().log(Level.WARNING, "failed getting attachment" + path, e);
+					continue;
+				}
+				items.add(new Item(path,resource.getDisplayName()));
+			}
+			post.setAttachments(items);
 
 			posts.add(post);
 		}
@@ -396,12 +490,59 @@ DWRAnnotationPersistance {
 		return this.groupHome;
 	}
 
+	protected IWSlideService getIWSlideService(IWUserContext iwuc) {
+		try {
+			IWSlideService slideService = IBOLookup.getServiceInstance(iwuc.getApplicationContext(),IWSlideService.class);
+			return slideService;
+		}
+		catch (IBOLookupException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+
+	public static String getGroupRoleForPostsAccess(Group group){
+		return GROUP_ROLE_PREFIX + group.getId() + StringHandler.stripNonRomanCharacters(group.getName());
+	}
+
+	@SuppressWarnings("unchecked")
+	private Collection <String> getGroupsRolesForPostsAccess(Collection <Integer> groupIds){
+		ArrayList <String> roles = new ArrayList<String>(groupIds.size());
+
+		String [] ids = new String[groupIds.size()];
+		int i = 0;
+		for(Integer id : groupIds){
+			ids[i++] = id.toString();
+		}
+
+		GroupBusiness groupBusiness = this.getGroupBusiness();
+		Collection <Group> groups = null;
+		try{
+			groups = groupBusiness.getGroups(ids);
+		}catch(RemoteException e){
+			this.getLogger().log(Level.WARNING, "failed getting groups", e);
+		}catch(FinderException e){
+			this.getLogger().log(Level.WARNING, "failed getting groups", e);
+		}
+		if(ListUtil.isEmpty(groups)){
+			return Collections.emptyList();
+		}
+
+		for(Group group : groups){
+			roles.add(PostBusiness.getGroupRoleForPostsAccess(group));
+		}
+		return roles;
+	}
+
 	public static class ParameterNames {
 		public static final String BODY_PARAMETER_NAME = "post_body";
 		public static final String POST_TITLE_PARAMETER = "post_title";
 		public static final String RECEIVERS_PARAMETER_NAME = "receivers_id";
-		public static final String POST_TO_GROUPS_PARAMETER_NAME = "post_to_groups";
-		public static final String PRIVATE_MESSAGE_PARAMETER_NAME = "private_message";
+		public static final String GROUP_RECEIVERS_PARAMETER_NAME = "group_receivers_id";
+		public static final String POST_TO_ALL_USER_GROUPS = "post_to_all_user_groups";
 		public static final String POST_ATTACHMENTS_PARAMETER_NAME = "post_attachments";
+		public static final String MESSAGE_TYPE = "private_or_public";
+		public static final String PRIVATE_MESSAGE = "private";
+		public static final String PUBLIC_MESSAGE = "public_private";
 	}
 }

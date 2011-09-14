@@ -88,3 +88,7 @@ table.autocompleted-receiver * img {
 	text-align:right;
 	padding-right:5%;	
 }
+
+.post-creation-view-public-or-private-msg{
+	display : inline;
+}

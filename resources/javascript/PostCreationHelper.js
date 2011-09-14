@@ -7,8 +7,8 @@
 
 
 
-var PostCreationView = {
-		TAGEDIT_INPUT_SELECTOR : "#tagedit-input"
+var PostCreationViewHelper = {
+		TAGEDIT_INPUT_SELECTOR : "[name=\"tag[]\"]"
 		,nontrivialUserDefiningPhraseErrorMsg : null
 		,seted : false
 		,createAccordion : function(selector, childSelector){
@@ -54,15 +54,15 @@ var PostCreationView = {
 				// Sets to check checkbox when header is clicked 
 				// TODO: think if it is convinient and logical
 //				jQuery(".post-creation-view-accordion-header").click(function(){
-//					if(!PostCreationView.seted){
-//						PostCreationView.setToCheck(jQuery(this).find(checkSelector));
+//					if(!PostCreationViewHelper.seted){
+//						PostCreationViewHelper.setToCheck(jQuery(this).find(checkSelector));
 //					}
-//					PostCreationView.seted = false;
+//					PostCreationViewHelper.seted = false;
 //				});
 				//enables checkbox checking
 				jQuery(checkSelector).click(function(){
-					PostCreationView.setChecked(jQuery(this));
-					PostCreationView.seted = true;
+					PostCreationViewHelper.setChecked(jQuery(this));
+					PostCreationViewHelper.seted = true;
 				});
 				if((activeSelector != undefined) && (activeSelector != null)){
 					jQuery(activeSelector).prev().click();
@@ -111,6 +111,7 @@ var PostCreationView = {
 ////			dwr.engine.endBatch();
 //		}
 		,savePost : function(selector){
+			showLoadingMessage("");
 			var form = jQuery(selector);
 			var parameters = form.serializeArray();
 			
@@ -125,6 +126,7 @@ var PostCreationView = {
 			
 			SagaServices.savePost(map,{
 				callback: function(reply){
+					closeAllLoadingMessages();
 					humanMsg.displayMsg(reply);
 				}
 			});
@@ -166,24 +168,109 @@ var PostCreationView = {
 						minLength : 1,
 						html: true,
 						select: function( event, ui ) {
-							jQuery(PostCreationView.TAGEDIT_INPUT_SELECTOR).val(ui.item.value).trigger('transformToTag', [ui.item.id, ui.item.label]);
+							jQuery(PostCreationViewHelper.TAGEDIT_INPUT_SELECTOR).val(ui.item.value).trigger('transformToTag', [ui.item.id, ui.item.label]);
 							return false;
 						}
 					},
 					transform : function(event, id, label) {
-						var obj = jQuery(PostCreationView.TAGEDIT_INPUT_SELECTOR).data("tag-options-data");
+						var obj = jQuery(PostCreationViewHelper.TAGEDIT_INPUT_SELECTOR).data("tag-options-data");
 						var oldValue = (typeof id != 'undefined' && id.length > 0);
 
 						if(label == undefined){
-							var request  = jQuery(PostCreationView.TAGEDIT_INPUT_SELECTOR).val();
+							var request  = jQuery(PostCreationViewHelper.TAGEDIT_INPUT_SELECTOR).val();
 							SagaServices.autocompleteUserSearchWithImagesRequest(request,-1, 20, 0, {
 								callback: function(userDataCollection) {
 									if(userDataCollection.length == 2){
-										jQuery(PostCreationView.TAGEDIT_INPUT_SELECTOR).trigger('transformToTag', [undefined, userDataCollection[0]]);
+										jQuery(PostCreationViewHelper.TAGEDIT_INPUT_SELECTOR).trigger('transformToTag', [undefined, userDataCollection[0]]);
 									}
 									else{
-										humanMsg.displayMsg(PostCreationView.nontrivialUserDefiningPhraseErrorMsg);
-										jQuery(PostCreationView.TAGEDIT_INPUT_SELECTOR).focus();
+										humanMsg.displayMsg(PostCreationViewHelper.nontrivialUserDefiningPhraseErrorMsg);
+										jQuery(PostCreationViewHelper.TAGEDIT_INPUT_SELECTOR).focus();
+									}
+								}
+							});
+							return false;
+						}
+						var checkAutocomplete = oldValue == true? false : true;
+						// check if the Value ist new
+						var isNewResult = obj.isNew(label.toString(), checkAutocomplete);
+						if(isNewResult[0] === true || (isNewResult[0] === false && typeof isNewResult[1] == 'string')) {
+
+							if(oldValue == false && typeof isNewResult[1] == 'string') {
+								oldValue = true;
+								id = isNewResult[1];
+							}
+
+							if(obj.options.allowAdd == true || oldValue) {
+								// Make a new tag in front the input
+								html = '<li class="tagedit-listelement tagedit-listelement-old">';
+								html += '<span dir="'+obj.options.direction+'">' + label + '</span>';
+								html += "<input type='hidden' name = 'tag[]' disabled='disabled'" + " value=\"" + label.toString() +"\" />";
+								html += '<a class="tagedit-close" title="'+obj.options.texts.removeLinkTitle+'">x</a>';
+								html += '</li>';
+
+								jQuery(this).parent().before(html);
+							}
+						}
+						jQuery(this).val('');
+
+						// close autocomplete
+						if(obj.options.autocompleteOptions.source) {
+							jQuery(this).autocomplete( "close" );
+						}
+
+					}
+				});
+				input.inputsToList = function(){};
+			});
+		}
+		,createGroupAutocomplete : function(selector){
+			jQuery(document).ready(function(){
+				input = jQuery(selector);
+				input.tagedit({
+					autocompleteURL: function(request, response) {
+						SagaServices.getSagaGroupSearchResultsAsAutoComplete(request.term, {
+							callback: function(userDataCollection) {
+								var arrayOfData = [];
+								var i = 0;
+								var end = userDataCollection.length - 1;
+								while(i < end){
+									var item = {
+											label : userDataCollection[i],
+											value : userDataCollection[i+1]
+									};
+									arrayOfData.push(item);
+									i += 2;
+								}
+								response(arrayOfData);
+							}
+						});
+					},
+					allowEdit: true,
+					allowAdd: true,
+					delay: 100,
+					autocompleteOptions: {
+						minLength : 1,
+						html: true,
+						select: function( event, ui ) {
+							jQuery(PostCreationViewHelper.TAGEDIT_GROUP_INPUT_SELECTOR).val(ui.item.value).trigger('transformToTag', [ui.item.id, ui.item.label]);
+							return false;
+						}
+					},
+					transform : function(event, id, label) {
+						var obj = jQuery(PostCreationViewHelper.TAGEDIT_GROUP_INPUT_SELECTOR).data("tag-options-data");
+						var oldValue = (typeof id != 'undefined' && id.length > 0);
+
+						if(label == undefined){
+							var request  = jQuery(PostCreationViewHelper.TAGEDIT_GROUP_INPUT_SELECTOR).val();
+							SagaServices.getSagaGroupSearchResultsAsAutoComplete(request, {
+								callback: function(userDataCollection) {
+									if(userDataCollection.length == 2){
+										jQuery(PostCreationViewHelper.TAGEDIT_GROUP_INPUT_SELECTOR).trigger('transformToTag', [undefined, userDataCollection[0]]);
+									}
+									else{
+										humanMsg.displayMsg(PostCreationViewHelper.nontrivialUserDefiningPhraseErrorMsg);
+										jQuery(PostCreationViewHelper.TAGEDIT_GROUP_INPUT_SELECTOR).focus();
 									}
 								}
 							});
@@ -248,6 +335,7 @@ var PostCreationView = {
 };
 
 
+
 //autoresize that was in web2 was modified and did not worked for me, so I added this
 
 /*
@@ -255,5 +343,6 @@ var PostCreationView = {
  * @copyright James Padolsey http://james.padolsey.com
  * @version 1.04
  */
+//
+//(function(a){a.fn.autoResize=function(j){var b=a.extend({onResize:function(){},animate:true,animateDuration:150,animateCallback:function(){},extraSpace:20,limit:1000},j);this.filter('textarea').each(function(){var c=a(this).css({resize:'none','overflow-y':'hidden'}),k=c.height(),f=(function(){var l=['height','width','lineHeight','textDecoration','letterSpacing'],h={};a.each(l,function(d,e){h[e]=c.css(e)});return c.clone().removeAttr('id').removeAttr('name').css({position:'absolute',top:0,left:-9999}).css(h).attr('tabIndex','-1').insertBefore(c)})(),i=null,g=function(){f.height(0).val(a(this).val()).scrollTop(10000);var d=Math.max(f.scrollTop(),k)+b.extraSpace,e=a(this).add(f);if(i===d){return}i=d;if(d>=b.limit){a(this).css('overflow-y','');return}b.onResize.call(this);b.animate&&c.css('display')==='block'?e.stop().animate({height:d},b.animateDuration,b.animateCallback):e.height(d)};c.unbind('.dynSiz').bind('keyup.dynSiz',g).bind('keydown.dynSiz',g).bind('change.dynSiz',g)});return this}})(jQuery);
 
-(function(a){a.fn.autoResize=function(j){var b=a.extend({onResize:function(){},animate:true,animateDuration:150,animateCallback:function(){},extraSpace:20,limit:1000},j);this.filter('textarea').each(function(){var c=a(this).css({resize:'none','overflow-y':'hidden'}),k=c.height(),f=(function(){var l=['height','width','lineHeight','textDecoration','letterSpacing'],h={};a.each(l,function(d,e){h[e]=c.css(e)});return c.clone().removeAttr('id').removeAttr('name').css({position:'absolute',top:0,left:-9999}).css(h).attr('tabIndex','-1').insertBefore(c)})(),i=null,g=function(){f.height(0).val(a(this).val()).scrollTop(10000);var d=Math.max(f.scrollTop(),k)+b.extraSpace,e=a(this).add(f);if(i===d){return}i=d;if(d>=b.limit){a(this).css('overflow-y','');return}b.onResize.call(this);b.animate&&c.css('display')==='block'?e.stop().animate({height:d},b.animateDuration,b.animateCallback):e.height(d)};c.unbind('.dynSiz').bind('keyup.dynSiz',g).bind('keydown.dynSiz',g).bind('change.dynSiz',g)});return this}})(jQuery);

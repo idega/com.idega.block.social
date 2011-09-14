@@ -13,6 +13,7 @@ public class PostFilterParameters {
 	private Collection<Integer> receivers = null;
 	private List <String> types = null;
 	private String beginUri = null;
+	private String getUp = null;
 
 	public User getUser() {
 		return user;
@@ -49,6 +50,12 @@ public class PostFilterParameters {
 	}
 	public void setBeginUri(String beginUri) {
 		this.beginUri = beginUri;
+	}
+	public String getGetUp() {
+		return getUp;
+	}
+	public void setGetUp(String getUp) {
+		this.getUp = getUp;
 	}
 
 }

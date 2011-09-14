@@ -32,6 +32,7 @@ import com.idega.presentation.ui.FieldSet;
 import com.idega.presentation.ui.GenericButton;
 import com.idega.presentation.ui.Label;
 import com.idega.presentation.ui.Legend;
+import com.idega.presentation.ui.RadioButton;
 import com.idega.presentation.ui.TextArea;
 import com.idega.presentation.ui.TextInput;
 import com.idega.util.CoreConstants;
@@ -40,14 +41,12 @@ import com.idega.util.PresentationUtil;
 import com.idega.webface.WFUtil;
 
 public class PostCreationView extends IWBaseComponent{
-//	public static final String BODY_PARAMETER_NAME = "post_body";
-//	public static final String POST_TITLE_PARAMETER = "post_title";
-//	public static final String RECEIVERS_PARAMETER_NAME = "receivers_id";
-//	public static final String POST_TO_GROUPS_PARAMETER_NAME = "post_to_groups";
-//	public static final String PRIVATE_MESSAGE_PARAMETER_NAME = "private_message";
-//	public static final String POST_ATTACHMENTS_PARAMETER_NAME = "post_attachments";
 
 	private static final String TAGEDIT_NAME = "tag[]";
+	private static final String GROUP_TAGEDIT_NAME = "tag[1]";
+
+//	private String tageditId = null;
+//	private String groupTageditId = null;
 
 	private IWResourceBundle iwrb = null;
 	private IWContext iwc = null;
@@ -139,40 +138,76 @@ public class PostCreationView extends IWBaseComponent{
 
 		FileUploadViewer uploader = new FileUploadViewer();
 		mainFieldsLayer.add(uploader);
-		uploader.setAllowMultipleFiles(false);
+		uploader.setAllowMultipleFiles(true);
 		uploader.setAutoAddFileInput(false);
-		uploader.setAutoUpload(true);
+		uploader.setAutoUpload(false);
 		uploader.setShowUploadedFiles(true);
 		uploader.setFormId(form.getId());
 
-		StringBuilder actionafterUpload = new StringBuilder("PostCreationView.createLocationInput('#").append(mainFieldsLayer.getId())
+		StringBuilder actionafterUpload = new StringBuilder("PostCreationViewHelper.createLocationInput('#").append(mainFieldsLayer.getId())
 				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(PostBusiness.ParameterNames.POST_ATTACHMENTS_PARAMETER_NAME)
 				.append(CoreConstants.JS_STR_PARAM_END);
 		uploader.setActionAfterUploadedToRepository(actionafterUpload.toString());
 
 		// Private message options
 		this.privateMsgOptionsLayer = new Layer();
-		this.addToaccordion(this.privateMsgOptionsLayer, iwrb.getLocalizedString("private_message", "Private Message"),
-				PostBusiness.ParameterNames.PRIVATE_MESSAGE_PARAMETER_NAME);
+//		this.addToaccordion(this.privateMsgOptionsLayer, iwrb.getLocalizedString("private_message", "Private Message"),
+//				PostBusiness.ParameterNames.PRIVATE_MESSAGE_PARAMETER_NAME);
+		addToaccordion(this.privateMsgOptionsLayer, iwrb.getLocalizedString("people", "People"));
 		Label label = new Label();
 		this.privateMsgOptionsLayer.add(label);
 //		layer.setId(iwc.getViewRoot().createUniqueId() + "PostCreationView");
-		label.addText(iwrb.getLocalizedString("message_receivers", "Message Receivers") + CoreConstants.COLON);
+		label.addText(iwrb.getLocalizedString("people", "People") + CoreConstants.COLON);
+
+		FieldSet field = new FieldSet();
+		this.privateMsgOptionsLayer.add(field);
+		label = new Label();
+		field.add(label);
+		label.setStyleClass("post-creation-view-public-or-private-msg");
+		label.addText(iwrb.getLocalizedString("private", "Private") + CoreConstants.COLON);
+		RadioButton radio = new RadioButton(PostBusiness.ParameterNames.MESSAGE_TYPE,PostBusiness.ParameterNames.PRIVATE_MESSAGE);
+		field.add(radio);
+		radio.setSelected();
+
+		label = new Label();
+		field.add(label);
+		label.setStyleClass("post-creation-view-public-or-private-msg");
+		label.addText(iwrb.getLocalizedString("public", "Public") + CoreConstants.COLON);
+		radio = new RadioButton(PostBusiness.ParameterNames.MESSAGE_TYPE,PostBusiness.ParameterNames.PUBLIC_MESSAGE);
+		field.add(radio);
+
 		TextInput nameInput = new TextInput();
 		this.privateMsgOptionsLayer.add(nameInput);
 		nameInput.setName(PostCreationView.TAGEDIT_NAME);
+		StringBuilder actionForm = new StringBuilder("PostCreationViewHelper.TAGEDIT_INPUT_SELECTOR = '#")
+		.append(nameInput.getId()).append("';");
+		String actionString = PresentationUtil.getJavaScriptAction(actionForm.toString());
+		main.add(actionString);
+//		this.tageditId = nameInput.getId();
 //		nameInput.setID("lalala");
 
 		// Group message options
 		Layer layer = new Layer();
-		this.addToaccordion(layer, iwrb.getLocalizedString("group_message", "Group Message"),
-				PostBusiness.ParameterNames.POST_TO_GROUPS_PARAMETER_NAME);
+//		this.addToaccordion(layer, iwrb.getLocalizedString("groups", "Groups"),
+//				PostBusiness.ParameterNames.POST_TO_GROUPS_PARAMETER_NAME);
+		addToaccordion(layer, iwrb.getLocalizedString("groups", "Groups"));
+		label = new Label();
+		layer.add(label);
+		label.addText(iwrb.getLocalizedString("message_receivers", "Message Receivers") + CoreConstants.COLON);
+		nameInput = new TextInput();
+		layer.add(nameInput);
+		nameInput.setName(GROUP_TAGEDIT_NAME);
+//		this.tageditId = nameInput.getId();
+		actionForm = new StringBuilder("PostCreationViewHelper.TAGEDIT_GROUP_INPUT_SELECTOR = '#")
+		.append(nameInput.getId()).append("';");
+		actionString = PresentationUtil.getJavaScriptAction(actionForm.toString());
+		main.add(actionString);
 
 
 		// Submit button
 		GenericButton buttonSubmit = new GenericButton("buttonSubmit", iwrb.getLocalizedString("submit", "Submit"));
 		this.addToButtonsLayer(buttonSubmit);
-		buttonSubmit.setOnClick("PostCreationView.savePost('#" + this.form.getId() + CoreConstants.JS_STR_PARAM_END);
+		buttonSubmit.setOnClick("PostCreationViewHelper.savePost('#" + this.form.getId() + CoreConstants.JS_STR_PARAM_END);
 //		buttonSubmit.setMarkupAttribute("type", "submit"); //will use revers ajax and js
 
 
@@ -183,38 +218,44 @@ public class PostCreationView extends IWBaseComponent{
 	}
 
 	private void addActions(){
-		StringBuilder tabsCreator = new StringBuilder("PostCreationView.createAccordion('#").append(accordionLayer.getId())
+		StringBuilder tabsCreator = new StringBuilder("PostCreationViewHelper.createAccordion('#").append(accordionLayer.getId())
 				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(".ui-accordion-header")
 				.append(CoreConstants.JS_STR_PARAM_END);
 		String action = PresentationUtil.getJavaScriptAction(tabsCreator.toString());
 		main.add(action);
 
-		StringBuilder checker = new StringBuilder("PostCreationView.setTocheckOnClick('.post-creation-view-accordion-checkbox','#")
+		StringBuilder checker = new StringBuilder("PostCreationViewHelper.setTocheckOnClick('.post-creation-view-accordion-checkbox','#")
 				.append(this.privateMsgOptionsLayer.getId())
 				.append(CoreConstants.JS_STR_PARAM_END);
 		String checkerScript = PresentationUtil.getJavaScriptAction(checker.toString());
 		main.add(checkerScript);
 
-		StringBuilder autogrow = new StringBuilder("PostCreationView.createAutoresizing('#").append(postBodyInputId)
+		StringBuilder autogrow = new StringBuilder("PostCreationViewHelper.createAutoresizing('#").append(postBodyInputId)
 		.append(CoreConstants.JS_STR_PARAM_END);
 		String autogrowAction = PresentationUtil.getJavaScriptAction(autogrow.toString());
 		main.add(autogrowAction);
 
 
-		StringBuilder actionForm = new StringBuilder("PostCreationView.createAutocompleteWithImages('[name=\"")
+		StringBuilder actionForm = new StringBuilder("PostCreationViewHelper.createAutocompleteWithImages('[name=\"")
 		.append(PostCreationView.TAGEDIT_NAME).append("\"]');");
 		String actionString = PresentationUtil.getJavaScriptAction(actionForm.toString());
 		main.add(actionString);
 
-		actionForm = new StringBuilder("PostCreationView.nontrivialUserDefiningPhraseErrorMsg = '")
+		actionForm = new StringBuilder("PostCreationViewHelper.nontrivialUserDefiningPhraseErrorMsg = '")
 				.append(this.iwrb.getLocalizedString("entered_phrase_does_not_trivially_defines_the_receiver",
 						"Entered phrase does not trivially defines the receiver")).append("';");
 		actionString = PresentationUtil.getJavaScriptAction(actionForm.toString());
 		main.add(actionString);
 
-		actionForm = new StringBuilder("PostCreationView.someHelp();");
+		actionForm = new StringBuilder("PostCreationViewHelper.someHelp();");
 		actionString = PresentationUtil.getJavaScriptAction(actionForm.toString());
 		main.add(actionString);
+
+		actionForm = new StringBuilder("PostCreationViewHelper.createGroupAutocomplete('[name=\"")
+		.append(GROUP_TAGEDIT_NAME).append("\"]');");
+		actionString = PresentationUtil.getJavaScriptAction(actionForm.toString());
+		main.add(actionString);
+
 
 
 	}
@@ -276,6 +317,24 @@ public class PostCreationView extends IWBaseComponent{
 
 	public void addFieldset(int index, FieldSet fieldset){
 		this.form.getChildren().add(index,fieldset);
+	}
+
+	protected void addToaccordion(UIComponent content, String header){
+		HeaderWithElements h = new HeaderWithElements();
+		h.setId(iwc.getViewRoot().createUniqueId() + "PostCreationView");
+		h.setStyleClass("post-creation-view-accordion-header");
+		Link link = new Link();
+		h.add(link);
+		link.addToText(header);
+		link.setStyleClass("post-creation-view-accordion-link");
+		this.accordionLayer.add(h);
+		if(!(content instanceof Layer)){
+			Layer contentLayer = new Layer();
+			contentLayer.add(content);
+			this.accordionLayer.add(contentLayer);
+			return;
+		}
+		this.accordionLayer.add(content);
 	}
 
 	protected void addToaccordion(UIComponent content, String header, String checkBoxName){

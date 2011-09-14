@@ -32,7 +32,6 @@ public class PostEntity   implements Serializable {
 
 	public static final String MESSAGE = "MESSAGE";
 	public static final String PUBLIC = "PUBLIC";
-	public static final String WALL = "WALL";
 
 	public static final String idProp = "ID";
 	@Id @GeneratedValue(strategy = GenerationType.AUTO)

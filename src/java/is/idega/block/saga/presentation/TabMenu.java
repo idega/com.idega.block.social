@@ -97,7 +97,6 @@ public class TabMenu extends IWBaseComponent {
 		link.setStyleClass("jquery-ui-tab-link");
 	}
 
-	//todo think
 	public void addTab(String tabView,String url,UIComponent accordionContent){
 		ListItem li = new ListItem();
 		tabs.add(li);

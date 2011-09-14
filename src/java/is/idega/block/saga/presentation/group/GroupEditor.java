@@ -189,10 +189,6 @@ public class GroupEditor extends GroupTreeViewer{
 			this.log(Level.WARNING, "Failed getting Web2Business no jQuery and it's pligins files were added");
 		}
 
-		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
-		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
-		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/GroupEditorHelper.js"));
-
 		IWBundle bundle = getBundle(iwc);
 //		//user com.idega.user styles
 //		IWBundle userBundle = iwc.getIWMainApplication().getBundle(UserConstants.IW_BUNDLE_IDENTIFIER);
@@ -201,6 +197,12 @@ public class GroupEditor extends GroupTreeViewer{
 
 		//user com.idega.user scripts
 		scripts.add(bundle.getVirtualPathWithFileNameString("javascript/SimpleUserAppHelper.js"));
+
+		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
+		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/GroupEditorHelper.js"));
+
+
 
 		//Saga styles
 		styles.add(iwb.getVirtualPathWithFileNameString("style/group.css"));
