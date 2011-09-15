@@ -54,5 +54,8 @@ public class ReceiversEntity implements Serializable {
 	public void setSocialPostId(Long socialPostId) {
 		this.socialPostId = socialPostId;
 	}
+	public Long getId() {
+		return id;
+	}
 
 }

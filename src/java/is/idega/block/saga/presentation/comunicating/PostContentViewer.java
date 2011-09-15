@@ -3,7 +3,6 @@ package is.idega.block.saga.presentation.comunicating;
 import is.idega.block.saga.Constants;
 import is.idega.block.saga.bean.PostRequestBean;
 import is.idega.block.saga.business.PostBusiness;
-import is.idega.block.saga.business.PostFilterParameters;
 import is.idega.block.saga.presentation.SimpleForm;
 
 import java.rmi.RemoteException;
@@ -48,8 +47,6 @@ public class PostContentViewer extends IWBaseComponent {
 				"PostCreationViewHelper.getThePosts();" +
 			"\n}";
 	public static final ScriptBuffer POST_LOAD_SCRIPT = new ScriptBuffer(POST_LOAD_SCRIPT_STRING);
-	@Autowired
-	private PostBusiness postBusiness;
 
 	private IWContext iwc = null;
 	private IWBundle bundle = null;
@@ -110,20 +107,20 @@ public class PostContentViewer extends IWBaseComponent {
 		this.addActions();
 	}
 
-	private void setPostFilterParameters(IWContext iwc){
-		PostFilterParameters filterParameters = new PostFilterParameters();
-
-		postRequestBean.setGetUp(iwc.getParameter(PostRequestBean.Parameters.GET_UP));
-		String max = iwc.getParameter(PostRequestBean.Parameters.MAX_TO_SHOW);
-		postRequestBean.setMaxToShow(max == null ? 10 : Integer.valueOf(max));
-		postRequestBean.setFirstUri(iwc.getParameter(PostRequestBean.Parameters.FIRST_URI));
-
-		if(isLoggedOn){
-			postRequestBean.setShowGroup(iwc.getParameter(PostRequestBean.Parameters.SHOW_GROUP));
-			postRequestBean.setShowPrivate(iwc.getParameter(PostRequestBean.Parameters.SHOW_PRIVATE));
-			postRequestBean.setShowSent(iwc.getParameter(PostRequestBean.Parameters.SENT));
-		}
-	}
+//	private void setPostFilterParameters(IWContext iwc){
+//		PostFilterParameters filterParameters = new PostFilterParameters();
+//
+//		postRequestBean.setGetUp(iwc.getParameter(PostRequestBean.Parameters.GET_UP));
+//		String max = iwc.getParameter(PostRequestBean.Parameters.MAX_TO_SHOW);
+//		postRequestBean.setMaxToShow(max == null ? 10 : Integer.valueOf(max));
+//		postRequestBean.setFirstUri(iwc.getParameter(PostRequestBean.Parameters.FIRST_URI));
+//
+//		if(isLoggedOn){
+//			postRequestBean.setShowGroup(iwc.getParameter(PostRequestBean.Parameters.SHOW_GROUP));
+//			postRequestBean.setShowPrivate(iwc.getParameter(PostRequestBean.Parameters.SHOW_PRIVATE));
+//			postRequestBean.setShowSent(iwc.getParameter(PostRequestBean.Parameters.SENT));
+//		}
+//	}
 
 	public static UIComponent getPostList(IWContext iwc){
 		IWBundle bundle = iwc.getIWMainApplication().getBundle(Constants.IW_BUNDLE_IDENTIFIER);

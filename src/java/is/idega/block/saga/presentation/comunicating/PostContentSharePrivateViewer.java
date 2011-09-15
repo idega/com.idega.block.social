@@ -38,7 +38,6 @@ public class PostContentSharePrivateViewer extends IWBaseComponent {
 	private Layer main = null;
 	private Layer tabbedMenu = null;
 
-	private static final String CONTENT_SHARE_MAIN_OBJECTS_CLASS = "content-share-main-object";
 
 	@Override
 	protected void initializeComponent(FacesContext context) {

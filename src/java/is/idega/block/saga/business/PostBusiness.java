@@ -6,7 +6,6 @@ import is.idega.block.saga.data.PostEntity;
 import is.idega.block.saga.data.dao.PostDao;
 import is.idega.block.saga.presentation.comunicating.PostContentViewer;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -209,7 +208,7 @@ DWRAnnotationPersistance {
 			if(privateSaved){
 				postupdated = true;
 				sendMails(userInfo.getEmail(),usersReceivers, body, post.getAttachments());
-				ArrayList accessUsers = new ArrayList(usersReceivers.size()+1);
+				ArrayList <Integer> accessUsers = new ArrayList<Integer>(usersReceivers.size()+1);
 				accessUsers.add(creatorId);
 				setAccessRights(resourcePath, iwc, accessUsers);
 			}else{
@@ -253,7 +252,6 @@ DWRAnnotationPersistance {
 		Ace ace = new Ace(IWSlideConstants.SUBJECT_URI_AUTHENTICATED);
 		ace.addPrivilege(Privilege.ALL);
 		Ace [] aces = {ace};
-		Ace denied = new Ace(IWSlideConstants.SUBJECT_URI_UNAUTHENTICATED);
 
 	    IWSlideService slideService = getIWSlideService(iwc);
 	    try{
@@ -295,93 +293,6 @@ DWRAnnotationPersistance {
 		this.emailSenderHelper.sendMessage(parameters);
 	}
 
-	@SuppressWarnings("unchecked")
-	private Collection <PostEntity> getAllArticlesOfGroupsUserIsIn(PostFilterParameters filterParameters){
-		Collection <Integer>  receivers = null;
-		if(filterParameters.getUser() != null){
-
-			Collection <Group> userGroups = null;
-			try{
-				userGroups = this.getUserBusiness().getUserGroups(filterParameters.getUser());
-			}catch(RemoteException e){
-				this.getLogger().log(Level.WARNING, "failed to get parent groups of user ", e);
-			}
-			if(ListUtil.isEmpty(userGroups)){
-				return Collections.emptyList();
-			}
-
-			receivers = new ArrayList<Integer>();
-			for(Group group : userGroups){
-				receivers.add(Integer.valueOf(group.getId()));
-			}
-		}
-
-		Collection <PostEntity> posts = postDao.getPostsByReceiversAndType(receivers,null,filterParameters.getMax(),null);
-		return posts;
-	}
-
-
-	private List <ArticleItemBean> getArticlesFromPosts(Collection <PostEntity> posts){
-		ArrayList <String> uris = new ArrayList<String>(posts.size());
-		for(PostEntity post : posts){
-			String uri = post.getArticle().getUri();
-			uris.add(uri);
-		}
-//		this.articleListManadgedBean.setShowAllItems(true);
-//		List <ArticleItemBean> articles = this.articleListManadgedBean.getArticlesByURIs(uris,
-//				CoreUtil.getIWContext());
-		List <ArticleItemBean> articles = new ArrayList<ArticleItemBean> (uris.size());
-		for(String uri : uris){
-			ArticleItemBean article = new ArticleItemBean();
-			article.setResourcePath(uri);
-			try{
-				article.load();
-				articles.add(article);
-			}catch(IOException e){
-				articles.add(new ArticleItemBean());
-				this.getLogger().log(Level.WARNING,
-						"failed loading " + uri, e);
-			}
-		}
-
-		return articles;
-	}
-
-	@SuppressWarnings("unchecked")
-	private Collection <PostEntity> getAllUserPosts(PostFilterParameters filterParameters){
-		Collection <Integer>  receivers = null;
-		if(filterParameters.getUser() != null){
-
-			Collection <Group> userGroups = null;
-			try{
-				userGroups = this.getUserBusiness().getUserGroups(filterParameters.getUser());
-			}catch(RemoteException e){
-				this.getLogger().log(Level.WARNING, "failed to get parent groups of user ", e);
-			}
-			if(ListUtil.isEmpty(userGroups)){
-				return Collections.emptyList();
-			}
-
-			receivers = new ArrayList<Integer>();
-			for(Group group : userGroups){
-				receivers.add(Integer.valueOf(group.getId()));
-			}
-		}
-		Integer userId = Integer.valueOf(filterParameters.getUser().getId());
-		receivers.add(userId);
-		Collection <PostEntity> posts = postDao.getPostsByReceiversAndType(receivers,null,filterParameters.getMax(),null);
-		return posts;
-	}
-
-	private Collection <PostEntity> getAllPosts(PostFilterParameters filterParameters){
-//		Collection <PostEntity> posts = null;
-		if(filterParameters.getUser() == null){
-			return  postDao.getPostsByReceiversAndType(null,null,filterParameters.getMax(),null);
-		}else{
-			return  this.getAllUserPosts(filterParameters);
-		}
-//		return posts;
-	}
 
 	//TODO: check if works with not logged on users when valdas will fix access problems
 	@SuppressWarnings("unchecked")

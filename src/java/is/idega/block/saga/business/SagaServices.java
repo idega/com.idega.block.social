@@ -1,7 +1,6 @@
 package is.idega.block.saga.business;
 
 import is.idega.block.saga.Constants;
-import is.idega.block.saga.data.dao.PostDao;
 import is.idega.block.saga.presentation.comunicating.PostContentViewer;
 import is.idega.block.saga.presentation.group.SagaGroupCreator;
 
@@ -37,7 +36,6 @@ import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
 import com.idega.user.bean.UserDataBean;
 import com.idega.user.business.GroupBusiness;
-import com.idega.user.business.GroupNode;
 import com.idega.user.business.UserApplicationEngine;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.Group;
@@ -69,8 +67,6 @@ public class SagaServices extends DefaultSpringBean implements
 //	@Autowired
 //	private GroupHelper groupHelper;
 
-	@Autowired
-	private PostDao postDao;
 
 	@Autowired
 	private PostBusiness postBusiness;
@@ -193,8 +189,6 @@ public class SagaServices extends DefaultSpringBean implements
 			return Collections.emptyList();
 		}
 		int groupsAmmount = foundGroups.size();
-		IWContext iwc = CoreUtil.getIWContext();
-		GroupNode g = new GroupNode();
 		ArrayList <String> strings = new ArrayList<String>(groupsAmmount);
 		for(Group group : foundGroups){
 //			String imgUri = this.groupHelper.getGroupIcon(group,

@@ -14,7 +14,6 @@ import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
 import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWMainApplication;
-import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.IWBaseComponent;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
@@ -26,12 +25,9 @@ import com.idega.webface.WFUtil;
 
 public class PostContentSharePublicViewer extends IWBaseComponent {
 	private IWContext iwc = null;
-	private IWResourceBundle iwrb = null;
 
 	private Layer main = null;
-	private Layer tabbedMenu = null;
 
-	private static final String CONTENT_SHARE_MAIN_OBJECTS_CLASS = "content-share-main-object";
 
 	@Override
 	protected void initializeComponent(FacesContext context) {
@@ -45,9 +41,6 @@ public class PostContentSharePublicViewer extends IWBaseComponent {
 		}
 
 		ELUtil.getInstance().autowire(this);
-
-		IWBundle bundle = iwc.getIWMainApplication().getBundle(Constants.IW_BUNDLE_IDENTIFIER);
-		iwrb = bundle.getResourceBundle(iwc);
 
 
 		// The main layer of component

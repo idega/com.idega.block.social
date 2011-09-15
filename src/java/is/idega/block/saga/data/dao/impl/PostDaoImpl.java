@@ -11,9 +11,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -21,8 +19,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.idega.block.article.data.ArticleEntity;
-import com.idega.block.article.data.dao.ArticleDao;
-import com.idega.block.article.data.dao.impl.ArticleDaoImpl;
 import com.idega.core.persistence.Param;
 import com.idega.core.persistence.Query;
 import com.idega.core.persistence.impl.GenericDaoImpl;
@@ -35,11 +31,6 @@ import com.idega.util.expression.ELUtil;
 @Scope(BeanDefinition.SCOPE_SINGLETON)
 @Qualifier("PostDao")
 public class PostDaoImpl extends GenericDaoImpl implements PostDao{
-
-	@Autowired
-	private ArticleDao articleDao;
-
-	private static Logger LOGGER = Logger.getLogger(ArticleDaoImpl.class.getName());
 
 	public PostDaoImpl(){
 		ELUtil.getInstance().autowire(this);
@@ -56,7 +47,7 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 
 		Set <Integer> existingReceivers = post.getReceivers();
 		if(existingReceivers == null){
-			existingReceivers = new HashSet();
+			existingReceivers = new HashSet<Integer>();
 			post.setReceivers(existingReceivers);
 		}
 		existingReceivers.addAll(receivers);
@@ -308,7 +299,7 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 
 	}
 
-	private Collection<PostEntity> getPostsByReceiversAndCreators(Collection<Integer> creators,
+	public Collection<PostEntity> getPostsByReceiversAndCreators(Collection<Integer> creators,
 			Collection<Integer> receivers, Collection<String> types, int max, String uriFrom,
 			boolean up) {
 

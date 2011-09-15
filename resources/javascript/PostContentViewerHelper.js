@@ -68,7 +68,9 @@ PostContentViewerHelper.addPosts = function(postListSelector){
 			{
 		callback: function(list) {
 			var listElements = jQuery(list).children();
-			listElements.splice(listElements.length - 1,1);
+			if((firstUri != undefined) && (firstUri != null)){
+				listElements.splice(listElements.length - 1,1);
+			}
 			jQuery("ul.posts-contents-list").prepend(listElements);
 		}
 	});
@@ -88,7 +90,9 @@ PostContentViewerHelper.addPostsdown = function(postListSelector){
 			{
 		callback: function(list) {
 			var listElements = jQuery(list).children();
-			listElements.splice(0,1);
+			if((firstUri != undefined) && (firstUri != null)){
+				listElements.splice(0,1);
+			}
 			jQuery("ul.posts-contents-list").append(listElements);
 			PostContentViewerHelper.createPostPreviews();
 			PostContentViewerHelper.loadMoreButtonNeeded();

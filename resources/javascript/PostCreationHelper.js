@@ -51,15 +51,6 @@ var PostCreationViewHelper = {
 		}
 		,setTocheckOnClick : function(checkSelector, activeSelector){
 			jQuery(document).ready(function(){
-				// Sets to check checkbox when header is clicked 
-				// TODO: think if it is convinient and logical
-//				jQuery(".post-creation-view-accordion-header").click(function(){
-//					if(!PostCreationViewHelper.seted){
-//						PostCreationViewHelper.setToCheck(jQuery(this).find(checkSelector));
-//					}
-//					PostCreationViewHelper.seted = false;
-//				});
-				//enables checkbox checking
 				jQuery(checkSelector).click(function(){
 					PostCreationViewHelper.setChecked(jQuery(this));
 					PostCreationViewHelper.seted = true;
@@ -70,46 +61,6 @@ var PostCreationViewHelper = {
 				}
 			});
 		}
-//		,savePost : function(selector){
-////			dwr.engine.beginBatch();
-////			dwr.engine.batch.create();
-//			
-//			var urlSearch = "/dwr/call/plaincall/SagaServices.savePost.dwr" 
-//				+"?scriptSessionId="+ dwr.engine._scriptSessionId
-//				+'&httpSessionId='+ dwr.engine._getHttpSessionId()
-//				+'&page='+ window.location.pathname
-//				+'&windowName='+ window.name
-//				+"&callCount=1"
-//				+"&batchId="+ dwr.engine._nextBatchId
-//				+"&c0-id=0"
-//				+"&c0-scriptName=SagaServices"
-//				+"&c0-methodName=savePost";
-//			
-//			var form = jQuery(selector);
-//			var parameters = form.serialize();
-//			parameters=decodeURIComponent(parameters);
-//			
-//			
-//			urlSearch += "&" + parameters;
-//			
-//			
-//			jQuery.ajax({
-//				url : urlSearch
-//				,type: "POST"
-//				//TODO: should return saved id too for enabling edition of post
-//				,success: function(reply){
-//					var replyPhrases = reply.split("\"");
-//					if(replyPhrases.length < 7){
-//						//the return value is null
-//						return false;
-//					}
-//					var msg = replyPhrases[replyPhrases.length -2];
-//					humanMsg.displayMsg(msg);
-//				}
-//			});
-//			
-////			dwr.engine.endBatch();
-//		}
 		,savePost : function(selector){
 			showLoadingMessage("");
 			var form = jQuery(selector);
@@ -135,7 +86,6 @@ var PostCreationViewHelper = {
 		,createAutoresizing : function(selector){
 			jQuery(document).ready(function(){
 				jQuery(selector).autoResize({limit : 250});
-//				jQuery(selector).autoGrow();
 			});
 		}
 		
@@ -333,16 +283,4 @@ var PostCreationViewHelper = {
 		}
 		,uploaderInitialized : false
 };
-
-
-
-//autoresize that was in web2 was modified and did not worked for me, so I added this
-
-/*
- * jQuery autoResize (textarea auto-resizer)
- * @copyright James Padolsey http://james.padolsey.com
- * @version 1.04
- */
-//
-//(function(a){a.fn.autoResize=function(j){var b=a.extend({onResize:function(){},animate:true,animateDuration:150,animateCallback:function(){},extraSpace:20,limit:1000},j);this.filter('textarea').each(function(){var c=a(this).css({resize:'none','overflow-y':'hidden'}),k=c.height(),f=(function(){var l=['height','width','lineHeight','textDecoration','letterSpacing'],h={};a.each(l,function(d,e){h[e]=c.css(e)});return c.clone().removeAttr('id').removeAttr('name').css({position:'absolute',top:0,left:-9999}).css(h).attr('tabIndex','-1').insertBefore(c)})(),i=null,g=function(){f.height(0).val(a(this).val()).scrollTop(10000);var d=Math.max(f.scrollTop(),k)+b.extraSpace,e=a(this).add(f);if(i===d){return}i=d;if(d>=b.limit){a(this).css('overflow-y','');return}b.onResize.call(this);b.animate&&c.css('display')==='block'?e.stop().animate({height:d},b.animateDuration,b.animateCallback):e.height(d)};c.unbind('.dynSiz').bind('keyup.dynSiz',g).bind('keydown.dynSiz',g).bind('change.dynSiz',g)});return this}})(jQuery);
 
