@@ -4,7 +4,6 @@
     xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
     version="1.0">
 
-    <entity class="is.idega.block.saga.data.Saga" />
-    <entity class="is.idega.block.saga.data.PostEntity" />
+    <entity class="com.idega.block.social.data.PostEntity" />
         
 </entity-mappings>
