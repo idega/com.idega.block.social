@@ -1,4 +1,4 @@
-package is.idega.block.saga.presentation.group;
+package com.idega.block.social.presentation.group;
 
 
 
@@ -79,7 +79,7 @@ public class GroupEditor extends GroupTreeViewer{
 		//creating "create" button
 		//parameters for button action function
 		StringBuffer parameters = new StringBuffer("openGroupCreationDialog('");
-		parameters.append(BuilderLogic.getInstance().getUriToObject(SagaGroupCreator.class))
+		parameters.append(BuilderLogic.getInstance().getUriToObject(SocialGroupCreator.class))
 		.append("','").append(UserConstants.GROUPS_TO_RELOAD_IN_MENU_DROPDOWN_ID_IN_SIMPLE_USER_APPLICATION)	//set to selected group or -1
 		.append("','").append(UserConstants.EDITED_GROUP_MENU_DROPDOWN_ID_IN_SIMPLE_USER_APPLICATION)
 		.append("')");
@@ -90,7 +90,7 @@ public class GroupEditor extends GroupTreeViewer{
 		//creating "edit" button
 		//parameters for button action function
 		parameters = new StringBuffer("openGroupEditDialog('");
-		parameters.append(BuilderLogic.getInstance().getUriToObject(SagaGroupCreator.class))
+		parameters.append(BuilderLogic.getInstance().getUriToObject(SocialGroupCreator.class))
 		.append("','").append(UserConstants.GROUPS_TO_RELOAD_IN_MENU_DROPDOWN_ID_IN_SIMPLE_USER_APPLICATION)	//set to selected group or -1
 		.append("','").append(UserConstants.EDITED_GROUP_MENU_DROPDOWN_ID_IN_SIMPLE_USER_APPLICATION)
 		.append("')");

@@ -1,8 +1,5 @@
 package com.idega.block.social.business;
 
-import is.idega.block.saga.data.PostEntity;
-import is.idega.block.saga.data.dao.PostDao;
-import is.idega.block.saga.presentation.comunicating.PostContentViewer;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -30,6 +27,9 @@ import com.idega.block.email.bean.MessageParameters;
 import com.idega.block.email.business.EmailSenderHelper;
 import com.idega.block.social.Constants;
 import com.idega.block.social.bean.PostItemBean;
+import com.idega.block.social.data.PostEntity;
+import com.idega.block.social.data.dao.PostDao;
+import com.idega.block.social.presentation.comunicating.PostContentViewer;
 import com.idega.business.IBOLookup;
 import com.idega.business.IBOLookupException;
 import com.idega.core.business.DefaultSpringBean;

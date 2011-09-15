@@ -1,4 +1,4 @@
-package is.idega.block.saga.presentation;
+package com.idega.block.social.presentation;
 
 
 import java.util.ArrayList;

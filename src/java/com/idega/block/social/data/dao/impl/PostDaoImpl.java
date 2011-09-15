@@ -1,9 +1,7 @@
-package is.idega.block.saga.data.dao.impl;
+package com.idega.block.social.data.dao.impl;
 
 
 
-import is.idega.block.saga.data.PostEntity;
-import is.idega.block.saga.data.dao.PostDao;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,6 +17,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.idega.block.article.data.ArticleEntity;
+import com.idega.block.social.data.PostEntity;
+import com.idega.block.social.data.dao.PostDao;
 import com.idega.core.persistence.Param;
 import com.idega.core.persistence.Query;
 import com.idega.core.persistence.impl.GenericDaoImpl;

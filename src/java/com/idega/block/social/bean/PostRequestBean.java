@@ -1,7 +1,5 @@
 package com.idega.block.social.bean;
 
-import is.idega.block.saga.data.PostEntity;
-import is.idega.block.saga.presentation.comunicating.PostPreview;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -21,6 +19,8 @@ import com.idega.block.social.Constants;
 import com.idega.block.social.business.PostBusiness;
 import com.idega.block.social.business.PostFilterParameters;
 import com.idega.block.social.business.PostInfo;
+import com.idega.block.social.data.PostEntity;
+import com.idega.block.social.presentation.comunicating.PostPreview;
 import com.idega.builder.bean.AdvancedProperty;
 import com.idega.builder.business.BuilderLogic;
 import com.idega.core.business.DefaultSpringBean;

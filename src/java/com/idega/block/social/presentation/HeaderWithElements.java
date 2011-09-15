@@ -1,4 +1,4 @@
-package is.idega.block.saga.presentation;
+package com.idega.block.social.presentation;
 
 import java.io.IOException;
 
@@ -8,15 +8,19 @@ import javax.faces.context.ResponseWriter;
 import com.idega.presentation.IWBaseComponent;
 import com.idega.util.CoreConstants;
 
-public class SimpleForm   extends IWBaseComponent{
-
+/**
+ * not finished yet :) writes only childs and id.
+ * @author alex
+ *
+ */
+public class HeaderWithElements  extends IWBaseComponent{
 
 	private String styleClass = null;
 
 	@Override
 	public void encodeBegin(FacesContext context) throws IOException {
 	       ResponseWriter writer = context.getResponseWriter();
-	    writer.startElement("form", this);
+	    writer.startElement("h3", this);
 	    writer.writeAttribute("id", this.getId(), null);
 	    writer.writeAttribute("class", this.styleClass, null);
 
@@ -25,7 +29,7 @@ public class SimpleForm   extends IWBaseComponent{
 	@Override
 	public void encodeEnd(FacesContext context) throws IOException {
 	       ResponseWriter writer = context.getResponseWriter();
-	    writer.endElement("form");
+	    writer.endElement("h3");
 
 	    super.encodeEnd(context);
 	}

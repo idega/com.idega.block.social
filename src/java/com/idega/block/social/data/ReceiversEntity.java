@@ -1,4 +1,4 @@
-package is.idega.block.saga.data;
+package com.idega.block.social.data;
 
 import java.io.Serializable;
 

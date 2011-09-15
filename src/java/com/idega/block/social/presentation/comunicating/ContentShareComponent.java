@@ -1,4 +1,4 @@
-package is.idega.block.saga.presentation.comunicating;
+package com.idega.block.social.presentation.comunicating;
 
 
 import java.rmi.RemoteException;
@@ -7,10 +7,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.faces.component.UIGraphic;
+import javax.faces.component.html.HtmlOutputLink;
 import javax.faces.context.FacesContext;
 
 import com.idega.block.social.Constants;
 import com.idega.block.social.bean.PostRequestBean;
+import com.idega.block.social.presentation.TabMenu;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
 import com.idega.block.web2.business.Web2BusinessBean;
@@ -22,7 +25,7 @@ import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.IWBaseComponent;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
-import com.idega.presentation.text.Link;
+import com.idega.presentation.Span;
 import com.idega.presentation.text.ListItem;
 import com.idega.presentation.text.Lists;
 import com.idega.util.CoreConstants;
@@ -31,13 +34,11 @@ import com.idega.util.PresentationUtil;
 import com.idega.util.expression.ELUtil;
 import com.idega.webface.WFUtil;
 
-public class PostContentSharePrivateViewer extends IWBaseComponent {
+public class ContentShareComponent  extends IWBaseComponent {
 	private IWContext iwc = null;
 	private IWResourceBundle iwrb = null;
 
-	private Layer main = null;
-	private Layer tabbedMenu = null;
-
+	private static final String CONTENT_SHARE_MAIN_OBJECTS_CLASS = "content-share-main-object";
 
 	@Override
 	protected void initializeComponent(FacesContext context) {
@@ -57,58 +58,124 @@ public class PostContentSharePrivateViewer extends IWBaseComponent {
 
 
 		// The main layer of component
-		main = new Layer();
+		Layer main = new Layer();
 		this.add(main);
 		main.setStyleClass("main-content-sharing-layer");
+
+//		IWBundle bundlee = getBundle(context, EmailConstants.IW_BUNDLE_IDENTIFIER);
+//		FaceletComponent facelet = (FaceletComponent)context.getApplication().createComponent(FaceletComponent.COMPONENT_TYPE);
+//		facelet.setFaceletURI(bundlee.getFaceletURI("emailSender.xhtml"));
+//		main.add(facelet);
+
 
 		Layer sideTopLayer = new Layer();
 		sideTopLayer.setStyleClass("side-top-layer-of-main");
 		main.add(sideTopLayer);
 
-		tabbedMenu = new Layer();
+		Layer tabbedMenu = new Layer();
 		main.add(tabbedMenu);
 		tabbedMenu.setStyleClass("main-content-sharing-tabs-layer");
 		tabbedMenu.setStyleClass("scrolable");
-		Lists tabList = new Lists();
-		tabbedMenu.add(tabList);
+		TabMenu tab = new TabMenu();
+		tabbedMenu.add(tab);
 
-		ListItem tabItem = new ListItem();
-		tabList.add(tabItem);
-		Link tabLink = new Link();
-		tabItem.add(tabLink);
-		tabLink.addToText(iwrb.getLocalizedString("inbox", "Inbox"));
-
+		Layer bottomMenu = new Layer();
+		main.add(bottomMenu);
+		bottomMenu.setStyleClass("main-content-sharing-bottom-layer");
+		bottomMenu.add(createPostView());
 
 		ArrayList <AdvancedProperty> parameters = new ArrayList<AdvancedProperty>();
+		parameters.add(new AdvancedProperty(PostRequestBean.Parameters.SHOW_GROUP, CoreConstants.PLUS));
 		parameters.add(new AdvancedProperty(PostRequestBean.Parameters.SHOW_PRIVATE, CoreConstants.PLUS));
 
 		String uri = BuilderLogic.getInstance().getUriToObject(PostContentViewer.class, parameters);
-		tabLink.setURL(uri);
+		//TODO: add filters of contents
+		Layer inboxFilter = new Layer();
+		tab.addTab(iwrb.getLocalizedString("all_posts", "All posts"), uri, inboxFilter);
 
 
-		tabItem = new ListItem();
-		tabList.add(tabItem);
-		tabLink = new Link();
-		tabItem.add(tabLink);
-		tabLink.addToText(iwrb.getLocalizedString("sent", "Sent"));
+		if(iwc.isLoggedOn()){
+			parameters = new ArrayList<AdvancedProperty>();
+			parameters.add(new AdvancedProperty(PostRequestBean.Parameters.SENT, CoreConstants.PLUS));
+			uri = BuilderLogic.getInstance().getUriToObject(PostContentViewer.class, parameters);
+			Layer sentFilter = new Layer();
+			tab.addTab(iwrb.getLocalizedString("sent", "Sent"), uri, sentFilter);
+		}
 
-		parameters = new ArrayList<AdvancedProperty>();
-		parameters.add(new AdvancedProperty(PostRequestBean.Parameters.SENT, CoreConstants.PLUS));
-		uri = BuilderLogic.getInstance().getUriToObject(PostContentViewer.class, parameters);
-
-		uri = BuilderLogic.getInstance().getUriToObject(PostContentViewer.class, parameters);
-		tabLink.setURL(uri);
-
-
-		addActions();
 
 	}
 
-	private void addActions(){
-		StringBuilder actions = new StringBuilder("jQuery(document).ready(function(){\n")
-				.append("jQuery('#").append(tabbedMenu.getId()).append("').tabs();\n});\n");
-		String actionString = PresentationUtil.getJavaScriptAction(actions.toString());
-		main.add(actionString);
+
+
+	//TODO: create button to hide this
+	private Layer createPostView(){
+		Layer container = new Layer();
+		container.setStyleClass(CONTENT_SHARE_MAIN_OBJECTS_CLASS);
+
+		// Menu list
+		Lists manuList = new Lists();
+		container.add(manuList);
+		manuList.setStyleClass("menu-with-help");
+
+		// Send message
+		HtmlOutputLink link = new HtmlOutputLink();
+		link.setId("createmsglink");
+		link.setOnclick("return false;");
+
+		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
+		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+
+		//TODO: add normal image
+		manuList.add(createMenuNode(iwrb.getLocalizedString("post_or_message", "Post Or Message"),
+				iwb.getVirtualPathWithFileNameString("new_16.gif"),
+				link));
+
+		StringBuilder onclick = new StringBuilder("ContentSharingHelper.showSendMsgWindow('")
+		.append(BuilderLogic.getInstance().getUriToObject(PostCreationView.class))
+		.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(link.getId())
+		.append("',['")
+		.append("']);");
+
+		StringBuilder actionString = new StringBuilder("ContentSharingHelper.bindOnclick('").append("#").append(link.getId())
+		.append("',\"").append(onclick)
+		.append("\");");
+		String action = PresentationUtil.getJavaScriptAction(actionString.toString());
+		container.add(action);
+
+		HtmlOutputLink linktoSkype = new HtmlOutputLink();
+
+		//TODO: add normal image
+		manuList.add(createMenuNode(iwrb.getLocalizedString("skype", "Skype"),
+				iwb.getVirtualPathWithFileNameString("new_16.gif"),
+				linktoSkype));
+		//TODO: add link to skype plugin or sth like that
+
+		actionString = new StringBuilder("jQuery('").append("#").append(container.getId())
+		.append("').macOsXIconDock();");
+		action = PresentationUtil.getJavaScriptAction(actionString.toString());
+		container.add(action);
+
+		return container;
+	}
+
+
+
+	private ListItem createMenuNode(String message, String uriToImage, HtmlOutputLink link){
+		ListItem li = new ListItem();
+
+		li.add(link);
+
+		Span msg = new Span();
+		msg.addText(message);
+		link.getChildren().add(msg);
+
+		UIGraphic image = new UIGraphic();
+		link.getChildren().add(image);
+		image.setValueExpression("alt", WFUtil.createValueExpression(iwc.getELContext(),
+				message,String.class));
+		image.setUrl(uriToImage);
+
+		return li;
 	}
 
 	private void addFiles(IWContext iwc){
@@ -151,7 +218,6 @@ public class PostContentSharePrivateViewer extends IWBaseComponent {
 		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
 		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/ContentSharingHelper.js"));
 		styles.add(iwb.getVirtualPathWithFileNameString("style/contentShare.css"));
-		styles.add(iwb.getVirtualPathWithFileNameString("style/postContentSharePrivate.css"));
 
 		scripts.add("/dwr/engine.js");
 		scripts.add("/dwr/interface/SagaServices.js");
@@ -167,4 +233,3 @@ public class PostContentSharePrivateViewer extends IWBaseComponent {
 	}
 
 }
-

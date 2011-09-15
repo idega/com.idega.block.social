@@ -1,7 +1,5 @@
 package com.idega.block.social.business;
 
-import is.idega.block.saga.presentation.comunicating.PostContentViewer;
-import is.idega.block.saga.presentation.group.SagaGroupCreator;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -26,6 +24,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import com.idega.block.social.Constants;
+import com.idega.block.social.presentation.comunicating.PostContentViewer;
+import com.idega.block.social.presentation.group.SocialGroupCreator;
 import com.idega.builder.business.BuilderLogic;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.component.bean.RenderedComponent;
@@ -53,7 +53,7 @@ import com.idega.util.expression.ELUtil;
 	@Param(name="beanName", value="sagaServices"),
 	@Param(name="javascript", value="SagaServices")
 }, name="SagaServices")
-public class SagaServices extends DefaultSpringBean implements
+public class SocialServices extends DefaultSpringBean implements
 		DWRAnnotationPersistance {
 
 	private GroupBusiness groupBusiness = null;
@@ -71,7 +71,7 @@ public class SagaServices extends DefaultSpringBean implements
 	@Autowired
 	private PostBusiness postBusiness;
 
-	public SagaServices(){
+	public SocialServices(){
 		ELUtil.getInstance().autowire(this);
 	}
 
@@ -153,7 +153,7 @@ public class SagaServices extends DefaultSpringBean implements
 				}
 			}
 		}
-		Layer tableLayer = SagaGroupCreator.createUserTable(groupId, this.getResourceBundle(),groupName);
+		Layer tableLayer = SocialGroupCreator.createUserTable(groupId, this.getResourceBundle(),groupName);
 		return BuilderLogic.getInstance().getRenderedComponent(tableLayer, null);
 	}
 
@@ -369,7 +369,7 @@ public class SagaServices extends DefaultSpringBean implements
 		userBusiness = this.getUserBusiness();
 		requestedUsers = userBusiness.getUsersByNameAndEmailAndPhone(request);
 
-		Layer tableLayer = SagaGroupCreator.createSearchResultsArea(requestedUsers, getResourceBundle());
+		Layer tableLayer = SocialGroupCreator.createSearchResultsArea(requestedUsers, getResourceBundle());
 		return BuilderLogic.getInstance().getRenderedComponent(tableLayer, null);
 	}
 
@@ -377,7 +377,7 @@ public class SagaServices extends DefaultSpringBean implements
 	public RenderedComponent  getUserSearchResultTableBySearchrequest(Collection<String> requests, int groupId, int maxAmount, int startingEntry){
 		UserHome userHome = this.getUserHome();
 		Collection <User> requestedUsers = (userHome.ejbFindBySearchRequest(requests, groupId,  maxAmount, startingEntry));
-		Layer tableLayer = SagaGroupCreator.createSearchResultsArea(requestedUsers, getResourceBundle());
+		Layer tableLayer = SocialGroupCreator.createSearchResultsArea(requestedUsers, getResourceBundle());
 
 		return BuilderLogic.getInstance().getRenderedComponent(tableLayer, null);
 	}
@@ -407,10 +407,10 @@ public class SagaServices extends DefaultSpringBean implements
 			groupName = groupBusiness.getGroupByGroupID(groupId).getName();
 		}catch(Exception e){
 			this.getLogger().log(Level.WARNING, "Failed accessing GroupBusiness services", e);
-			Layer tableLayer = SagaGroupCreator.createUserTable(groupId, this.getResourceBundle(),"this group");
+			Layer tableLayer = SocialGroupCreator.createUserTable(groupId, this.getResourceBundle(),"this group");
 			return BuilderLogic.getInstance().getRenderedComponent(tableLayer, null);
 		}
-		Layer tableLayer = SagaGroupCreator.createUserTable(groupId, this.getResourceBundle(),groupName);
+		Layer tableLayer = SocialGroupCreator.createUserTable(groupId, this.getResourceBundle(),groupName);
 		return BuilderLogic.getInstance().getRenderedComponent(tableLayer, null);
 	}
 

@@ -1,4 +1,4 @@
-package is.idega.block.saga.presentation.group;
+package com.idega.block.social.presentation.group;
 
 
 import java.io.IOException;
@@ -10,7 +10,7 @@ import org.hsqldb.lib.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.idega.block.social.Constants;
-import com.idega.block.social.business.SagaServices;
+import com.idega.block.social.business.SocialServices;
 import com.idega.business.IBOLookup;
 import com.idega.business.IBOLookupException;
 import com.idega.idegaweb.IWMainApplication;
@@ -37,10 +37,10 @@ import com.idega.util.ListUtil;
 import com.idega.util.PresentationUtil;
 import com.idega.util.expression.ELUtil;
 
-public class SagaGroupCreator extends SimpleGroupCreator{
+public class SocialGroupCreator extends SimpleGroupCreator{
 
 	@Autowired
-	private SagaServices sagaservices;
+	private SocialServices sagaservices;
 	private Layer userEditContent = null;
 
 	@Autowired
@@ -218,7 +218,7 @@ public class SagaGroupCreator extends SimpleGroupCreator{
 	private static Layer createSearchTable(Collection <User> users,IWResourceBundle iwrb){
 		Layer tableLayer = new Layer();
 		tableLayer.setStyleClass("containerLayer");
-		Table2 userTable = SagaGroupCreator.createUserInfoTableByUsers(users, iwrb);
+		Table2 userTable = SocialGroupCreator.createUserInfoTableByUsers(users, iwrb);
 
 		Label name = new Label();
 		name.setLabel(iwrb.getLocalizedString("mark", "Mark"));
@@ -316,7 +316,7 @@ public class SagaGroupCreator extends SimpleGroupCreator{
 		try{
 			groupBusiness = IBOLookup.getServiceInstance(IWMainApplication.getDefaultIWApplicationContext(),GroupBusiness.class);
 		}catch(IBOLookupException e){
-			Logger.getLogger(SagaGroupCreator.class.getName()).log(Level.WARNING, CoreConstants.EMPTY, e);
+			Logger.getLogger(SocialGroupCreator.class.getName()).log(Level.WARNING, CoreConstants.EMPTY, e);
 			Label msgLabel = new Label();
 			msgLabel.setLabel(iwrb.getLocalizedString("server_error", "Server error"));
 			tableLayer.add(msgLabel);
@@ -326,7 +326,7 @@ public class SagaGroupCreator extends SimpleGroupCreator{
 		try{
 			usersOfThisGroup = groupBusiness.getUsersNotDirectlyRelated(groupId);
 		}catch(Exception e){
-			Logger.getLogger(SagaGroupCreator.class.getName()).log(Level.WARNING, CoreConstants.EMPTY, e);
+			Logger.getLogger(SocialGroupCreator.class.getName()).log(Level.WARNING, CoreConstants.EMPTY, e);
 			Label msgLabel = new Label();
 			msgLabel.setLabel(iwrb.getLocalizedString("server_error", "Server error"));
 			tableLayer.add(msgLabel);
@@ -341,7 +341,7 @@ public class SagaGroupCreator extends SimpleGroupCreator{
 		}
 
 
-		Table2 userTable = SagaGroupCreator.createUserInfoTableByUsers(usersOfThisGroup, iwrb);
+		Table2 userTable = SocialGroupCreator.createUserInfoTableByUsers(usersOfThisGroup, iwrb);
 
 		Label name = new Label();
 		name.setLabel(iwrb.getLocalizedString("click_to_remove", "Click to remove"));

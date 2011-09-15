@@ -1,9 +1,9 @@
-package is.idega.block.saga.data.dao;
+package com.idega.block.social.data.dao;
 
-import is.idega.block.saga.data.PostEntity;
 
 import java.util.Collection;
 
+import com.idega.block.social.data.PostEntity;
 import com.idega.core.persistence.GenericDao;
 
 public interface PostDao  extends GenericDao {

@@ -1,6 +1,5 @@
-package is.idega.block.saga.presentation.comunicating;
+package com.idega.block.social.presentation.comunicating;
 
-import is.idega.block.saga.presentation.SimpleForm;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -19,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.idega.block.social.Constants;
 import com.idega.block.social.bean.PostRequestBean;
 import com.idega.block.social.business.PostBusiness;
+import com.idega.block.social.presentation.SimpleForm;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
 import com.idega.block.web2.business.Web2BusinessBean;
