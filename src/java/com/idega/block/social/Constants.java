@@ -1,4 +1,4 @@
-package is.idega.block.saga;
+package com.idega.block.social;
 
 public class Constants {
 

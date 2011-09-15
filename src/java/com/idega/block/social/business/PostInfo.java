@@ -1,4 +1,4 @@
-package is.idega.block.saga.business;
+package com.idega.block.social.business;
 
 import java.util.Date;
 import java.util.List;

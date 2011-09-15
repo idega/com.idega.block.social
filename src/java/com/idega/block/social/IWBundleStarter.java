@@ -1,4 +1,4 @@
-package is.idega.block.saga;
+package com.idega.block.social;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;

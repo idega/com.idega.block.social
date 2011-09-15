@@ -1,7 +1,5 @@
 package is.idega.block.saga.presentation.group;
 
-import is.idega.block.saga.Constants;
-import is.idega.block.saga.business.SagaServices;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -11,6 +9,8 @@ import java.util.logging.Logger;
 import org.hsqldb.lib.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.idega.block.social.Constants;
+import com.idega.block.social.business.SagaServices;
 import com.idega.business.IBOLookup;
 import com.idega.business.IBOLookupException;
 import com.idega.idegaweb.IWMainApplication;

@@ -1,6 +1,5 @@
-package is.idega.block.saga;
+package com.idega.block.social;
 
-import is.idega.block.saga.business.PostBusiness;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationEvent;
@@ -8,6 +7,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import com.idega.block.social.business.PostBusiness;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.user.data.Group;

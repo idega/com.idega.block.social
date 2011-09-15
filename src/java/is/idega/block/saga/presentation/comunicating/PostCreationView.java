@@ -1,7 +1,5 @@
 package is.idega.block.saga.presentation.comunicating;
 
-import is.idega.block.saga.Constants;
-import is.idega.block.saga.business.PostBusiness;
 import is.idega.block.saga.presentation.HeaderWithElements;
 import is.idega.block.saga.presentation.SimpleForm;
 
@@ -15,6 +13,8 @@ import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 
+import com.idega.block.social.Constants;
+import com.idega.block.social.business.PostBusiness;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
 import com.idega.block.web2.business.Web2BusinessBean;

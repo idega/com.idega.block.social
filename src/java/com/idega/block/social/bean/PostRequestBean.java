@@ -1,9 +1,5 @@
-package is.idega.block.saga.bean;
+package com.idega.block.social.bean;
 
-import is.idega.block.saga.Constants;
-import is.idega.block.saga.business.PostBusiness;
-import is.idega.block.saga.business.PostFilterParameters;
-import is.idega.block.saga.business.PostInfo;
 import is.idega.block.saga.data.PostEntity;
 import is.idega.block.saga.presentation.comunicating.PostPreview;
 
@@ -21,6 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import com.idega.block.social.Constants;
+import com.idega.block.social.business.PostBusiness;
+import com.idega.block.social.business.PostFilterParameters;
+import com.idega.block.social.business.PostInfo;
 import com.idega.builder.bean.AdvancedProperty;
 import com.idega.builder.business.BuilderLogic;
 import com.idega.core.business.DefaultSpringBean;

@@ -1,6 +1,5 @@
 package is.idega.block.saga.presentation;
 
-import is.idega.block.saga.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +10,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.html.HtmlOutputLink;
 import javax.faces.context.FacesContext;
 
+import com.idega.block.social.Constants;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
 import com.idega.idegaweb.IWBundle;

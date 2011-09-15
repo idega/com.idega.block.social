@@ -2,7 +2,6 @@ package is.idega.block.saga.presentation.group;
 
 
 
-import is.idega.block.saga.Constants;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -12,6 +11,7 @@ import java.util.logging.Level;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.idega.block.social.Constants;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
 import com.idega.builder.business.BuilderLogic;

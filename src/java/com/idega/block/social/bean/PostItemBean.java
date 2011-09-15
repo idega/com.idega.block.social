@@ -1,4 +1,4 @@
-package is.idega.block.saga.bean;
+package com.idega.block.social.bean;
 
 import com.idega.block.article.bean.ArticleItemBean;
 import com.idega.content.business.ContentUtil;

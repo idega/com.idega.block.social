@@ -1,6 +1,5 @@
-package is.idega.block.saga.business;
+package com.idega.block.social.business;
 
-import is.idega.block.saga.Constants;
 import is.idega.block.saga.presentation.comunicating.PostContentViewer;
 import is.idega.block.saga.presentation.group.SagaGroupCreator;
 
@@ -26,6 +25,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import com.idega.block.social.Constants;
 import com.idega.builder.business.BuilderLogic;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.component.bean.RenderedComponent;
