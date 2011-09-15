@@ -4,29 +4,15 @@
     <key>
       <name>iw_bundle_identifier</name>
       <type>java.lang.String</type>
-      <value>is.idega.block.saga</value>
+      <value>com.idega.block.social</value>
     </key>
     <key>
       <name>iw_components</name>
       <value>
         <map>
+        
           <key>
-            <name>is.idega.block.saga.presentation.SagaAdminViewer</name>
-            <value>
-              <map>
-                <key>
-                  <name>component_property_file</name>
-                  <type>java.lang.String</type>
-                  <value>is.idega.block.saga.presentation.SagaAdminViewer.pxml</value>
-                  <simple>false</simple>
-                  <reload>false</reload>
-                </key>
-              </map>
-            </value>
-            <type>map</type>
-          </key>
-          <key>
-            <name>is.idega.block.saga.presentation.group.GroupEditor</name>
+            <name>com.idega.block.social.presentation.group.GroupEditor</name>
             <value>
               <map>
                 <key>
@@ -38,40 +24,41 @@
             </value>
             <type>map</type>
           </key>
+          
           <key>
-            <name>is.idega.block.saga.presentation.comunicating.ContentShareComponent</name>
+            <name>com.idega.block.social.presentation.comunicating.ContentShareComponent</name>
             <value>
               <map>
                 <key>
                   <name>component_property_file</name>
                   <type>java.lang.String</type>
-                  <value>is.idega.block.saga.presentation.comunicating.ContentShareComponent.pxml</value>
+                  <value>com.idega.block.social.presentation.comunicating.ContentShareComponent.pxml</value>
                 </key>
               </map>
             </value>
             <type>map</type>
           </key>
           <key>
-            <name>is.idega.block.saga.presentation.comunicating.PostContentSharePrivateViewer</name>
+            <name>com.idega.block.social.presentation.comunicating.PostContentSharePrivateViewer</name>
             <value>
               <map>
                 <key>
                   <name>component_property_file</name>
                   <type>java.lang.String</type>
-                  <value>is.idega.block.saga.presentation.comunicating.PostContentSharePrivateViewer.pxml</value>
+                  <value>com.idega.block.social.presentation.comunicating.PostContentSharePrivateViewer.pxml</value>
                 </key>
               </map>
             </value>
             <type>map</type>
           </key>
           <key>
-            <name>is.idega.block.saga.presentation.comunicating.PostContentSharePublicViewer</name>
+            <name>com.idega.block.social.presentation.comunicating.PostContentSharePublicViewer</name>
             <value>
               <map>
                 <key>
                   <name>component_property_file</name>
                   <type>java.lang.String</type>
-                  <value>is.idega.block.saga.presentation.comunicating.PostContentSharePublicViewer.pxml</value>
+                  <value>com.idega.block.social.presentation.comunicating.PostContentSharePublicViewer.pxml</value>
                 </key>
               </map>
             </value>
