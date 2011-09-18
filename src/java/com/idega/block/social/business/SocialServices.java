@@ -47,14 +47,15 @@ import com.idega.util.CoreUtil;
 import com.idega.util.ListUtil;
 import com.idega.util.expression.ELUtil;
 
-@Service("sagaServices")
+@Service(SocialServices.SERVICE)
 @Scope(BeanDefinition.SCOPE_SINGLETON)
 @RemoteProxy(creator=SpringCreator.class, creatorParams={
-	@Param(name="beanName", value="sagaServices"),
-	@Param(name="javascript", value="SagaServices")
-}, name="SagaServices")
+	@Param(name="beanName", value=SocialServices.SERVICE),
+	@Param(name="javascript", value="SocialServices")
+}, name="SocialServices")
 public class SocialServices extends DefaultSpringBean implements
 		DWRAnnotationPersistance {
+	public static final String SERVICE = "socialServices";
 
 	private GroupBusiness groupBusiness = null;
 	private UserApplicationEngine userApplicationEngine = null;
@@ -62,6 +63,8 @@ public class SocialServices extends DefaultSpringBean implements
 	private IWResourceBundle iwrb = null;
 	private UserHome userHome = null;
 	private GroupHome groupHome = null;
+
+	private Long index = Long.MAX_VALUE;
 
 
 //	@Autowired
@@ -424,206 +427,11 @@ public class SocialServices extends DefaultSpringBean implements
 		return parentgroups.iterator().next();
 	}
 
-//	@SuppressWarnings("unchecked")
-//	@RemoteMethod
-//	public String savePost(/*HttpServletRequest request*/){
-//		IWContext iwc  =  CoreUtil.getIWContext();
-////		request.getp
-//		if(!iwc.isLoggedOn()){
-//			String errorMsg = this.getResourceBundle().getLocalizedString("you_must_be_logged_on_to_perform_this_action",
-//					"You must be logged on to perform this action");
-//			return errorMsg;
-//		}
-//		ArticleItemBean post = (ArticleItemBean) WFUtil.getBeanInstance(ManagedContentBeans.ARTICLE_ITEM_BEAN_ID);
-//
-//		// Get all sent parameters
-//		//TODO: set author and other useful stuff
-//		String body = iwc.getParameter(PostCreationView.BODY_PARAMETER_NAME);
-//		post.setBody(body);
-//		String parameter = iwc.getParameter(PostCreationView.POST_TITLE_PARAMETER);
-//		post.setHeadline(parameter);
-//
-//		User currentUser = iwc.getCurrentUser();
-//		UserApplicationEngine userApplicationEngine = this.getUserApplicationEngine();
-//		UserDataBean userInfo =  userApplicationEngine.getUserInfo(currentUser);
-//		int creatorId = userInfo.getUserId();
-//
-//		post.setCreatedByUserId(creatorId);
-//		String name = userInfo.getName();
-//		post.setAuthor(name);
-//
-//		String [] attachments = iwc.getParameterValues(PostCreationView.POST_ATTACHMENTS_PARAMETER_NAME);
-//		if(!ArrayUtil.isEmpty(attachments)){
-//			post.setAttachment(Arrays.asList(attachments));
-//		}
-//
-//
-//		// Store post as xml article
-////		post.store();
-//
-//
-//		// Store post in db
-//		String uri = null;//post.getResourcePath();
-//		String privateMsg = iwc.getParameter(PostCreationView.PRIVATE_MESSAGE_PARAMETER_NAME);
-//
-//		String currentUserEmail = userInfo.getEmail();
-//		if(privateMsg != null){
-//			String [] receiversIds = iwc.getParameterValues(PostCreationView.RECEIVERS_PARAMETER_NAME);
-//			if(!ArrayUtil.isEmpty(receiversIds)){
-//				Collection<Integer> receivers = new ArrayList<Integer>(receiversIds.length);
-//				for(String receiver : receiversIds){
-//					receivers.add(Integer.valueOf(receiver));
-//				}
-//				if(uri == null){
-//					post.store();
-//					uri = post.getResourcePath();
-//				}
-//				if(!postDao.updatePost(uri, receivers,creatorId)){
-//					return this.getResourceBundle().getLocalizedString("failed_to_save",
-//					"Failed to save");
-//				}
-//
-//				sendMails(currentUserEmail,receivers, body, attachments);
-//			}
-//		}
-//
-//		String publicMsg = iwc.getParameter(PostCreationView.POST_TO_GROUPS_PARAMETER_NAME);
-//		if(publicMsg != null){
-//			Collection <Group> userGroups = null;
-//			try{
-//				userGroups = this.getUserBusiness().getUserGroups(currentUser);
-//			}catch(RemoteException e){
-//				this.getLogger().log(Level.WARNING, "Failed saving public post because of failed getting users groups" , e);
-//			}
-//			if(!ListUtil.isEmpty(userGroups)){
-//				ArrayList <Integer> receivers = new ArrayList<Integer>();
-//				for(Group group : userGroups){
-//					receivers.add(Integer.valueOf(group.getId()));
-//				}
-//				if(uri == null){
-//					post.store();
-//					uri = post.getResourcePath();
-//				}
-//				if(!postDao.updatePost(uri,receivers, PostEntity.PUBLIC,creatorId)){
-//					return this.getResourceBundle().getLocalizedString("failed_to_save",
-//					"Failed to save");
-//				}
-//			}
-//		}
-//		return this.getResourceBundle().getLocalizedString("changes_saved","Changes saved");
-//
-//	}
 
 	@RemoteMethod
 	public String savePost(Map <String,ArrayList<String>> parameters){
 		return this.postBusiness.savePost(parameters);
 	}
-//
-//	@SuppressWarnings("unchecked")
-//	private boolean storePrivatePost(Map <String,ArrayList<String>> parameters, String uri,
-//			UserDataBean userInfo,ArticleItemBean post){
-//
-//		ArrayList<String> receiversIds = parameters.get(PostCreationView.RECEIVERS_PARAMETER_NAME);
-//		if(ListUtil.isEmpty(receiversIds)){
-//			return true;
-//		}
-//
-//		Collection<Integer> receivers = new ArrayList<Integer>(receiversIds.size());
-//		for(String receiver : receiversIds){
-//			receivers.add(Integer.valueOf(receiver));
-//		}
-//
-//		if(!postDao.updatePost(uri, receivers,userInfo.getUserId())){
-//			return false;
-//		}
-//
-//		sendMails(userInfo.getEmail(),receivers, post.getBody(), post.getAttachments());
-//		return true;
-//	}
-//
-//	@SuppressWarnings("unchecked")
-//	private boolean storeGroupPost(Map <String,ArrayList<String>> parameters, String uri,User currentUser,
-//			int creatorId){
-//		Collection <Group> userGroups = null;
-//		try{
-//			userGroups = this.getUserBusiness().getUserGroups(currentUser);
-//		}catch(RemoteException e){
-//			this.getLogger().log(Level.WARNING, "Failed saving public post because of failed getting users groups" , e);
-//			return false;
-//		}
-//		if(ListUtil.isEmpty(userGroups)){
-//			return true;
-//		}
-//
-//		ArrayList <Integer> receivers = new ArrayList<Integer>();
-//		for(Group group : userGroups){
-//			receivers.add(Integer.valueOf(group.getId()));
-//		}
-//		if(!postDao.updatePost(uri,receivers, PostEntity.PUBLIC,creatorId)){
-//			return false;
-//		}
-//		return true;
-//	}
-//
-//
-//	private void sendMails(String from, Collection <Integer> userIds,String body, List<String> attachments){
-//
-//		MessageParameters parameters = new MessageParameters();
-//		parameters.setFrom(from);
-//
-//		ArrayList <String> recipients = new ArrayList<String>(userIds.size());
-//		UserBusiness userbusiness = this.getUserBusiness();
-//		for(Integer userId : userIds){
-//			User user = null;
-//			try{
-//				user = userbusiness.getUser(Integer.valueOf(userId));
-//			}catch(RemoteException e){
-//				this.getLogger().log(Level.WARNING, "Failed to get user with id " + userId, e);
-//			}
-//			UserDataBean userInfo =  userApplicationEngine.getUserInfo(user);
-//			recipients.add(userInfo.getEmail());
-//		}
-//		parameters.setAttachments(attachments);
-//		parameters.setMessage(body);
-//		String recipientsString = recipients.toString();
-//		parameters.setRecipientTo(recipientsString);
-//		this.emailSenderHelper.sendMessage(parameters);
-//	}
-
-//	@SuppressWarnings("unchecked")
-//	private void sendMailsToAllUserGroups(User user){
-//		Collection <Group> userGroups = null;
-//		try{
-//			userGroups = this.getGroupBusiness().getParentGroups(user);
-//		}catch(RemoteException e){
-//			this.getLogger().log(Level.WARNING, "failed to get parent groups of user ", e);
-//		}
-//		if(ListUtil.isEmpty(userGroups)){
-//			return;
-//		}
-//		ArrayList <User> users = new ArrayList<User>();
-//		for(Group group : userGroups){
-//			users.addAll();
-//		}
-//		// TODO: not finished
-//	}
-
-
-//	@SuppressWarnings("unchecked")
-//	public List<GroupNode> getChildGroupsRecursive(Integer uniqueId) {
-//		GroupBusiness groupBusiness = getGroupBusiness();
-//		if (groupBusiness == null) {
-//			return null;
-//		}
-//		GroupHelper helper = ELUtil.getInstance().getBean(GroupHelper.class);
-//		try {
-//			return helper.convertGroupsToGroupNodes(groupBusiness.getChildGroups(group), iwc, false, helper.getGroupImageBaseUri(iwc));
-//		} catch (RemoteException e) {
-//			e.printStackTrace();
-//		}
-//
-//		return null;
-//	}
 
 	public Group getSagaRootGroup(){
 		try{
@@ -689,7 +497,10 @@ public class SocialServices extends DefaultSpringBean implements
 		return this.groupHome;
 	}
 
-
+	public String getUniqueIndex(){
+		index++;
+		return SERVICE + index.toString();
+	}
 }
 
 

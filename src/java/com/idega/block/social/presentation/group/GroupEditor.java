@@ -9,8 +9,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.idega.block.social.Constants;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
@@ -36,9 +34,6 @@ public class GroupEditor extends GroupTreeViewer{
 	private StringBuilder errorMsg = null;
 
 	private boolean tageditFunctions = true;
-
-	@Autowired
-	//private SagaServices sagaservices;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -116,9 +111,9 @@ public class GroupEditor extends GroupTreeViewer{
 	//TODO: make this work :D
 	public static Layer createTreeView(int scrollPos, Collection<Integer> openedGroups,int maxGroupsToShow){
 		Layer treeContainerContent = new Layer();
-//		SagaServices sagaservices = ELUtil.getInstance().getBean(SagaServices.class);
+//		SocialServices SocialServices = ELUtil.getInstance().getBean(SocialServices.class);
 //		GroupService groupService =   ELUtil.getInstance().getBean(GroupService.class);
-//		GroupBusiness groupBusiness = ELUtil.getInstance().getBean(GroupBusiness.class);//sagaservices.getSagaRootGroup().getUniqueId()
+//		GroupBusiness groupBusiness = ELUtil.getInstance().getBean(GroupBusiness.class);//SocialServices.getSagaRootGroup().getUniqueId()
 //		ArrayList topGroups = new ArrayList(groupService.getChildrenOfGroup("10"));
 //		for(Integer i : openedGroups){
 //			int pos = 0;
@@ -208,7 +203,7 @@ public class GroupEditor extends GroupTreeViewer{
 		styles.add(iwb.getVirtualPathWithFileNameString("style/group.css"));
 
 		scripts.add("/dwr/engine.js");
-		scripts.add("/dwr/interface/SagaServices.js");
+		scripts.add("/dwr/interface/SocialServices.js");
 
 		PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, scripts);
 		PresentationUtil.addStyleSheetsToHeader(iwc, styles);

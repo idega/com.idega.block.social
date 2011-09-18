@@ -75,7 +75,7 @@ var PostCreationViewHelper = {
 				map[element.name].push(element.value);
 			}
 			
-			SagaServices.savePost(map,{
+			SocialServices.savePost(map,{
 				callback: function(reply){
 					closeAllLoadingMessages();
 					humanMsg.displayMsg(reply);
@@ -94,7 +94,7 @@ var PostCreationViewHelper = {
 				input = jQuery(selector);
 				input.tagedit({
 					autocompleteURL: function(request, response) {
-						SagaServices.autocompleteUserSearchWithImagesRequest(request.term,-1, 20, 0, {
+						SocialServices.autocompleteUserSearchWithImagesRequest(request.term,-1, 20, 0, {
 							callback: function(userDataCollection) {
 								var arrayOfData = [];
 								var i = 0;
@@ -128,7 +128,7 @@ var PostCreationViewHelper = {
 
 						if(label == undefined){
 							var request  = jQuery(PostCreationViewHelper.TAGEDIT_INPUT_SELECTOR).val();
-							SagaServices.autocompleteUserSearchWithImagesRequest(request,-1, 20, 0, {
+							SocialServices.autocompleteUserSearchWithImagesRequest(request,-1, 20, 0, {
 								callback: function(userDataCollection) {
 									if(userDataCollection.length == 2){
 										jQuery(PostCreationViewHelper.TAGEDIT_INPUT_SELECTOR).trigger('transformToTag', [undefined, userDataCollection[0]]);
@@ -179,7 +179,7 @@ var PostCreationViewHelper = {
 				input = jQuery(selector);
 				input.tagedit({
 					autocompleteURL: function(request, response) {
-						SagaServices.getSagaGroupSearchResultsAsAutoComplete(request.term, {
+						SocialServices.getSagaGroupSearchResultsAsAutoComplete(request.term, {
 							callback: function(userDataCollection) {
 								var arrayOfData = [];
 								var i = 0;
@@ -213,7 +213,7 @@ var PostCreationViewHelper = {
 
 						if(label == undefined){
 							var request  = jQuery(PostCreationViewHelper.TAGEDIT_GROUP_INPUT_SELECTOR).val();
-							SagaServices.getSagaGroupSearchResultsAsAutoComplete(request, {
+							SocialServices.getSagaGroupSearchResultsAsAutoComplete(request, {
 								callback: function(userDataCollection) {
 									if(userDataCollection.length == 2){
 										jQuery(PostCreationViewHelper.TAGEDIT_GROUP_INPUT_SELECTOR).trigger('transformToTag', [undefined, userDataCollection[0]]);

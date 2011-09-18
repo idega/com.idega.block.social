@@ -24,7 +24,7 @@ PostContentViewerHelper.savePost = function(buttonSelector,textSelector){
 		map[element.name].push(element.value);
 	}
 	
-	SagaServices.savePost(map,{
+	SocialServices.savePost(map,{
 		callback: function(reply){
 			humanMsg.displayMsg(reply);
 			jQuery(textSelector).attr("value","");
@@ -59,7 +59,7 @@ PostContentViewerHelper.openAdvancedPostForm = function(selector){
 PostContentViewerHelper.addPosts = function(postListSelector){
 	var firstElement = jQuery("ul.posts-contents-list").children().filter(":first");
 	var firstUri = firstElement.find(".post-uri-container").attr("value");
-	SagaServices.getPosts(
+	SocialServices.getPosts(
 			firstUri,
 			true,
 			PostContentViewerHelper.showPrivate,
@@ -80,7 +80,7 @@ PostContentViewerHelper.addPostsdown = function(postListSelector){
 	var lastElement = jQuery("ul.posts-contents-list").children().filter(":last");
 	var firstUri = lastElement.find(".post-uri-container").attr("value");
 	showLoadingMessage("");
-	SagaServices.getPosts(
+	SocialServices.getPosts(
 			firstUri,
 			false,
 			PostContentViewerHelper.showPrivate,
@@ -109,7 +109,7 @@ PostContentViewerHelper.loadMoreButtonNeeded = function(){
 		return;
 	}
 	var firstUri = lastElement.find(".post-uri-container").attr("value");
-	SagaServices.getPosts(
+	SocialServices.getPosts(
 			firstUri,
 			false,
 			PostContentViewerHelper.showPrivate,

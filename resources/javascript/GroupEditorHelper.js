@@ -68,7 +68,7 @@ function openGroupCreationDialog(link,parentGroupParameter,edittedGroup){
 
 function openGroupEditDialog(link,parentGroupParameter,edittedGroup){
 	link += "&" + edittedGroup + '=' + SimpleAppInfo.currentGroupId;
-	SagaServices.getParentGroup(SimpleAppInfo.currentGroupId, {
+	SocialServices.getParentGroup(SimpleAppInfo.currentGroupId, {
 		callback: function(parentGroup) {
 			link += "&" + parentGroupParameter + '=' + parentGroup;
 		}
@@ -124,7 +124,7 @@ function checkIfNameExists(inputId,groupNameDublicationMsg,groupNameEmptyMsg){
 	}else{
 		jQuery('#group_name_empty_error_id').hide();
 	}
-	SagaServices.isGroupAllowedToSave(value, SimpleAppInfo.currentGroupId, {
+	SocialServices.isGroupAllowedToSave(value, SimpleAppInfo.currentGroupId, {
 		callback: function(isGroupNameOk) {
 			SimpleAppInfo.isGroupNameOk = isGroupNameOk;
 			if(isGroupNameOk){
@@ -145,7 +145,7 @@ function getUserSearchResults(requestValue){
 		requestValue = [requestValue];
 	}
 	jQuery('.containerLayer').hide("normal");
-	SagaServices.getUserSearchResultTableBySearchrequest(requestValue, SimpleAppInfo.currentGroupId,-1,-1,{
+	SocialServices.getUserSearchResultTableBySearchrequest(requestValue, SimpleAppInfo.currentGroupId,-1,-1,{
 		callback: function(component) {
 			IWCORE.insertRenderedComponent(component,{
 				container: tableLayer,
@@ -174,7 +174,7 @@ function addChosenUsers(){
 		userIds.push(userId);
 	});
 	tableLayer = jQuery('#'+ GroupEditorInfo.userTablelayerId);
-	SagaServices.saveUsersAndGetUserTable(SimpleAppInfo.currentGroupId,userIds, {
+	SocialServices.saveUsersAndGetUserTable(SimpleAppInfo.currentGroupId,userIds, {
 		callback: function(component) {
 			IWCORE.insertRenderedComponent(component,{
 				container: tableLayer,
@@ -197,7 +197,7 @@ function checkUserToAdd(checkBoxId, userRowId){
 }
 
 function removeUserFromGroup(userId, rowId){
-	SagaServices.removeUserFromGroup(userId,SimpleAppInfo.currentGroupId
+	SocialServices.removeUserFromGroup(userId,SimpleAppInfo.currentGroupId
 //	,{callback: function(msg){
 //			showHumanizedMessage(msg, null);
 //		}
@@ -207,7 +207,7 @@ function removeUserFromGroup(userId, rowId){
 	if(jQuery("#"+ GroupEditorInfo.userTablelayerId +"tr").length < 1){
 		tableLayer = jQuery('#'+ GroupEditorInfo.userTablelayerId).empty();
 		table = jQuery('#'+ GroupEditorInfo.userTablelayerId);
-		SagaServices.getUsersOfSpecifiedGroupTable(SimpleAppInfo.currentGroupId,-1,0, {
+		SocialServices.getUsersOfSpecifiedGroupTable(SimpleAppInfo.currentGroupId,-1,0, {
 			callback: function(component) {
 				IWCORE.insertRenderedComponent(component,{
 					container: tableLayer,
@@ -261,7 +261,7 @@ function prepareSearchAreaTextInput(inputId, addTagEditFunctions){
 function createAutocompleteForUserSearch(inputSelector){
 	jQuery(inputSelector).autocomplete({
 		source : function(request, response) {
-			SagaServices.autocompleteUserSearchRequest(request.term,SimpleAppInfo.currentGroupId, 20, 0,{
+			SocialServices.autocompleteUserSearchRequest(request.term,SimpleAppInfo.currentGroupId, 20, 0,{
 				callback: function(userDataCollection) {
 					var arrayOfData = [];
 					for(i = 0;i < userDataCollection.length;i++){
@@ -279,7 +279,7 @@ function createAutocompleteForUserSearch(inputSelector){
 function createAutocompleteForUserSearchWithTagEdit(inputSelector){
 	jQuery(inputSelector).tagedit({
 		autocompleteURL: function(request, response) {
-			SagaServices.autocompleteUserSearchRequest(request.term,SimpleAppInfo.currentGroupId, 20, 0, {
+			SocialServices.autocompleteUserSearchRequest(request.term,SimpleAppInfo.currentGroupId, 20, 0, {
 				callback: function(userDataCollection) {
 					var arrayOfData = [];
 					for(i = 0;i < userDataCollection.length;i++){

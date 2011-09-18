@@ -40,7 +40,7 @@ import com.idega.util.expression.ELUtil;
 public class SocialGroupCreator extends SimpleGroupCreator{
 
 	@Autowired
-	private SocialServices sagaservices;
+	private SocialServices socialServices;
 	private Layer userEditContent = null;
 
 	@Autowired
@@ -71,7 +71,7 @@ public class SocialGroupCreator extends SimpleGroupCreator{
 		String parentGroupId = iwc.getParameter(UserConstants.GROUPS_TO_RELOAD_IN_MENU_DROPDOWN_ID_IN_SIMPLE_USER_APPLICATION);
 
 		if(StringUtil.isEmpty(parentGroupId) || parentGroupId.equals("-1")){
-			parentGroupId = sagaservices.getSagaRootGroup().getId();
+			parentGroupId = socialServices.getSagaRootGroup().getId();
 		}
 
 		setParentGroupId(parentGroupId);

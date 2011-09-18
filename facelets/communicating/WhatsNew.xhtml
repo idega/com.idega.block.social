@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<div
+			xmlns:ui="http://java.sun.com/jsf/facelets"
+	    	xmlns:h="http://java.sun.com/jsf/html"
+			xmlns:t="http://myfaces.apache.org/tomahawk"
+			xmlns:content="http://xmlns.idega.com/com.idega.content"
+			xmlns:f="http://java.sun.com/jsf/core"
+			xmlns:ic="http://xmlns.idega.com/com.idega.core"
+			xmlns="http://www.w3.org/1999/xhtml" 
+			class = "whats-new-main"> 
+	<ul>
+		<li><a href="##{whatsNewBean.popularLayerId}">#{localizedStrings['com.idega.block.social']['most_popular']}</a></li>
+		<li><a href="##{whatsNewBean.newLayerId}">#{localizedStrings['com.idega.block.social']['new']}</a></li>
+		<li><a href="##{whatsNewBean.searchLayerId}">#{localizedStrings['com.idega.block.social']['search']}</a></li>
+	</ul>
+	<div id ="#{whatsNewBean.popularLayerId}">
+		<!-- #{whatsNewBean.mostPopularGroups} -->
+	</div>
+	<div id ="#{whatsNewBean.newLayerId}">
+		<h:outputText value="#{whatsNewBean.newGroups}"/>
+	</div>
+	<div id ="#{whatsNewBean.searchLayerId}">
+		<input type = "text" class = "whats-new-group-search-input"/>
+		<div class = "whats-new-group-search-results">
+		
+		</div>
+	</div>
+</div>

@@ -220,7 +220,7 @@ public class ContentShareComponent  extends IWBaseComponent {
 		styles.add(iwb.getVirtualPathWithFileNameString("style/contentShare.css"));
 
 		scripts.add("/dwr/engine.js");
-		scripts.add("/dwr/interface/SagaServices.js");
+		scripts.add("/dwr/interface/SocialServices.js");
 
 		scripts.addAll(PostCreationView.getNeededScripts(iwc));
 		styles.addAll(PostCreationView.getNeededStyles(iwc));

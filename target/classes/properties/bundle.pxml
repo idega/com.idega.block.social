@@ -10,7 +10,6 @@
       <name>iw_components</name>
       <value>
         <map>
-        
           <key>
             <name>com.idega.block.social.presentation.group.GroupEditor</name>
             <value>
@@ -18,21 +17,7 @@
                 <key>
                   <name>component_property_file</name>
                   <type>java.lang.String</type>
-                  <value>is.idega.block.saga.presentation.group.GroupEditor.pxml</value>
-                </key>
-              </map>
-            </value>
-            <type>map</type>
-          </key>
-          
-          <key>
-            <name>com.idega.block.social.presentation.comunicating.ContentShareComponent</name>
-            <value>
-              <map>
-                <key>
-                  <name>component_property_file</name>
-                  <type>java.lang.String</type>
-                  <value>com.idega.block.social.presentation.comunicating.ContentShareComponent.pxml</value>
+                  <value>com.idega.block.social.presentation.group.GroupEditor.pxml</value>
                 </key>
               </map>
             </value>
@@ -59,6 +44,19 @@
                   <name>component_property_file</name>
                   <type>java.lang.String</type>
                   <value>com.idega.block.social.presentation.comunicating.PostContentSharePublicViewer.pxml</value>
+                </key>
+              </map>
+            </value>
+            <type>map</type>
+          </key>
+          <key>
+            <name>com.idega.block.social.presentation.comunicating.WhatsNewView</name>
+            <value>
+              <map>
+                <key>
+                  <name>component_property_file</name>
+                  <type>java.lang.String</type>
+                  <value>com.idega.block.social.presentation.comunicating.WhatsNewView.pxml</value>
                 </key>
               </map>
             </value>

@@ -84,6 +84,7 @@ public class PostContentViewer extends IWBaseComponent {
 
 	@Override
 	protected void initializeComponent(FacesContext context) {
+		super.initializeComponent(context);
 		main = new Layer();
 		this.add(main);
 
@@ -107,20 +108,6 @@ public class PostContentViewer extends IWBaseComponent {
 		this.addActions();
 	}
 
-//	private void setPostFilterParameters(IWContext iwc){
-//		PostFilterParameters filterParameters = new PostFilterParameters();
-//
-//		postRequestBean.setGetUp(iwc.getParameter(PostRequestBean.Parameters.GET_UP));
-//		String max = iwc.getParameter(PostRequestBean.Parameters.MAX_TO_SHOW);
-//		postRequestBean.setMaxToShow(max == null ? 10 : Integer.valueOf(max));
-//		postRequestBean.setFirstUri(iwc.getParameter(PostRequestBean.Parameters.FIRST_URI));
-//
-//		if(isLoggedOn){
-//			postRequestBean.setShowGroup(iwc.getParameter(PostRequestBean.Parameters.SHOW_GROUP));
-//			postRequestBean.setShowPrivate(iwc.getParameter(PostRequestBean.Parameters.SHOW_PRIVATE));
-//			postRequestBean.setShowSent(iwc.getParameter(PostRequestBean.Parameters.SENT));
-//		}
-//	}
 
 	public static UIComponent getPostList(IWContext iwc){
 		IWBundle bundle = iwc.getIWMainApplication().getBundle(Constants.IW_BUNDLE_IDENTIFIER);
