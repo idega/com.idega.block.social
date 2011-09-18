@@ -1,0 +1,9 @@
+@CHARSET "UTF-8";
+
+.whats-new-main{
+	heitht : 100%;
+}
+.ui-tabs-panel{
+	heitht : 100%;
+	overfloww : auto;
+}
