@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.faces.component.UIComponent;
-import javax.faces.context.ResponseWriter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -13,8 +12,6 @@ import org.springframework.stereotype.Service;
 import com.idega.block.social.Constants;
 import com.idega.block.social.business.SocialServices;
 import com.idega.block.social.presentation.comunicating.WhatsNewView;
-import com.idega.builder.business.BuilderLogic;
-import com.idega.presentation.IWContext;
 import com.idega.user.data.Group;
 import com.idega.util.CoreUtil;
 import com.idega.util.expression.ELUtil;
@@ -61,22 +58,38 @@ public class WhatsNewBean {
 	public String getMostPopularGroups(){
 		Collection <Group> groups = socialservices.getGroupBusiness().getMostPopularGroups(types, amount);
 
-		UIComponent postList = WhatsNewView.getGroupListView(groups);
-		IWContext iwc =CoreUtil.getIWContext();
-		ResponseWriter writer = iwc.getResponseWriter();
-		String html = BuilderLogic.getInstance().getRenderedComponent(postList, null).getHtml();
-		iwc.setResponseWriter(writer);
+		UIComponent groupList = WhatsNewView.getGroupListView(groups);
+//		IWContext iwc =CoreUtil.getIWContext();
+//		ResponseWriter writer = iwc.getResponseWriter();
+//		String html = BuilderLogic.getInstance().getRenderedComponent(groupList, null).getHtml();
+//		iwc.setResponseWriter(writer);
 
 		//TODO: think how remove this
 		try{
-			postList.encodeAll(CoreUtil.getIWContext());
+			groupList.encodeAll(CoreUtil.getIWContext());
 		}catch(Exception e){
 
 		}
-		return html;
+//		return html;
+		return "";
 	}
 
 	public String getNewGroups(){
+		Collection <Group> groups = socialservices.getGroupBusiness().getGroups(types, amount);
+
+		UIComponent groupList = WhatsNewView.getGroupListView(groups);
+//		IWContext iwc =CoreUtil.getIWContext();
+//		ResponseWriter writer = iwc.getResponseWriter();
+//		String html = BuilderLogic.getInstance().getRenderedComponent(groupList, null).getHtml();
+//		iwc.setResponseWriter(writer);
+
+		//TODO: think how remove this
+		try{
+			groupList.encodeAll(CoreUtil.getIWContext());
+		}catch(Exception e){
+
+		}
+//		return html;
 		return "";
 	}
 

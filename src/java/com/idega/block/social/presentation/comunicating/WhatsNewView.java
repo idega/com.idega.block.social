@@ -118,6 +118,7 @@ public class WhatsNewView  extends IWBaseComponent{
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
 		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
 		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/WhatsNewHelper.js"));
+		scripts.add("/dwr/interface/SocialServices.js");
 
 		return scripts;
 	}

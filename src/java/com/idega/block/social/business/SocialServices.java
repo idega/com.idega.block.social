@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import com.idega.block.social.Constants;
 import com.idega.block.social.presentation.comunicating.PostContentViewer;
+import com.idega.block.social.presentation.comunicating.WhatsNewView;
 import com.idega.block.social.presentation.group.SocialGroupCreator;
 import com.idega.builder.business.BuilderLogic;
 import com.idega.core.business.DefaultSpringBean;
@@ -500,6 +501,24 @@ public class SocialServices extends DefaultSpringBean implements
 	public String getUniqueIndex(){
 		index++;
 		return SERVICE + index.toString();
+	}
+
+	@RemoteMethod
+	@SuppressWarnings("unchecked")
+	public String getGroupSearchResults(String request, Integer amount){
+		if(amount == null){
+			amount = -1;
+		}
+		//TODO: make global variable
+		ArrayList<String> types = new ArrayList<String>(1);
+		types.add(Constants.SOCIAL_TYPE);
+		Collection <Group> groups = getGroupBusiness().getGroupsBySearchRequest(request, types, amount);
+		if(ListUtil.isEmpty(groups)){
+			return "<label>" + this.getResourceBundle().getLocalizedString("no_groups_were_found_by_your_request", "No groups were found by your request") + "</label>";
+		}
+		UIComponent groupList = WhatsNewView.getGroupListView(groups);
+		String html = BuilderLogic.getInstance().getRenderedComponent(groupList, null).getHtml();
+		return html;
 	}
 }
 
