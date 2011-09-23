@@ -63,7 +63,6 @@ public class WhatsNewView  extends IWBaseComponent{
 			PresentationUtil.addStyleSheetsToHeader(iwc, getNeededStyles(iwc));
 		}
 
-		this.addActions();
 	}
 	public static UIComponent getNewsView(IWContext iwc){
 		IWBundle bundle = iwc.getIWMainApplication().getBundle(Constants.IW_BUNDLE_IDENTIFIER);
@@ -72,12 +71,6 @@ public class WhatsNewView  extends IWBaseComponent{
 		return facelet;
 	}
 
-
-	private void addActions(){
-//		StringBuilder actions = new StringBuilder();
-//		String actionString = PresentationUtil.getJavaScriptAction(actions.toString());
-//		main.add(actionString);
-	}
 
 
 	/**
@@ -119,6 +112,7 @@ public class WhatsNewView  extends IWBaseComponent{
 		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
 		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/WhatsNewHelper.js"));
 		scripts.add("/dwr/interface/SocialServices.js");
+		scripts.addAll(GroupInfoViewer.getNeededScripts(iwc));
 
 		return scripts;
 	}
@@ -133,6 +127,8 @@ public class WhatsNewView  extends IWBaseComponent{
 	public static List<String> getNeededStyles(IWContext iwc){
 
 		List<String> styles = new ArrayList<String>();
+		
+		styles.addAll(GroupInfoViewer.getNeededStyles(iwc));
 
 		Web2Business web2 = WFUtil.getBeanInstance(iwc, Web2Business.SPRING_BEAN_IDENTIFIER);
 		if (web2 != null) {
