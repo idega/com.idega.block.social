@@ -65,22 +65,23 @@ public class GroupInfoViewer  extends IWBaseComponent{
 		}
 
 
-		Layer layer = new Layer();
-		main.add(layer);
-		layer.setStyleClass("social-buttons-layer");
 		
-		GroupJoiner groupJoiner = new GroupJoiner(group.getId(),null);
-		layer.add(groupJoiner);
 		
 		Heading1 title = new Heading1();
 		main.add(title);
 		title.addToText(group.getName());
 		title.setStyleClass("heading-title");
 
-		layer = new Layer();
+		Layer layer = new Layer();
 		main.add(layer);
 		layer.addText(group.getDescription());
 
+		layer = new Layer();
+		main.add(layer);
+		layer.setStyleClass("social-buttons-layer");
+		
+		GroupJoiner groupJoiner = new GroupJoiner(group.getId(),null);
+		layer.add(groupJoiner);
 		
 		String neededFiles = iwc.getParameter(Constants.NEEDED_SCRIPT_AND_STYLE_FILES);
 		if((neededFiles != null) && (neededFiles.equals(FALSE))){
