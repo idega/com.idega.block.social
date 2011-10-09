@@ -1,6 +1,5 @@
 package com.idega.block.social.business;
 
-
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,8 +53,8 @@ import com.idega.util.expression.ELUtil;
 	@Param(name="beanName", value=SocialServices.SERVICE),
 	@Param(name="javascript", value="SocialServices")
 }, name="SocialServices")
-public class SocialServices extends DefaultSpringBean implements
-		DWRAnnotationPersistance {
+public class SocialServices extends DefaultSpringBean implements DWRAnnotationPersistance {
+
 	public static final String SERVICE = "socialServices";
 
 	private GroupBusiness groupBusiness = null;
@@ -66,11 +65,6 @@ public class SocialServices extends DefaultSpringBean implements
 	private GroupHome groupHome = null;
 
 	private Long index = Long.MAX_VALUE;
-
-
-//	@Autowired
-//	private GroupHelper groupHelper;
-
 
 	@Autowired
 	private PostBusiness postBusiness;
@@ -195,8 +189,6 @@ public class SocialServices extends DefaultSpringBean implements
 		int groupsAmmount = foundGroups.size();
 		ArrayList <String> strings = new ArrayList<String>(groupsAmmount);
 		for(Group group : foundGroups){
-//			String imgUri = this.groupHelper.getGroupIcon(group,
-//					this.groupHelper.getGroupImageBaseUri(iwc), true);
 			StringBuilder responseItem = new StringBuilder("<input type='hidden' name='")
 					.append(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME).append("' value='")
 					.append(group.getId()).append("'><table class = 'autocompleted-receiver'><tr><td><img src = '")
@@ -315,6 +307,7 @@ public class SocialServices extends DefaultSpringBean implements
 		return strings;
 	}
 
+	@SuppressWarnings("deprecation")
 	@RemoteMethod
 	public String removeUserFromGroup(Integer userId, Integer groupId){
 		IWContext iwc  = CoreUtil.getIWContext();
@@ -323,7 +316,7 @@ public class SocialServices extends DefaultSpringBean implements
 			currentUser = iwc.getCurrentUser();
 		}else{
 			try{
-				currentUser = iwc.getAccessController().getAdministratorUser();
+				currentUser = iwc.getAccessController().getAdministratorUserLegacy();
 			}catch(Exception e){
 				this.getLogger().log(Level.WARNING, "Failed to get superUser", e);
 				IWResourceBundle bundle = this.getResourceBundle();
@@ -504,7 +497,6 @@ public class SocialServices extends DefaultSpringBean implements
 	}
 
 	@RemoteMethod
-	@SuppressWarnings("unchecked")
 	public String getGroupSearchResults(String request, Integer amount){
 		if(amount == null){
 			amount = -1;
@@ -521,5 +513,3 @@ public class SocialServices extends DefaultSpringBean implements
 		return html;
 	}
 }
-
-

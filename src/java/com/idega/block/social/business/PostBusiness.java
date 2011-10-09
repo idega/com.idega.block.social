@@ -1,20 +1,17 @@
 package com.idega.block.social.business;
 
-
 import java.rmi.RemoteException;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.ejb.FinderException;
+import javax.jcr.security.Privilege;
 
-import org.apache.webdav.lib.Ace;
-import org.apache.webdav.lib.Privilege;
-import org.apache.webdav.lib.WebdavResource;
 import org.directwebremoting.WebContextFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -30,18 +27,21 @@ import com.idega.block.social.bean.PostItemBean;
 import com.idega.block.social.data.PostEntity;
 import com.idega.block.social.data.dao.PostDao;
 import com.idega.block.social.presentation.comunicating.PostContentViewer;
-import com.idega.business.IBOLookup;
-import com.idega.business.IBOLookupException;
+import com.idega.content.bean.ContentItemField;
+import com.idega.content.bean.ContentItemFieldBean;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.data.IDOLookup;
 import com.idega.dwr.business.DWRAnnotationPersistance;
 import com.idega.dwr.reverse.ScriptCaller;
 import com.idega.idegaweb.IWResourceBundle;
-import com.idega.idegaweb.IWUserContext;
+import com.idega.jackrabbit.repository.access.JackrabbitAccessControlEntry;
 import com.idega.presentation.IWContext;
-import com.idega.slide.business.IWSlideService;
-import com.idega.slide.util.AccessControlList;
-import com.idega.slide.util.IWSlideConstants;
+import com.idega.repository.RepositoryConstants;
+import com.idega.repository.access.AccessControlEntry;
+import com.idega.repository.access.AccessControlList;
+import com.idega.repository.access.RepositoryPrivilege;
+import com.idega.repository.authentication.AuthenticationBusiness;
+import com.idega.repository.bean.RepositoryItem;
 import com.idega.user.bean.UserDataBean;
 import com.idega.user.business.GroupBusiness;
 import com.idega.user.business.UserApplicationEngine;
@@ -58,13 +58,9 @@ import com.idega.util.StringUtil;
 import com.idega.util.expression.ELUtil;
 import com.idega.util.text.Item;
 
-
 @Service("postBusiness")
 @Scope(BeanDefinition.SCOPE_SINGLETON)
-public class PostBusiness extends DefaultSpringBean implements
-DWRAnnotationPersistance {
-
-
+public class PostBusiness extends DefaultSpringBean implements DWRAnnotationPersistance {
 
 	private static final String GROUP_ROLE_PREFIX = "saga_role_";
 
@@ -82,13 +78,13 @@ DWRAnnotationPersistance {
 	@Autowired
 	private PostDao postDao;
 
+	@Autowired
+	private AuthenticationBusiness authentication;
+
 	public PostBusiness(){
 		ELUtil.getInstance().autowire(this);
 		this.articleListManadgedBean = new ArticleListManagedBean();
 	}
-
-
-
 
 	@SuppressWarnings("unchecked")
 	public String savePost(Map <String,ArrayList<String>> parameters){
@@ -148,11 +144,6 @@ DWRAnnotationPersistance {
 			}
 		}
 
-
-
-
-//		ArrayList<Integer> receivers = new ArrayList<Integer>(usersReceiversAmmount + groupsReceiversAmmount);
-
 		ArrayList<String> postToAllUserGroups = parameters.get(PostBusiness.ParameterNames.POST_TO_ALL_USER_GROUPS);
 		if(!ListUtil.isEmpty(postToAllUserGroups)){
 			Collection <Group> userGroups = null;
@@ -190,14 +181,19 @@ DWRAnnotationPersistance {
 		String name = userInfo.getName();
 		post.setAuthor(name);
 
-		ArrayList<String> attachments = parameters.get(PostBusiness.ParameterNames.POST_ATTACHMENTS_PARAMETER_NAME);
-		if(!ListUtil.isEmpty(attachments)){
-			post.setAttachment(attachments);
+		List<String> attachments = parameters.get(PostBusiness.ParameterNames.POST_ATTACHMENTS_PARAMETER_NAME);
+		if(!ListUtil.isEmpty(attachments)) {
+			int id = 0;
+			List<ContentItemField> attachmentList = new ArrayList<ContentItemField>();
+			for (String attachment: attachments) {
+				ContentItemField item = new ContentItemFieldBean(id, id, attachment, attachment, id, ContentItemField.FIELD_TYPE_STRING);
+				attachmentList.add(item);
+				id++;
+			}
+			post.setAttachment(attachmentList);
 		}
 
 		// Store post in db
-
-
 		String resourcePath = post.getResourcePath();
 		StringBuilder errors = null;
 		boolean postupdated = false;
@@ -207,7 +203,7 @@ DWRAnnotationPersistance {
 			privateSaved = postDao.updatePost(resourcePath, usersReceivers,creatorId);
 			if(privateSaved){
 				postupdated = true;
-				sendMails(userInfo.getEmail(),usersReceivers, body, post.getAttachments());
+				sendMails(userInfo.getEmail(),usersReceivers, body, post.getAttachmentsUris());
 				ArrayList <Integer> accessUsers = new ArrayList<Integer>(usersReceivers.size()+1);
 				accessUsers.add(creatorId);
 				setAccessRights(resourcePath, iwc, accessUsers);
@@ -231,7 +227,6 @@ DWRAnnotationPersistance {
 						.append(iwrb.getLocalizedString("failed_to_send_post_to_groups","Failed to send post to groups"));
 			}
 		}
-//		StringBuilder msg = null;new StringBuilder(iwrb.getLocalizedString("post_saved", "Post saved"));
 		if(postupdated){
 			post.store();
 			String successMsg = iwrb.getLocalizedString("post_sent", "Post sent");
@@ -246,28 +241,29 @@ DWRAnnotationPersistance {
 
 	}
 
-	private void setAccessRights(String resourcePath,IWContext iwc,Collection <Integer> groupIds){
+	private void setAccessRights(String resourcePath,IWContext iwc,Collection <Integer> groupIds) {
 		Collection <String> roleNames = getGroupsRolesForPostsAccess(groupIds);
 
-		Ace ace = new Ace(IWSlideConstants.SUBJECT_URI_AUTHENTICATED);
-		ace.addPrivilege(Privilege.ALL);
-		Ace [] aces = {ace};
+		try{
+			AccessControlEntry ace = new JackrabbitAccessControlEntry(new Principal() {
+				@Override
+				public String getName() {
+					return RepositoryConstants.SUBJECT_URI_AUTHENTICATED;
+				}
+			}, new RepositoryPrivilege[] {new RepositoryPrivilege(Privilege.JCR_ALL)});
+			AccessControlEntry[] aces = {ace};
 
-	    IWSlideService slideService = getIWSlideService(iwc);
-	    try{
-		    slideService.createAllFoldersInPathAsRoot(resourcePath);
-		    AccessControlList processFolderACL = slideService.getAccessControlList(resourcePath);
+		    getRepositoryService().createFolderAsRoot(resourcePath);
+		    AccessControlList processFolderACL = getRepositoryService().getAccessControlList(resourcePath);
 		    processFolderACL.setAces(aces);
-		    processFolderACL = slideService.getAuthenticationBusiness().applyPermissionsToRepository(processFolderACL, roleNames);
-		    slideService.storeAccessControlList(processFolderACL);
+		    processFolderACL = authentication.applyPermissionsToRepository(processFolderACL, roleNames);
+		    getRepositoryService().storeAccessControlList(processFolderACL);
 	    }catch(Exception e){
-	    	Logger.getLogger(getClass().getName()).log(Level.WARNING,
-	    			"failed adding access rights to " + resourcePath, e);
+	    	getLogger().log(Level.WARNING, "failed adding access rights to " + resourcePath, e);
 	    }
 	}
 
-	private void sendMails(String from, Collection <Integer> userIds,String body, List<String> attachments){
-
+	private void sendMails(String from, Collection <Integer> userIds, String body, List<String> attachments){
 		if(StringUtil.isEmpty(from) || ListUtil.isEmpty(userIds)){
 			return;
 		}
@@ -293,9 +289,7 @@ DWRAnnotationPersistance {
 		this.emailSenderHelper.sendMessage(parameters);
 	}
 
-
 	//TODO: check if works with not logged on users when valdas will fix access problems
-	@SuppressWarnings("unchecked")
 	public List <PostInfo> getPosts(PostFilterParameters filterParameters,IWContext iwc){
 		Collection <PostEntity> postEntities = null;
 		postEntities = this.postDao.getPosts(filterParameters.getCreators(), filterParameters.getReceivers(),
@@ -303,7 +297,6 @@ DWRAnnotationPersistance {
 		List<PostInfo> posts = new ArrayList<PostInfo>(postEntities.size());
 		List <String> uris = new ArrayList<String>(1);
 		this.articleListManadgedBean.setShowAllItems(true);
-		IWSlideService slide = getServiceInstance(IWSlideService.class);
 		for(PostEntity entity : postEntities){
 			uris.add(entity.getArticle().getUri());
 			List <ArticleItemBean> articleItems= this.articleListManadgedBean.getArticlesByURIs(uris,
@@ -327,18 +320,18 @@ DWRAnnotationPersistance {
 			post.setTitle(article.getHeadline());
 			post.setUriToBody(article.getResourcePath());
 			post.setBody(article.getBody());
-			List <String> attachments = article.getAttachments();
+			List <String> attachments = article.getAttachmentsUris();
 
 			List<Item> items = new ArrayList<Item>(attachments.size());
 			for(String path : attachments){
-				WebdavResource resource = null;
+				RepositoryItem resource = null;
 				try{
-					resource = slide.getWebdavResourceAuthenticatedAsRoot(path);
+					resource = getRepositoryService().getRepositoryItemAsRootUser(path);
 				}catch(Exception e){
 					this.getLogger().log(Level.WARNING, "failed getting attachment" + path, e);
 					continue;
 				}
-				items.add(new Item(path,resource.getDisplayName()));
+				items.add(new Item(path,resource.getName()));
 			}
 			post.setAttachments(items);
 
@@ -347,7 +340,6 @@ DWRAnnotationPersistance {
 
 		return posts;
 	}
-
 
 	public GroupBusiness getGroupBusiness() {
 		if(groupBusiness == null){
@@ -400,17 +392,6 @@ DWRAnnotationPersistance {
 		}
 		return this.groupHome;
 	}
-
-	protected IWSlideService getIWSlideService(IWUserContext iwuc) {
-		try {
-			IWSlideService slideService = IBOLookup.getServiceInstance(iwuc.getApplicationContext(),IWSlideService.class);
-			return slideService;
-		}
-		catch (IBOLookupException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 
 	public static String getGroupRoleForPostsAccess(Group group){
 		return GROUP_ROLE_PREFIX + group.getId() + StringHandler.stripNonRomanCharacters(group.getName());
