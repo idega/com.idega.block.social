@@ -504,7 +504,6 @@ public class SocialServices extends DefaultSpringBean implements
 	}
 
 	@RemoteMethod
-	@SuppressWarnings("unchecked")
 	public String getGroupSearchResults(String request, Integer amount){
 		if(amount == null){
 			amount = -1;
