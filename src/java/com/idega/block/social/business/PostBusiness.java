@@ -1,6 +1,5 @@
 package com.idega.block.social.business;
 
-
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,7 +33,6 @@ import com.idega.business.IBOLookup;
 import com.idega.business.IBOLookupException;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.data.IDOLookup;
-import com.idega.dwr.business.DWRAnnotationPersistance;
 import com.idega.dwr.reverse.ScriptCaller;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.idegaweb.IWUserContext;
@@ -58,13 +56,9 @@ import com.idega.util.StringUtil;
 import com.idega.util.expression.ELUtil;
 import com.idega.util.text.Item;
 
-
 @Service("postBusiness")
 @Scope(BeanDefinition.SCOPE_SINGLETON)
-public class PostBusiness extends DefaultSpringBean implements
-DWRAnnotationPersistance {
-
-
+public class PostBusiness extends DefaultSpringBean {
 
 	private static final String GROUP_ROLE_PREFIX = "saga_role_";
 
@@ -83,12 +77,8 @@ DWRAnnotationPersistance {
 	private PostDao postDao;
 
 	public PostBusiness(){
-		ELUtil.getInstance().autowire(this);
 		this.articleListManadgedBean = new ArticleListManagedBean();
 	}
-
-
-
 
 	@SuppressWarnings("unchecked")
 	public String savePost(Map <String,ArrayList<String>> parameters){

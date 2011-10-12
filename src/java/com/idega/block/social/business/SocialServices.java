@@ -54,8 +54,8 @@ import com.idega.util.expression.ELUtil;
 	@Param(name="beanName", value=SocialServices.SERVICE),
 	@Param(name="javascript", value="SocialServices")
 }, name="SocialServices")
-public class SocialServices extends DefaultSpringBean implements
-		DWRAnnotationPersistance {
+public class SocialServices extends DefaultSpringBean implements DWRAnnotationPersistance {
+	
 	public static final String SERVICE = "socialServices";
 
 	private GroupBusiness groupBusiness = null;
@@ -67,17 +67,8 @@ public class SocialServices extends DefaultSpringBean implements
 
 	private Long index = Long.MAX_VALUE;
 
-
-//	@Autowired
-//	private GroupHelper groupHelper;
-
-
 	@Autowired
 	private PostBusiness postBusiness;
-
-	public SocialServices(){
-		ELUtil.getInstance().autowire(this);
-	}
 
 	/**
 	 * checks if group is allowed to save
@@ -195,8 +186,6 @@ public class SocialServices extends DefaultSpringBean implements
 		int groupsAmmount = foundGroups.size();
 		ArrayList <String> strings = new ArrayList<String>(groupsAmmount);
 		for(Group group : foundGroups){
-//			String imgUri = this.groupHelper.getGroupIcon(group,
-//					this.groupHelper.getGroupImageBaseUri(iwc), true);
 			StringBuilder responseItem = new StringBuilder("<input type='hidden' name='")
 					.append(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME).append("' value='")
 					.append(group.getId()).append("'><table class = 'autocompleted-receiver'><tr><td><img src = '")
@@ -208,9 +197,7 @@ public class SocialServices extends DefaultSpringBean implements
 			strings.add(groupName != null ? groupName.toString() : CoreConstants.EMPTY);
 		}
 		return strings;
-
 	}
-
 
 	/**
 	 * @param request -	any string.
@@ -520,5 +507,3 @@ public class SocialServices extends DefaultSpringBean implements
 		return html;
 	}
 }
-
-

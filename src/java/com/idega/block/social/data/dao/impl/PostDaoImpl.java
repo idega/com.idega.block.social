@@ -1,8 +1,5 @@
 package com.idega.block.social.data.dao.impl;
 
-
-
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -25,16 +22,12 @@ import com.idega.core.persistence.impl.GenericDaoImpl;
 import com.idega.util.CoreConstants;
 import com.idega.util.ListUtil;
 import com.idega.util.StringUtil;
-import com.idega.util.expression.ELUtil;
 
 @Repository
 @Scope(BeanDefinition.SCOPE_SINGLETON)
 @Qualifier("PostDao")
 public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 
-	public PostDaoImpl(){
-		ELUtil.getInstance().autowire(this);
-	}
 	@Override
 	@Transactional(readOnly=false)
 	public boolean updatePost(String uri, Collection<Integer> receivers,
@@ -57,7 +50,6 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 	}
 
 	private List <PostEntity> getPostsByArticleUriAndPostType(String uri,String type){
-//		Long articleEntityId = this.articleDao.getArticleIdByURI(uri);
 		StringBuilder inlineQuery =
 				new StringBuilder("FROM PostEntity p WHERE (p.postType").append(" = :")
 				.append(PostEntity.postTypeProp).append(") AND (p.article")
@@ -68,6 +60,7 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 				new Param(ArticleEntity.uriProp,uri));
 		return entities;
 	}
+	
 	@Override
 	@Transactional(readOnly=false)
 	public boolean updatePost(String uri,Collection<Integer> receivers,int creator) {
@@ -75,21 +68,7 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 
 	}
 
-//	@Override
-//	@Transactional(readOnly=false)
-//	public boolean updatePost(String uri, String type,int creator) {
-//
-//		PostEntity post =  this.createPostEntity(uri, type,creator);
-//		if(post == null){
-//			return false;
-//		}
-//		persist(post);
-//		return true;
-//
-//	}
-
 	private PostEntity createPostEntity(String uri, String type,int creator) {
-
 		List <PostEntity> entities = this.getPostsByArticleUriAndPostType(uri, type);
 		PostEntity post = null;
 		if(ListUtil.isEmpty(entities)){
@@ -101,11 +80,6 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 			}
 			post = entities.iterator().next();
 		}
-//		if(!this.articleDao.updateArticle(new Date(), uri, null)){
-//			return null;
-//		}
-//
-//		ArticleEntity article = this.articleDao.getArticle(uri);
 
 		ArticleEntity article = new ArticleEntity();
 		article.setModificationDate(new Date());
@@ -114,9 +88,7 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 		post.setArticle(article);
 		post.setPostCreator(creator);
 
-//		persist(post);
 		return post;
-
 	}
 
 	@Override
@@ -209,7 +181,6 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 		return entities;
 	}
 
-
 	@Override
 	public Collection<PostEntity> getPostsByCreators(
 			Collection<Integer> creators, String type, int max, String uriFrom) {
@@ -296,7 +267,6 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 			}
 		}
 		return entities;
-
 	}
 
 	public Collection<PostEntity> getPostsByReceiversAndCreators(Collection<Integer> creators,
@@ -444,6 +414,5 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 		}
 		return query.getResultList(PostEntity.class,params);
 	}
-
 
 }
