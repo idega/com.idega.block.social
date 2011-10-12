@@ -47,137 +47,137 @@
     </notifiers>
   </ciManagement>
   <build>
-    <sourceDirectory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/src/java</sourceDirectory>
+    <sourceDirectory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/src/java</sourceDirectory>
     <scriptSourceDirectory>src/main/scripts</scriptSourceDirectory>
-    <testSourceDirectory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/src/test/java</testSourceDirectory>
-    <outputDirectory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/target/classes</outputDirectory>
-    <testOutputDirectory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/target/test-classes</testOutputDirectory>
+    <testSourceDirectory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/src/test/java</testSourceDirectory>
+    <outputDirectory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/target/classes</outputDirectory>
+    <testOutputDirectory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/target/test-classes</testOutputDirectory>
     <resources>
       <resource>
         <targetPath>resources</targetPath>
-        <mergeId>resource-0</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/resources</directory>
+        <mergeId>resource-1080</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/resources</directory>
       </resource>
       <resource>
         <targetPath>properties</targetPath>
-        <mergeId>resource-1</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/properties</directory>
+        <mergeId>resource-1081</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/properties</directory>
       </resource>
       <resource>
         <targetPath>WEB-INF</targetPath>
-        <mergeId>resource-2</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/WEB-INF</directory>
+        <mergeId>resource-1082</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/WEB-INF</directory>
       </resource>
       <resource>
         <targetPath>jsp</targetPath>
-        <mergeId>resource-3</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/jsp</directory>
+        <mergeId>resource-1083</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/jsp</directory>
       </resource>
       <resource>
         <targetPath>facelets</targetPath>
-        <mergeId>resource-4</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/facelets</directory>
+        <mergeId>resource-1084</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/facelets</directory>
       </resource>
       <resource>
         <targetPath>META-INF</targetPath>
-        <mergeId>resource-5</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/WEB-INF/tld</directory>
+        <mergeId>resource-1085</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/WEB-INF/tld</directory>
         <includes>
           <include>**/*.tld</include>
         </includes>
       </resource>
       <resource>
-        <mergeId>resource-6</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/src/WEB-INF/classes</directory>
+        <mergeId>resource-1086</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/src/WEB-INF/classes</directory>
         <includes>
           <include>*.properties</include>
         </includes>
       </resource>
       <resource>
         <targetPath>META-INF</targetPath>
-        <mergeId>resource-7</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/WEB-INF/tld</directory>
+        <mergeId>resource-1087</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/WEB-INF/tld</directory>
         <includes>
           <include>**/*.taglib.xml</include>
         </includes>
       </resource>
       <resource>
         <targetPath>META-INF</targetPath>
-        <mergeId>resource-8</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/WEB-INF/classes</directory>
+        <mergeId>resource-1088</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/WEB-INF/classes</directory>
         <includes>
           <include>**/*.xml</include>
         </includes>
       </resource>
       <resource>
         <targetPath>META-INF</targetPath>
-        <mergeId>resource-9</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/WEB-INF</directory>
+        <mergeId>resource-1089</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/WEB-INF</directory>
         <includes>
           <include>faces-config.xml</include>
         </includes>
       </resource>
       <resource>
-        <mergeId>resource-10</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/src/java</directory>
+        <mergeId>resource-1090</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/src/java</directory>
         <includes>
           <include>**/*.wsdd</include>
         </includes>
       </resource>
       <resource>
-        <mergeId>resource-11</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/src/java</directory>
+        <mergeId>resource-1091</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/src/java</directory>
         <includes>
           <include>**/*.wsdl</include>
         </includes>
       </resource>
       <resource>
-        <mergeId>resource-12</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/src/java</directory>
+        <mergeId>resource-1092</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/src/java</directory>
         <includes>
           <include>**/*.xml</include>
         </includes>
       </resource>
       <resource>
-        <mergeId>resource-13</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/src/java</directory>
+        <mergeId>resource-1093</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/src/java</directory>
         <includes>
           <include>**/*.hbm.xml</include>
         </includes>
       </resource>
       <resource>
-        <mergeId>resource-14</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/src/java</directory>
+        <mergeId>resource-1094</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/src/java</directory>
         <includes>
           <include>**/*.properties</include>
         </includes>
       </resource>
       <resource>
-        <mergeId>resource-15</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/src/test/java</directory>
+        <mergeId>resource-1095</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/src/test/java</directory>
         <includes>
           <include>**/*.xml</include>
         </includes>
       </resource>
       <resource>
-        <mergeId>resource-16</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/src/test/java</directory>
+        <mergeId>resource-1096</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/src/test/java</directory>
         <includes>
           <include>**/*.hbm.xml</include>
         </includes>
       </resource>
       <resource>
         <targetPath>META-INF</targetPath>
-        <mergeId>resource-17</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/WEB-INF</directory>
+        <mergeId>resource-1097</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/WEB-INF</directory>
         <includes>
           <include>persistence.xml</include>
         </includes>
       </resource>
       <resource>
         <targetPath>META-INF</targetPath>
-        <mergeId>resource-18</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/WEB-INF</directory>
+        <mergeId>resource-1098</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/WEB-INF</directory>
         <includes>
           <include>components.xml</include>
         </includes>
@@ -185,11 +185,11 @@
     </resources>
     <testResources>
       <testResource>
-        <mergeId>resource-19</mergeId>
-        <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/src/test/resources</directory>
+        <mergeId>resource-1099</mergeId>
+        <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/src/test/resources</directory>
       </testResource>
     </testResources>
-    <directory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/target</directory>
+    <directory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/target</directory>
     <finalName>com.idega.block.social-4.1.3-SNAPSHOT</finalName>
     <pluginManagement>
       <plugins>
@@ -324,18 +324,6 @@
   </distributionManagement>
   <repositories>
     <repository>
-      <releases>
-        <updatePolicy>always</updatePolicy>
-        <checksumPolicy>warn</checksumPolicy>
-      </releases>
-      <snapshots>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-      <id>idega1</id>
-      <name>Idega Main Repository</name>
-      <url>http://repository.idega.com/maven2</url>
-    </repository>
-    <repository>
       <id>java.net2</id>
       <name>Sun Java Net Maven 2 Repository</name>
       <url>http://download.java.net/maven/2/</url>
@@ -371,6 +359,11 @@
       <id>people.apache.org</id>
       <name>apache.org Incubating Maven Repository</name>
       <url>http://people.apache.org/repo/m2-incubating-repository/</url>
+    </repository>
+    <repository>
+      <id>idega1</id>
+      <name>idega maven2 repository</name>
+      <url>http://repository.idega.com/maven2/</url>
     </repository>
     <repository>
       <id>jahia</id>
@@ -549,7 +542,7 @@
   </dependencies>
   <reporting>
     <excludeDefaults>false</excludeDefaults>
-    <outputDirectory>/home/alex/workspace2/com.idega.block.addon/com.idega.block.social/target/site</outputDirectory>
+    <outputDirectory>/home/alex/idega/workspace/com.idega.block.addon/com.idega.block.social/target/site</outputDirectory>
     <plugins>
       <plugin>
         <artifactId>maven-project-info-reports-plugin</artifactId>
@@ -771,11 +764,6 @@
       </dependency>
       <dependency>
         <groupId>com.idega.block.addon</groupId>
-        <artifactId>com.idega.block.social</artifactId>
-        <version>4.1.3-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>com.idega.block.addon</groupId>
         <artifactId>org.chiba.web</artifactId>
         <version>4.1.3-SNAPSHOT</version>
       </dependency>
@@ -922,6 +910,16 @@
       <dependency>
         <groupId>com.idega.block.addon</groupId>
         <artifactId>com.idega.telecom</artifactId>
+        <version>4.1.3-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.idega.block.addon</groupId>
+        <artifactId>com.idega.block.caldav</artifactId>
+        <version>4.1.3-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.idega.block.addon</groupId>
+        <artifactId>com.idega.block.social</artifactId>
         <version>4.1.3-SNAPSHOT</version>
       </dependency>
       <dependency>
@@ -1493,12 +1491,12 @@
     <jug-jug-version>1.1.2</jug-jug-version>
     <batik-batik-rasterizer-version>1.6</batik-batik-rasterizer-version>
     <xerces-xercesImpl-version>2.9.1</xerces-xercesImpl-version>
-    <org.hibernate-hibernate-entitymanager-version>3.4.0.GA</org.hibernate-hibernate-entitymanager-version>
     <commons-beanutils-commons-beanutils-version>1.7.0</commons-beanutils-commons-beanutils-version>
+    <org.hibernate-hibernate-entitymanager-version>3.4.0.GA</org.hibernate-hibernate-entitymanager-version>
     <commons-codec-commons-codec-version>1.5</commons-codec-commons-codec-version>
     <commons-digester-commons-digester-version>1.8.1</commons-digester-commons-digester-version>
-    <commons-jxpath-commons-jxpath-version>1.2-patched</commons-jxpath-commons-jxpath-version>
     <commons-pool-commons-pool-version>1.1</commons-pool-commons-pool-version>
+    <commons-jxpath-commons-jxpath-version>1.2-patched</commons-jxpath-commons-jxpath-version>
     <jaxen-jaxen-version>1.0-FCS</jaxen-jaxen-version>
     <maven-wagon-http-lightweight-version>1.0-alpha-3</maven-wagon-http-lightweight-version>
     <dwr-dwr-noncla-version>3.0rc1</dwr-dwr-noncla-version>
@@ -1516,8 +1514,8 @@
     <net.sf.ehcache-ehcache-core-version>2.4.5</net.sf.ehcache-ehcache-core-version>
     <org.apache.poi-poi-version>3.7</org.apache.poi-poi-version>
     <org.springframework-spring-test-version>2.5.6</org.springframework-spring-test-version>
-    <xalan-version>2.7.1</xalan-version>
     <javax.jcr-jcr-version>2.0</javax.jcr-jcr-version>
+    <xalan-version>2.7.1</xalan-version>
     <javax.annotation-jsr250-api-version>1.0</javax.annotation-jsr250-api-version>
   </properties>
 </project>
