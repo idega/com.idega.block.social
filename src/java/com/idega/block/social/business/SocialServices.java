@@ -61,7 +61,6 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 	private GroupBusiness groupBusiness = null;
 	private UserApplicationEngine userApplicationEngine = null;
 	private UserBusiness userBusiness = null;
-	private IWResourceBundle iwrb = null;
 	private UserHome userHome = null;
 	private GroupHome groupHome = null;
 
@@ -456,11 +455,7 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 	}
 
 	protected IWResourceBundle getResourceBundle(){
-
-		if(iwrb == null){
-			iwrb =this.getResourceBundle(this.getBundle(Constants.IW_BUNDLE_IDENTIFIER));
-		}
-		return iwrb;
+		return this.getResourceBundle(this.getBundle(Constants.IW_BUNDLE_IDENTIFIER));
 	}
 
 	public UserHome getUserHome() {
