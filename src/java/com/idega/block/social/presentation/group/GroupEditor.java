@@ -75,12 +75,12 @@ public class GroupEditor extends GroupTreeViewer {
 		
 		String containerId = "UniqueGroupTreeContainerId15647989";
 		this.setGroupsTreeViewerId(containerId);
-		StringBuilder treeLoadScript= new StringBuilder("loadSagaBookGroupsTree('")
+		StringBuilder treeLoadScript = new StringBuilder("loadSagaBookGroupsTree('")
 		.append(containerId)
 		.append("', '").append(iwrb.getLocalizedString("there_are_no_groups_available", "There are no groups available"))
 		.append("', '").append(groups.iterator().next().getUniqueId())
 		.append("', '").append(this.getStyleClass())
-		.append("'); ");
+		.append("');");
 		this.setLoadRemoteGroupsFunction(treeLoadScript.toString());
 		super.main(iwc);
 
