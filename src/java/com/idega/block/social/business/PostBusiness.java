@@ -60,7 +60,7 @@ import com.idega.util.text.Item;
 @Scope(BeanDefinition.SCOPE_SINGLETON)
 public class PostBusiness extends DefaultSpringBean {
 
-	private static final String GROUP_ROLE_PREFIX = "saga_role_";
+	private static final String GROUP_ROLE_PREFIX = "social_role_";
 
 	private GroupBusiness groupBusiness = null;
 	private UserApplicationEngine userApplicationEngine = null;

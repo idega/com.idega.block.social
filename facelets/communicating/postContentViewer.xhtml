@@ -27,10 +27,10 @@
 			<div class = "post-content-view-post-footer">
 				<h:outputLink value="#{item.uriToBodyPreview}" rendered="#{item.uriToBodyPreview != null}" 
 						class = "post-content-viewer-post-preview post-content-viewer-post-preview-not-ready">
-					<h:outputText value="#{localizedStrings['is.idega.block.saga']['view_all_post']}"/>
+					<h:outputText value="#{localizedStrings['com.idega.block.social']['view_all_post']}"/>
 				</h:outputLink>	
 				<span class = "post-attachments-span">
-					<h:outputText value="#{localizedStrings['is.idega.block.saga']['attachments']}" 
+					<h:outputText value="#{localizedStrings['com.idega.block.social']['attachments']}" 
 						rendered="#{not empty item.attachments}"/>
 					<t:dataList var="attachment" value="#{item.attachments}" layout="unorderedList" styleClass = "post-attachments-list">
 						<ic:DownloadLink  value = "#{attachment.itemLabel}" rendered="#{not empty item.attachments}">

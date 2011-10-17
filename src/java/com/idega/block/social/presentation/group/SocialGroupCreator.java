@@ -71,7 +71,7 @@ public class SocialGroupCreator extends SimpleGroupCreator{
 		String parentGroupId = iwc.getParameter(UserConstants.GROUPS_TO_RELOAD_IN_MENU_DROPDOWN_ID_IN_SIMPLE_USER_APPLICATION);
 
 		if(StringUtil.isEmpty(parentGroupId) || parentGroupId.equals("-1")){
-			parentGroupId = socialServices.getSagaRootGroup().getId();
+			parentGroupId = socialServices.getSocialRootGroup().getId();
 		}
 
 		setParentGroupId(parentGroupId);

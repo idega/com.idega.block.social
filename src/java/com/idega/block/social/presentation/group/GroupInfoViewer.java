@@ -24,15 +24,13 @@ import com.idega.presentation.text.ListItem;
 import com.idega.presentation.text.Lists;
 import com.idega.user.data.Group;
 import com.idega.user.presentation.GroupJoiner;
-import com.idega.util.CoreUtil;
 import com.idega.util.PresentationUtil;
 import com.idega.util.expression.ELUtil;
 
-public class GroupInfoViewer  extends IWBaseComponent{
+public class GroupInfoViewer extends IWBaseComponent {
 
 	public static final String GROUP_ID_PARAMETER = "group_id_parameter";
 
-	private IWContext iwc = null;
 	private IWResourceBundle iwrb = null;
 
 	private Layer main = null;
@@ -41,32 +39,28 @@ public class GroupInfoViewer  extends IWBaseComponent{
 
 	private boolean needFiles = true;
 
-
 	@Autowired
 	private SocialServices socialservices;
 
 	public GroupInfoViewer(){
 		ELUtil.getInstance().autowire(this);
-		this.iwc = CoreUtil.getIWContext();
 	}
 
 	@Override
 	protected void initializeComponent(FacesContext context) {
 		super.initializeComponent(context);
+		IWContext iwc = IWContext.getIWContext(context);
 		iwrb = this.getBundle(context, Constants.IW_BUNDLE_IDENTIFIER).getResourceBundle(iwc);
 
 		main = new Layer();
 		this.add(main);
 
-		Group group = getGroup();
+		Group group = getGroup(iwc);
 		if(group == null){
 			main.addText(iwrb.getLocalizedString("error_getting_group", "Error getting group"));
 			return;
 		}
 
-
-		
-		
 		Heading1 title = new Heading1();
 		main.add(title);
 		title.addToText(group.getName());
@@ -88,14 +82,12 @@ public class GroupInfoViewer  extends IWBaseComponent{
 			needFiles = false;
 		}
 		if(needFiles){
-			PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, getNeededScripts(iwc));
+			PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, GroupJoiner.getNeededScripts(iwc));
 			PresentationUtil.addStyleSheetsToHeader(iwc, getNeededStyles(iwc));
 		}
-
-//		this.addActions();
 	}
 
-	private Group getGroup(){
+	private Group getGroup(IWContext iwc) {
 		String groupId = iwc.getParameter(GROUP_ID_PARAMETER);
 		if(groupId == null){
 			return null;
@@ -112,24 +104,6 @@ public class GroupInfoViewer  extends IWBaseComponent{
 
 	}
 
-//	private void addActions(){
-////		StringBuilder actions = new StringBuilder();
-////		String actionString = PresentationUtil.getJavaScriptAction(actions.toString());
-////		main.add(actionString);
-//	}
-
-
-	/**
-	 * Gets the scripts that is need for this element to work
-	 * if this element is loaded dynamically (ajax) and not
-	 * in frame, than containing element have to add theese
-	 * scriptFiles.
-	 * @return script files uris
-	 */
-	public static List<String> getNeededScripts(IWContext iwc){
-		return GroupJoiner.getNeededScripts(iwc);
-	}
-
 	/**
 	 * Gets the stylesheets that is need for this element to work
 	 * if this element is loaded dynamically (ajax) and not
@@ -138,7 +112,6 @@ public class GroupInfoViewer  extends IWBaseComponent{
 	 * @return style files uris
 	 */
 	public static List<String> getNeededStyles(IWContext iwc){
-
 		List<String> styles = new ArrayList<String>();
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
 		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
@@ -146,7 +119,7 @@ public class GroupInfoViewer  extends IWBaseComponent{
 		return styles;
 	}
 
-	public static UIComponent getGroupListView(Collection<Group> groups){
+	public UIComponent getGroupListView(Collection<Group> groups){
 		Lists list = new Lists();
 		for(Group group : groups){
 			ListItem li = new ListItem();
@@ -157,4 +130,3 @@ public class GroupInfoViewer  extends IWBaseComponent{
 		return list;
 	}
 }
-

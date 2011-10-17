@@ -420,13 +420,13 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		return this.postBusiness.savePost(parameters);
 	}
 
-	public Group getSagaRootGroup(){
+	public Group getSocialRootGroup(){
 		try{
 			@SuppressWarnings("unchecked")
-			Collection <Group> sagaRootGroups = getGroupBusiness().getGroupsByGroupName(Constants.SAGA_ROOT_GROUP_NAME);
-			return sagaRootGroups.iterator().next();
+			Collection<Group> socialRootGroups = getGroupBusiness().getGroupsByGroupName(Constants.SOCIAL_ROOT_GROUP_NAME);
+			return socialRootGroups.iterator().next();
 		}catch(Exception e){
-			this.getLogger().log(Level.WARNING, "Failed getting saga root group", e);
+			this.getLogger().log(Level.WARNING, "Failed getting social root group", e);
 			return null;
 		}
 

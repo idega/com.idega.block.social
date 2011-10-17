@@ -58,7 +58,7 @@ public class PostContentViewer extends IWBaseComponent {
 	private String postCreationFormId = null;
 	private String postCreationButtonId = null;
 
-	private static String GENERATED_ID_PREFIX = "is.idega.block.saga.presentation.comunicating.post-content-viewer";
+	private static String GENERATED_ID_PREFIX = "com.idega.block.social.presentation.comunicating.post-content-viewer";
 	private int idGenerationCounter = 0;
 
 	private String advancedLinkId = null;
