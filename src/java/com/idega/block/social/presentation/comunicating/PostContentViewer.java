@@ -35,7 +35,6 @@ import com.idega.presentation.ui.GenericButton;
 import com.idega.presentation.ui.HiddenInput;
 import com.idega.presentation.ui.TextArea;
 import com.idega.util.CoreConstants;
-import com.idega.util.CoreUtil;
 import com.idega.util.PresentationUtil;
 import com.idega.util.expression.ELUtil;
 import com.idega.webface.WFUtil;
@@ -48,7 +47,6 @@ public class PostContentViewer extends IWBaseComponent {
 			"\n}";
 	public static final ScriptBuffer POST_LOAD_SCRIPT = new ScriptBuffer(POST_LOAD_SCRIPT_STRING);
 
-	private IWContext iwc = null;
 	private IWBundle bundle = null;
 	private IWResourceBundle iwrb = null;
 
@@ -70,21 +68,22 @@ public class PostContentViewer extends IWBaseComponent {
 
 	private static final String ENDING = "';\n";
 
-
 	public PostContentViewer(){
 		ELUtil.getInstance().autowire(this);
-		this.iwc = CoreUtil.getIWContext();
-		bundle = iwc.getIWMainApplication().getBundle(Constants.IW_BUNDLE_IDENTIFIER);
-		this.uiViewRoot = iwc.getViewRoot();
 		Random random = new Random();
 		this.idGenerationCounter = random.nextInt();
-		isLoggedOn = iwc.isLoggedOn();
-		iwrb = bundle.getResourceBundle(iwc);
 	}
 
 	@Override
 	protected void initializeComponent(FacesContext context) {
 		super.initializeComponent(context);
+		
+		IWContext iwc = IWContext.getIWContext(context);
+		bundle = getBundle(context, Constants.IW_BUNDLE_IDENTIFIER);
+		this.uiViewRoot = iwc.getViewRoot();
+		isLoggedOn = iwc.isLoggedOn();
+		iwrb = bundle.getResourceBundle(iwc);
+		
 		main = new Layer();
 		this.add(main);
 
@@ -105,9 +104,8 @@ public class PostContentViewer extends IWBaseComponent {
 		PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, PostContentViewer.getNeededScripts(iwc));
 		PresentationUtil.addStyleSheetsToHeader(iwc, PostContentViewer.getNeededStyles(iwc));
 
-		this.addActions();
+		this.addActions(iwc);
 	}
-
 
 	public static UIComponent getPostList(IWContext iwc){
 		IWBundle bundle = iwc.getIWMainApplication().getBundle(Constants.IW_BUNDLE_IDENTIFIER);
@@ -147,7 +145,7 @@ public class PostContentViewer extends IWBaseComponent {
 
 		GenericButton postButton = new GenericButton();
 		form.add(postButton);
-		postButton.setValue("post"/*this.iwrb.getLocalizedString("post", "Post")*/);
+		postButton.setValue(this.iwrb.getLocalizedString("post", "Post"));
 		StringBuilder action = new StringBuilder("PostContentViewerHelper.savePost('#").append(postButton.getId())
 		.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(CoreConstants.NUMBER_SIGN).append(postBody.getId())
 		.append(CoreConstants.JS_STR_PARAM_END);
@@ -171,7 +169,7 @@ public class PostContentViewer extends IWBaseComponent {
 		return form;
 	}
 
-	private void addActions(){
+	private void addActions(IWContext iwc){
 		StringBuilder autogrow = new StringBuilder("PostContentViewerHelper.createAutoresizing('#").append(main.getId())
 		.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append("[name = \"").append(PostBusiness.ParameterNames.BODY_PARAMETER_NAME)
 		.append("\"]');\n");
