@@ -491,8 +491,8 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 			amount = -1;
 		}
 		//TODO: make global variable
-		ArrayList<String> types = new ArrayList<String>(1);
-		types.add(Constants.SOCIAL_TYPE);
+		ArrayList<String> types = null;//new ArrayList<String>(1);
+//		types.add(Constants.SOCIAL_TYPE);
 		Collection <Group> groups = getGroupBusiness().getGroupsBySearchRequest(request, types, amount);
 		if(ListUtil.isEmpty(groups)){
 			return "<label>" + this.getResourceBundle().getLocalizedString("no_groups_were_found_by_your_request", "No groups were found by your request") + "</label>";

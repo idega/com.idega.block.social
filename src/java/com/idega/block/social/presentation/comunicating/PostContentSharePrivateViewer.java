@@ -1,7 +1,6 @@
 package com.idega.block.social.presentation.comunicating;
 
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -13,7 +12,6 @@ import com.idega.block.social.Constants;
 import com.idega.block.social.bean.PostRequestBean;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
-import com.idega.block.web2.business.Web2BusinessBean;
 import com.idega.builder.bean.AdvancedProperty;
 import com.idega.builder.business.BuilderLogic;
 import com.idega.idegaweb.IWBundle;
@@ -25,6 +23,7 @@ import com.idega.presentation.Layer;
 import com.idega.presentation.text.Link;
 import com.idega.presentation.text.ListItem;
 import com.idega.presentation.text.Lists;
+import com.idega.presentation.ui.GenericButton;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.PresentationUtil;
@@ -60,6 +59,16 @@ public class PostContentSharePrivateViewer extends IWBaseComponent {
 		main = new Layer();
 		this.add(main);
 		main.setStyleClass("main-content-sharing-layer");
+		
+		
+		String uriToAdvanced = BuilderLogic.getInstance().getUriToObject(PostCreationView.class);
+		
+		GenericButton advanced = new GenericButton();
+		main.add(advanced);
+		advanced.setValue(iwrb.getLocalizedString("Send_message", "Send message"));
+		StringBuilder action = new StringBuilder("ContentSharingHelper.openInDefaultFancybox('").append(uriToAdvanced)
+		.append(CoreConstants.JS_STR_PARAM_END);
+		advanced.setOnClick(action.toString());
 
 		Layer sideTopLayer = new Layer();
 		sideTopLayer.setStyleClass("side-top-layer-of-main");
@@ -106,8 +115,11 @@ public class PostContentSharePrivateViewer extends IWBaseComponent {
 
 	private void addActions(){
 		StringBuilder actions = new StringBuilder("jQuery(document).ready(function(){\n")
-				.append("jQuery('#").append(tabbedMenu.getId()).append("').tabs();\n});\n");
+				.append("jQuery('#").append(tabbedMenu.getId()).append("').tabs();\n")
+				.append("});\n");
 		String actionString = PresentationUtil.getJavaScriptAction(actions.toString());
+		
+		
 		main.add(actionString);
 	}
 
@@ -130,17 +142,6 @@ public class PostContentSharePrivateViewer extends IWBaseComponent {
 
 			scripts.add(web2.getBundleUriToHumanizedMessagesScript());
 			styles.add(web2.getBundleUriToHumanizedMessagesStyleSheet());
-
-			try{
-				StringBuilder path = new StringBuilder(Web2BusinessBean.JQUERY_PLUGINS_FOLDER_NAME_PREFIX)
-				.append("/mac-os-x-icon-dock/3-remake/mac-os-x-icon-dock.js");
-				scripts.add(web2.getBundleURIWithinScriptsFolder(path.toString()));
-				path = new StringBuilder(Web2BusinessBean.JQUERY_PLUGINS_FOLDER_NAME_PREFIX)
-				.append("/mac-os-x-icon-dock/3-remake/mac-os-x-icon-dock.css");
-				styles.add(web2.getBundleURIWithinScriptsFolder(path.toString()));
-			}catch(RemoteException e){
-				Logger.getLogger(this.getClass().getName()).log(Level.WARNING,CoreConstants.EMPTY,e);
-			}
 
 
 		}else{

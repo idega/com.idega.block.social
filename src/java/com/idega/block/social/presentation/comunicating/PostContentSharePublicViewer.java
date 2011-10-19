@@ -53,6 +53,7 @@ public class PostContentSharePublicViewer extends IWBaseComponent {
 		postRequestBean.setShowGroup("true");
 
 		PostContentViewer viewer = new PostContentViewer();
+		viewer.setComposePublic(Boolean.TRUE);
 //		FaceletComponent facelet = (FaceletComponent)iwc.getApplication().createComponent(FaceletComponent.COMPONENT_TYPE);
 //		facelet.setFaceletURI(bundle.getFaceletURI("communicating/postContentViewer.xhtml"));
 
@@ -83,17 +84,6 @@ public class PostContentSharePublicViewer extends IWBaseComponent {
 
 			scripts.add(web2.getBundleUriToHumanizedMessagesScript());
 			styles.add(web2.getBundleUriToHumanizedMessagesStyleSheet());
-
-//			try{
-//				StringBuilder path = new StringBuilder(Web2BusinessBean.JQUERY_PLUGINS_FOLDER_NAME_PREFIX)
-//				.append("/mac-os-x-icon-dock/3-remake/mac-os-x-icon-dock.js");
-//				scripts.add(web2.getBundleURIWithinScriptsFolder(path.toString()));
-//				path = new StringBuilder(Web2BusinessBean.JQUERY_PLUGINS_FOLDER_NAME_PREFIX)
-//				.append("/mac-os-x-icon-dock/3-remake/mac-os-x-icon-dock.css");
-//				styles.add(web2.getBundleURIWithinScriptsFolder(path.toString()));
-//			}catch(RemoteException e){
-//				Logger.getLogger(this.getClass().getName()).log(Level.WARNING,CoreConstants.EMPTY,e);
-//			}
 
 
 		}else{

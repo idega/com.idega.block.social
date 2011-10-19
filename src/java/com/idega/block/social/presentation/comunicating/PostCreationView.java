@@ -1,7 +1,6 @@
 package com.idega.block.social.presentation.comunicating;
 
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,9 +43,8 @@ public class PostCreationView extends IWBaseComponent{
 
 	private static final String TAGEDIT_NAME = "tag[]";
 	private static final String GROUP_TAGEDIT_NAME = "tag[1]";
-
-//	private String tageditId = null;
-//	private String groupTageditId = null;
+	
+	public static final String PUBLIC_NEEDED = "PostCreationView-public-needed";
 
 	private IWResourceBundle iwrb = null;
 	private IWContext iwc = null;
@@ -64,6 +62,8 @@ public class PostCreationView extends IWBaseComponent{
 	private String postBodyInputId = null;
 
 	protected Layer privateMsgOptionsLayer = null;
+	
+	private Boolean publicNeeded = null;
 
 	public PostCreationView(){
 		iwc = CoreUtil.getIWContext();
@@ -93,25 +93,12 @@ public class PostCreationView extends IWBaseComponent{
 		buttonsLayer.setStyleClass("post-creation-view-buttons-layer");
 	}
 
-	@Override
-	public void encodeEnd(FacesContext context) throws IOException {
-//	    List fc = this.form.getChildren();
-//	    fc.remove(fc.size() - 1);
-//	    fc.remove(fc.size() - 1);
-//	    super.encodeEnd(context);
-	}
 
 	@Override
 	protected void initializeComponent(FacesContext context) {
 		iwrb = this.getBundle(context, Constants.IW_BUNDLE_IDENTIFIER).getResourceBundle(iwc);
 
 		form.setId("post-creation-view-main-form");
-
-//		IWBundle bundle = getBundle(context, EmailConstants.IW_BUNDLE_IDENTIFIER);
-//		FaceletComponent facelet = (FaceletComponent)context.getApplication().createComponent(FaceletComponent.COMPONENT_TYPE);
-//		facelet.setFaceletURI(bundle.getFaceletURI("emailSender.xhtml"));
-
-//		this.main.add(facelet);
 
 		Layer mainFieldsLayer = new Layer();
 		this.addChild(1, mainFieldsLayer);
@@ -183,19 +170,19 @@ public class PostCreationView extends IWBaseComponent{
 		.append(nameInput.getId()).append("';");
 		String actionString = PresentationUtil.getJavaScriptAction(actionForm.toString());
 		main.add(actionString);
-//		this.tageditId = nameInput.getId();
-//		nameInput.setID("lalala");
 
 		// Group message options
-		Layer layer = new Layer();
+		Layer groupLayer = new Layer();
 //		this.addToaccordion(layer, iwrb.getLocalizedString("groups", "Groups"),
 //				PostBusiness.ParameterNames.POST_TO_GROUPS_PARAMETER_NAME);
-		addToaccordion(layer, iwrb.getLocalizedString("groups", "Groups"));
+		if(isPublicNeeded(iwc)){
+			addToaccordion(groupLayer, iwrb.getLocalizedString("groups", "Groups"));
+		}
 		label = new Label();
-		layer.add(label);
+		groupLayer.add(label);
 		label.addText(iwrb.getLocalizedString("message_receivers", "Message Receivers") + CoreConstants.COLON);
 		nameInput = new TextInput();
-		layer.add(nameInput);
+		groupLayer.add(nameInput);
 		nameInput.setName(GROUP_TAGEDIT_NAME);
 //		this.tageditId = nameInput.getId();
 		actionForm = new StringBuilder("PostCreationViewHelper.TAGEDIT_GROUP_INPUT_SELECTOR = '#")
@@ -215,6 +202,10 @@ public class PostCreationView extends IWBaseComponent{
 		PresentationUtil.addStyleSheetsToHeader(iwc, PostCreationView.getNeededStyles(iwc));
 
 		this.addActions();
+		//TODO: temporary solution
+		if(!isPublicNeeded(iwc)){
+			field.setStyleClass("not-displayed");
+		}
 	}
 
 	private void addActions(){
@@ -263,14 +254,6 @@ public class PostCreationView extends IWBaseComponent{
 	public void addToButtonsLayer(UIComponent object){
 		buttonsLayer.add(object);
 	}
-
-//	public String getActionOnSubmit() {
-//		return form.getOnsubmit();
-//	}
-//
-//	public void setActionOnSubmit(String onSubmit){
-//		form.setOnsubmit(onSubmit);
-//	}
 
 	@Override
 	public void add(UIComponent object){
@@ -424,13 +407,11 @@ public class PostCreationView extends IWBaseComponent{
 			scripts.add(jQuery.getBundleURIToJQueryLib());
 
 			scripts.add(jQuery.getBundleURIToJQueryUILib("1.8.14","js/jquery-ui-1.8.14.custom.min.js"));
-			scripts.add(jQuery.getBundleURIToJQueryUILib("1.8.14","development-bundle/ui/jquery.ui.autocomplete.js"));
 			scripts.add(jQuery.getBundleURIToJQueryUILib("1.8.14","development-bundle/ui/jquery-ui-autocomplete-html.js"));
 
 
 			scripts.add(web2.getBundleUriToHumanizedMessagesScript());
 
-//			scripts.addAll(web2.getBundleURIsToTageditLib());
 			try{
 				StringBuilder path = new StringBuilder(Web2BusinessBean.JQUERY_PLUGINS_FOLDER_NAME_PREFIX)
 				.append("/jquery-tagedit-remake.js");
@@ -442,10 +423,6 @@ public class PostCreationView extends IWBaseComponent{
 				Logger.getLogger("PostcreationView").log(Level.WARNING,CoreConstants.EMPTY,e);
 			}
 
-//			scripts.add(jQuery.getBundleURIToJQueryPlugin(JQueryPlugin.TEXT_AREA_AUTO_GROW));
-//			scripts.add(jQuery.getBundleURIToJQueryPlugin(JQueryPlugin.AUTO_RESIZE));
-//			scripts.add(jQuery.getBundleURIToJQueryPlugin(JQueryPlugin.AUTO_GROW));
-
 		}else{
 			Logger.getLogger("ContentShareComponent").log(Level.WARNING, "Failed getting Web2Business no jQuery and it's plugins files were added");
 		}
@@ -453,9 +430,7 @@ public class PostCreationView extends IWBaseComponent{
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
 		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
 		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/PostCreationHelper.js"));
-
-//		IWBundle iwbemail = iwma.getBundle(EmailConstants.IW_BUNDLE_IDENTIFIER);
-//		scripts.add(iwbemail.getVirtualPathWithFileNameString("javascript/FileUploadHelper.js"));
+		scripts.add("/dwr/interface/SocialServices.js");
 
 		return scripts;
 	}
@@ -490,5 +465,23 @@ public class PostCreationView extends IWBaseComponent{
 		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
 		styles.add(iwb.getVirtualPathWithFileNameString("style/postCreationView.css"));
 		return styles;
+	}
+
+
+	public Boolean isPublicNeeded(IWContext iwc) {
+		if(publicNeeded == null){
+			String param = iwc.getParameter(PUBLIC_NEEDED);
+			if(param != null && param.equalsIgnoreCase("true")){
+				publicNeeded = Boolean.TRUE;
+			}else{
+				publicNeeded = Boolean.FALSE;
+			}
+		}
+		return publicNeeded;
+	}
+
+
+	public void setPublicNeeded(Boolean publicNeeded) {
+		this.publicNeeded = publicNeeded;
 	}
 }

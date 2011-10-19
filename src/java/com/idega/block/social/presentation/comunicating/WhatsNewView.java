@@ -26,7 +26,6 @@ import com.idega.presentation.text.Link;
 import com.idega.presentation.text.ListItem;
 import com.idega.presentation.text.Lists;
 import com.idega.user.data.Group;
-import com.idega.user.presentation.GroupJoiner;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.PresentationUtil;
@@ -113,7 +112,7 @@ public class WhatsNewView  extends IWBaseComponent{
 		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
 		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/WhatsNewHelper.js"));
 		scripts.add("/dwr/interface/SocialServices.js");
-		scripts.addAll(GroupJoiner.getNeededScripts(iwc));
+		scripts.addAll(GroupInfoViewer.getNeededScripts(iwc));
 
 		return scripts;
 	}

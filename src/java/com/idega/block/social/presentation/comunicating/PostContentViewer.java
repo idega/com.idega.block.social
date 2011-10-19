@@ -22,6 +22,7 @@ import com.idega.block.social.presentation.SimpleForm;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
 import com.idega.block.web2.business.Web2BusinessBean;
+import com.idega.builder.bean.AdvancedProperty;
 import com.idega.builder.business.BuilderLogic;
 import com.idega.facelets.ui.FaceletComponent;
 import com.idega.idegaweb.IWBundle;
@@ -46,12 +47,15 @@ public class PostContentViewer extends IWBaseComponent {
 				"PostCreationViewHelper.getThePosts();" +
 			"\n}";
 	public static final ScriptBuffer POST_LOAD_SCRIPT = new ScriptBuffer(POST_LOAD_SCRIPT_STRING);
+	public static final String COMPOSE_PUBLIC = "PostContentViewer-compose-public";
 
 	private IWBundle bundle = null;
 	private IWResourceBundle iwrb = null;
 
 	private Layer main = null;
 	private UIViewRoot uiViewRoot = null;
+	
+	private Boolean composePublic = null;
 
 	private String postCreationFormId = null;
 	private String postCreationButtonId = null;
@@ -65,6 +69,8 @@ public class PostContentViewer extends IWBaseComponent {
 	PostRequestBean postRequestBean;
 
 	private boolean isLoggedOn = false;
+	
+	private boolean loadMoreButtonNeeded = true;
 
 	private static final String ENDING = "';\n";
 
@@ -77,7 +83,6 @@ public class PostContentViewer extends IWBaseComponent {
 	@Override
 	protected void initializeComponent(FacesContext context) {
 		super.initializeComponent(context);
-		
 		IWContext iwc = IWContext.getIWContext(context);
 		bundle = getBundle(context, Constants.IW_BUNDLE_IDENTIFIER);
 		this.uiViewRoot = iwc.getViewRoot();
@@ -86,8 +91,8 @@ public class PostContentViewer extends IWBaseComponent {
 		
 		main = new Layer();
 		this.add(main);
-
-		if(isLoggedOn){
+		
+		if(isLoggedOn && isComposePublic(iwc)){
 			main.add(getPostingForm());
 		}
 		main.setStyleClass("post-content-ciewer");
@@ -95,11 +100,13 @@ public class PostContentViewer extends IWBaseComponent {
 
 		main.add(getPostList(iwc));
 
-		GenericButton button = new GenericButton();
-		main.add(button);
-		button.setValue(iwrb.getLocalizedString("load_more", "Load More"));
-		button.setOnClick("PostContentViewerHelper.addPostsdown()");
-		button.setStyleClass("post-button-load-more");
+		if(loadMoreButtonNeeded){
+			GenericButton button = new GenericButton();
+			main.add(button);
+			button.setValue(iwrb.getLocalizedString("load_more", "Load More"));
+			button.setOnClick("PostContentViewerHelper.addPostsdown()");
+			button.setStyleClass("post-button-load-more");
+		}
 
 		PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, PostContentViewer.getNeededScripts(iwc));
 		PresentationUtil.addStyleSheetsToHeader(iwc, PostContentViewer.getNeededStyles(iwc));
@@ -156,7 +163,9 @@ public class PostContentViewer extends IWBaseComponent {
 		Link link = new Link(CoreConstants.EMPTY);
 		form.add(link);
 		this.advancedLinkId = link.getId();
-		String uriToAdvanced = BuilderLogic.getInstance().getUriToObject(PostCreationView.class);
+		ArrayList <AdvancedProperty> parameters = new ArrayList<AdvancedProperty>();
+		parameters.add(new AdvancedProperty(PostCreationView.PUBLIC_NEEDED, "true"));
+		String uriToAdvanced = BuilderLogic.getInstance().getUriToObject(PostCreationView.class,parameters);
 		link.setURL(uriToAdvanced);
 
 		GenericButton advanced = new GenericButton();
@@ -170,7 +179,7 @@ public class PostContentViewer extends IWBaseComponent {
 	}
 
 	private void addActions(IWContext iwc){
-		StringBuilder autogrow = new StringBuilder("PostContentViewerHelper.createAutoresizing('#").append(main.getId())
+		StringBuilder autogrow = new StringBuilder("jQuery(document).ready(function(){\nPostContentViewerHelper.createAutoresizing('#").append(main.getId())
 		.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append("[name = \"").append(PostBusiness.ParameterNames.BODY_PARAMETER_NAME)
 		.append("\"]');\n");
 		StringBuilder actions = new StringBuilder(autogrow);
@@ -223,10 +232,13 @@ public class PostContentViewer extends IWBaseComponent {
 			}
 		}
 
-		actions.append("PostCreationViewHelper.getThePosts = function(){PostContentViewerHelper.addPosts();}\n");
-		actions.append("jQuery(document).ready(function(){\n PostContentViewerHelper.prepareAdvancedLink('#").append(advancedLinkId)
-				.append("');\n});\n");
-		actions.append("jQuery(document).ready(function(){\nPostContentViewerHelper.loadMoreButtonNeeded();\n});\n");
+		actions.append("PostContentViewerHelper.getThePosts = function(){PostContentViewerHelper.addPosts();}\n");
+		actions.append(" PostContentViewerHelper.prepareAdvancedLink('#").append(advancedLinkId)
+				.append("');\n");
+		if(loadMoreButtonNeeded){
+			actions.append("PostContentViewerHelper.loadMoreButtonNeeded();\n");
+		}
+		actions.append("});");
 		String actionString = PresentationUtil.getJavaScriptAction(actions.toString());
 		main.add(actionString);
 	}
@@ -314,6 +326,31 @@ public class PostContentViewer extends IWBaseComponent {
 		StringBuilder action = new StringBuilder("PostContentViewerHelper.createAutoresizing('#").append(getPostCreationButtonId())
 		.append(CoreConstants.JS_STR_PARAM_END);
 		return action.toString();
+	}
+
+
+	public Boolean isComposePublic(IWContext iwc) {
+		if(composePublic == null){
+			String param = iwc.getParameter(COMPOSE_PUBLIC);
+			if(param != null && param.equalsIgnoreCase("true")){
+				composePublic = Boolean.TRUE;
+			}else{
+				composePublic = Boolean.FALSE;
+			}
+		}
+		return composePublic;
+	}
+
+	public void setComposePublic(Boolean composePublic) {
+		this.composePublic = composePublic;
+	}
+
+	public boolean isLoadMoreButtonNeeded() {
+		return loadMoreButtonNeeded;
+	}
+
+	public void setLoadMoreButtonNeeded(boolean loadMoreButtonNeeded) {
+		this.loadMoreButtonNeeded = loadMoreButtonNeeded;
 	}
 
 }

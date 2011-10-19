@@ -133,13 +133,17 @@ public class PostRequestBean extends DefaultSpringBean {
 			Integer userId = Integer.valueOf(user.getId());
 			Collection <Integer> receivers = new ArrayList<Integer>();
 			List <String> types = new ArrayList<String>();
-			if(this.parameters.showGroup != null){
-				receivers.addAll(this.getUserGroupIds(user));
-				types.add(PostEntity.PUBLIC);
-			}
-			if(this.parameters.showPrivate != null){
-				receivers.add(userId);
-				types.add(PostEntity.MESSAGE);
+			if(ListUtil.isEmpty(this.getReceivers())){
+				if(this.parameters.showGroup != null){
+					receivers.addAll(this.getUserGroupIds(user));
+					types.add(PostEntity.PUBLIC);
+				}
+				if(this.parameters.showPrivate != null){
+					receivers.add(userId);
+					types.add(PostEntity.MESSAGE);
+				}
+			}else{
+				receivers = this.getReceivers();
 			}
 			Collection<Integer> creators = new ArrayList<Integer>();
 			if(this.parameters.showSent != null){
@@ -152,6 +156,7 @@ public class PostRequestBean extends DefaultSpringBean {
 			ArrayList <String> types = new ArrayList<String>(1);
 			types.add(PostEntity.PUBLIC);
 			filterParameters.setTypes(types);
+			filterParameters.setReceivers(this.getReceivers());
 		}
 		return filterParameters;
 	}
@@ -252,8 +257,17 @@ public class PostRequestBean extends DefaultSpringBean {
 		String firstUri = null;
 		int maxToShow = 0;
 		String getUp = null;
+		Collection <Integer> receivers = null;
 	}
 
+	public Collection <Integer> getReceivers(){
+		return this.parameters.receivers;
+	}
+	
+	public void setReceivers(Collection <Integer> receivers){
+		this.parameters.receivers = receivers;
+	}
+	
 	public int getTeaserRecomendedLength() {
 		return teaserRecomendedLength;
 	}

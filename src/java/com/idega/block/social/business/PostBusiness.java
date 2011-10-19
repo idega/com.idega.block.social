@@ -171,6 +171,10 @@ public class PostBusiness extends DefaultSpringBean {
 			body = parameters.get(PostBusiness.ParameterNames.BODY_PARAMETER_NAME).get(0);
 			post.setBody(body);
 		}
+		if(StringUtil.isEmpty(body)){
+			return iwrb.getLocalizedString("failed", "Failed")+ CoreConstants.COLON
+					+iwrb.getLocalizedString("no_message_found", "No message found");
+		}
 		if(parameters.containsKey(PostBusiness.ParameterNames.POST_TITLE_PARAMETER)){
 			String parameter = parameters.get(PostBusiness.ParameterNames.POST_TITLE_PARAMETER).get(0);
 			post.setHeadline(parameter);

@@ -86,6 +86,11 @@ ContentSharingHelper = {
 			h = ((parseFloat(element.css("height")) - 5) / ph * 100) + "%";
 			element.css({width : w,height : h});
 		}
+		,openInDefaultFancybox : function(uri){
+			var link = jQuery("a.invisibleLink");
+			link.attr("href",uri);
+			link.click();
+		}
 }
 
 jQuery(document).ready(function(){
