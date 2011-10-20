@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -24,7 +25,7 @@ import com.idega.block.article.bean.ArticleItemBean;
 import com.idega.block.article.bean.ArticleListManagedBean;
 import com.idega.block.email.bean.MessageParameters;
 import com.idega.block.email.business.EmailSenderHelper;
-import com.idega.block.social.Constants;
+import com.idega.block.social.SocialConstants;
 import com.idega.block.social.bean.PostItemBean;
 import com.idega.block.social.data.PostEntity;
 import com.idega.block.social.data.dao.PostDao;
@@ -32,6 +33,7 @@ import com.idega.block.social.presentation.comunicating.PostContentViewer;
 import com.idega.business.IBOLookup;
 import com.idega.business.IBOLookupException;
 import com.idega.core.business.DefaultSpringBean;
+import com.idega.core.contact.data.Email;
 import com.idega.data.IDOLookup;
 import com.idega.dwr.reverse.ScriptCaller;
 import com.idega.idegaweb.IWResourceBundle;
@@ -65,7 +67,6 @@ public class PostBusiness extends DefaultSpringBean {
 	private GroupBusiness groupBusiness = null;
 	private UserApplicationEngine userApplicationEngine = null;
 	private UserBusiness userBusiness = null;
-	private IWResourceBundle iwrb = null;
 	private UserHome userHome = null;
 	private GroupHome groupHome = null;
 	private ArticleListManagedBean articleListManadgedBean = null;
@@ -81,23 +82,21 @@ public class PostBusiness extends DefaultSpringBean {
 	}
 
 	@SuppressWarnings("unchecked")
-	public String savePost(Map <String,ArrayList<String>> parameters){
-
-		IWContext iwc  =  CoreUtil.getIWContext();
+	public String savePost(Map <String,List<String>> parameters) {
+		IWResourceBundle iwrb = getResourceBundle(getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER));
+		IWContext iwc = CoreUtil.getIWContext();
 		if(!iwc.isLoggedOn()){
-			String errorMsg = this.getResourceBundle().getLocalizedString("you_must_be_logged_on_to_perform_this_action",
-					"You must be logged on to perform this action");
+			String errorMsg = iwrb.getLocalizedString("you_must_be_logged_on_to_perform_this_action", "You must be logged on to perform this action");
 			return errorMsg;
 		}
-		String errorMsg = this.getResourceBundle().getLocalizedString("failed_to_save_post",
-		"Failed to save post");
+		String errorMsg = iwrb.getLocalizedString("failed_to_save_post", "Failed to save post");
 
 		User currentUser = iwc.getCurrentUser();
 		UserApplicationEngine userApplicationEngine = this.getUserApplicationEngine();
 		UserDataBean userInfo =  userApplicationEngine.getUserInfo(currentUser);
 		int creatorId = userInfo.getUserId();
 
-		ArrayList<String> userReceiversIds = parameters.get(PostBusiness.ParameterNames.RECEIVERS_PARAMETER_NAME);
+		List<String> userReceiversIds = parameters.get(PostBusiness.ParameterNames.RECEIVERS_PARAMETER_NAME);
 		int usersReceiversAmmount = 0;
 		Collection<Integer> usersReceivers = null;
 		boolean areUserReceivers = !ListUtil.isEmpty(userReceiversIds);
@@ -109,8 +108,8 @@ public class PostBusiness extends DefaultSpringBean {
 			}
 		}
 
-		ArrayList<String> groupsReceiversIds = parameters.get(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME);
-		Collection<Integer> groupsReceivers = new ArrayList<Integer>();;
+		List<String> groupsReceiversIds = parameters.get(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME);
+		Collection<Integer> groupsReceivers = new ArrayList<Integer>();
 		if(!ListUtil.isEmpty(groupsReceiversIds)){
 			for(String receiver : groupsReceiversIds){
 				groupsReceivers.add(Integer.valueOf(receiver));
@@ -138,12 +137,7 @@ public class PostBusiness extends DefaultSpringBean {
 			}
 		}
 
-
-
-
-//		ArrayList<Integer> receivers = new ArrayList<Integer>(usersReceiversAmmount + groupsReceiversAmmount);
-
-		ArrayList<String> postToAllUserGroups = parameters.get(PostBusiness.ParameterNames.POST_TO_ALL_USER_GROUPS);
+		List<String> postToAllUserGroups = parameters.get(PostBusiness.ParameterNames.POST_TO_ALL_USER_GROUPS);
 		if(!ListUtil.isEmpty(postToAllUserGroups)){
 			Collection <Group> userGroups = null;
 			try{
@@ -162,7 +156,6 @@ public class PostBusiness extends DefaultSpringBean {
 		if((usersReceivers == null) && (ListUtil.isEmpty(groupsReceivers))){
 			return iwrb.getLocalizedString("post_has_no_receivers", "Post has no receivers");
 		}
-
 
 		PostItemBean post = new PostItemBean();
 
@@ -184,14 +177,12 @@ public class PostBusiness extends DefaultSpringBean {
 		String name = userInfo.getName();
 		post.setAuthor(name);
 
-		ArrayList<String> attachments = parameters.get(PostBusiness.ParameterNames.POST_ATTACHMENTS_PARAMETER_NAME);
+		List<String> attachments = parameters.get(PostBusiness.ParameterNames.POST_ATTACHMENTS_PARAMETER_NAME);
 		if(!ListUtil.isEmpty(attachments)){
 			post.setAttachment(attachments);
 		}
 
 		// Store post in db
-
-
 		String resourcePath = post.getResourcePath();
 		StringBuilder errors = null;
 		boolean postupdated = false;
@@ -201,8 +192,12 @@ public class PostBusiness extends DefaultSpringBean {
 			privateSaved = postDao.updatePost(resourcePath, usersReceivers,creatorId);
 			if(privateSaved){
 				postupdated = true;
-				sendMails(userInfo.getEmail(),usersReceivers, body, post.getAttachments());
-				ArrayList <Integer> accessUsers = new ArrayList<Integer>(usersReceivers.size()+1);
+				String title = post.getHeadline();
+				if (StringUtil.isEmpty(title))
+					title = getResourceBundle(getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER)).getLocalizedString("private_message_from", "Private message from") +
+						iwc.getDomain().getName();
+				sendMails(userInfo.getEmail(), usersReceivers, title, body, post.getAttachments());
+				List<Integer> accessUsers = new ArrayList<Integer>(usersReceivers.size()+1);
 				accessUsers.add(creatorId);
 				setAccessRights(resourcePath, iwc, accessUsers);
 			}else{
@@ -225,7 +220,7 @@ public class PostBusiness extends DefaultSpringBean {
 						.append(iwrb.getLocalizedString("failed_to_send_post_to_groups","Failed to send post to groups"));
 			}
 		}
-//		StringBuilder msg = null;new StringBuilder(iwrb.getLocalizedString("post_saved", "Post saved"));
+		
 		if(postupdated){
 			post.store();
 			String successMsg = iwrb.getLocalizedString("post_sent", "Post sent");
@@ -260,42 +255,53 @@ public class PostBusiness extends DefaultSpringBean {
 	    }
 	}
 
-	private void sendMails(String from, Collection <Integer> userIds,String body, List<String> attachments){
-
-		if(StringUtil.isEmpty(from) || ListUtil.isEmpty(userIds)){
+	private void sendMails(String from, Collection <Integer> userIds, String subject, String body, List<String> attachments) {
+		if (StringUtil.isEmpty(from) || ListUtil.isEmpty(userIds))
 			return;
-		}
+		
 		MessageParameters parameters = new MessageParameters();
 		parameters.setFrom(from);
 
-		ArrayList <String> recipients = new ArrayList<String>(userIds.size());
-		UserBusiness userbusiness = this.getUserBusiness();
-		for(Integer userId : userIds){
-			User user = null;
-			try{
-				user = userbusiness.getUser(Integer.valueOf(userId));
-			}catch(RemoteException e){
-				this.getLogger().log(Level.WARNING, "Failed to get user with id " + userId, e);
+		List<String> recipients = new ArrayList<String>(userIds.size());
+		UserBusiness userBusiness = this.getUserBusiness();
+		for (Integer userId : userIds) {
+			Email email = null;
+			try {
+				email = userBusiness.getUserMail(userId);
+			} catch(Exception e) {
+				this.getLogger().log(Level.WARNING, "Failed to get user email for user with ID: " + userId, e);
 			}
-			UserDataBean userInfo =  userApplicationEngine.getUserInfo(user);
-			recipients.add(userInfo.getEmail());
+			if (email == null)
+				continue;
+			
+			recipients.add(email.getEmailAddress());
 		}
+		if (ListUtil.isEmpty(recipients)) {
+			getLogger().warning("No recipients resolved!");
+			return;
+		}
+		
 		parameters.setAttachments(attachments);
+		parameters.setSubject(subject);
 		parameters.setMessage(body);
-		String recipientsString = recipients.toString();
-		parameters.setRecipientTo(recipientsString);
+		
+		StringBuilder emails = new StringBuilder();
+		for (Iterator<String> mailsIter = recipients.iterator(); mailsIter.hasNext();) {
+			emails.append(mailsIter.next());
+			if (mailsIter.hasNext())
+				emails.append(CoreConstants.COMMA);
+		}
+		parameters.setRecipientTo(emails.toString());
+		
 		this.emailSenderHelper.sendMessage(parameters);
 	}
 
-
-	//TODO: check if works with not logged on users when valdas will fix access problems
-	@SuppressWarnings("unchecked")
 	public List <PostInfo> getPosts(PostFilterParameters filterParameters,IWContext iwc){
 		Collection <PostEntity> postEntities = null;
 		postEntities = this.postDao.getPosts(filterParameters.getCreators(), filterParameters.getReceivers(),
 				filterParameters.getTypes(), filterParameters.getMax(), filterParameters.getBeginUri(), filterParameters.getGetUp() != null);
 		List<PostInfo> posts = new ArrayList<PostInfo>(postEntities.size());
-		List <String> uris = new ArrayList<String>(1);
+		List<String> uris = new ArrayList<String>(1);
 		this.articleListManadgedBean.setShowAllItems(true);
 		IWSlideService slide = getServiceInstance(IWSlideService.class);
 		for(PostEntity entity : postEntities){
@@ -321,18 +327,19 @@ public class PostBusiness extends DefaultSpringBean {
 			post.setTitle(article.getHeadline());
 			post.setUriToBody(article.getResourcePath());
 			post.setBody(article.getBody());
-			List <String> attachments = article.getAttachments();
+			List<?> attachments = article.getAttachments();
 
 			List<Item> items = new ArrayList<Item>(attachments.size());
-			for(String path : attachments){
+			for(Object path : attachments) {
+				String uri = path instanceof String ? (String) path : path.toString();
 				WebdavResource resource = null;
 				try{
-					resource = slide.getWebdavResourceAuthenticatedAsRoot(path);
+					resource = slide.getWebdavResourceAuthenticatedAsRoot(uri);
 				}catch(Exception e){
-					this.getLogger().log(Level.WARNING, "failed getting attachment" + path, e);
+					this.getLogger().log(Level.WARNING, "failed getting attachment" + uri, e);
 					continue;
 				}
-				items.add(new Item(path,resource.getDisplayName()));
+				items.add(new Item(uri, resource.getDisplayName()));
 			}
 			post.setAttachments(items);
 
@@ -341,7 +348,6 @@ public class PostBusiness extends DefaultSpringBean {
 
 		return posts;
 	}
-
 
 	public GroupBusiness getGroupBusiness() {
 		if(groupBusiness == null){
@@ -357,20 +363,11 @@ public class PostBusiness extends DefaultSpringBean {
 		return userApplicationEngine;
 	}
 
-
 	public UserBusiness getUserBusiness() {
 		if(userBusiness == null){
 			userBusiness = this.getServiceInstance(UserBusiness.class);
 		}
 		return userBusiness;
-	}
-
-	protected IWResourceBundle getResourceBundle(){
-
-		if(iwrb == null){
-			iwrb =this.getResourceBundle(this.getBundle(Constants.IW_BUNDLE_IDENTIFIER));
-		}
-		return iwrb;
 	}
 
 	public UserHome getUserHome() {
@@ -405,14 +402,13 @@ public class PostBusiness extends DefaultSpringBean {
 		}
 	}
 
-
 	public static String getGroupRoleForPostsAccess(Group group){
 		return GROUP_ROLE_PREFIX + group.getId() + StringHandler.stripNonRomanCharacters(group.getName());
 	}
 
 	@SuppressWarnings("unchecked")
-	private Collection <String> getGroupsRolesForPostsAccess(Collection <Integer> groupIds){
-		ArrayList <String> roles = new ArrayList<String>(groupIds.size());
+	private Collection<String> getGroupsRolesForPostsAccess(Collection <Integer> groupIds){
+		List<String> roles = new ArrayList<String>(groupIds.size());
 
 		String [] ids = new String[groupIds.size()];
 		int i = 0;
@@ -421,7 +417,7 @@ public class PostBusiness extends DefaultSpringBean {
 		}
 
 		GroupBusiness groupBusiness = this.getGroupBusiness();
-		Collection <Group> groups = null;
+		Collection<Group> groups = null;
 		try{
 			groups = groupBusiness.getGroups(ids);
 		}catch(RemoteException e){
