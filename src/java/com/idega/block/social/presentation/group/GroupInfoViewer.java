@@ -142,8 +142,8 @@ public class GroupInfoViewer extends IWBaseComponent {
 				ListItem li = new ListItem();
 				list.add(li);
 				Image image = new Image(userData.getPictureUri());
-				li.addText(userData.getName());
 				li.add(image);
+				li.addText(userData.getName());
 			}
 		} catch (Exception e) {
 			Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Failed getting users of group with id "

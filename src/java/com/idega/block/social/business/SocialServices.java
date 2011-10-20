@@ -278,10 +278,8 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 			String lastName = names.length == 2 ? names[1] : names.length > 2 ? names[2] : null;
 
 			String email = data.getEmail().toLowerCase();
-			if(email.contains(words[last]) && !request.contains(email)){
-				autocompleted = new StringBuilder(request.substring(0, request.length() - words[last].length() - extractAmount)).append(email);
-			}
-			else if(name.contains(words[last]) && !request.contains(name)){
+			
+			if(name.contains(words[last]) && !request.contains(name)){
 				for(int i = 0;i < names.length;i++){
 					if(!request.contains(names[i])){
 						autocompleted = new StringBuilder(request.substring(0, request.length() - words[last].length() - extractAmount)).append(names[i]);
@@ -293,6 +291,9 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 			}
 			else if((lastName != null) && lastName.contains(words[last]) && !request.contains(lastName)){
 				autocompleted = new StringBuilder(request.substring(0, request.length() - words[last].length() - extractAmount)).append(lastName);
+			}
+			else if(email.contains(words[last]) && !request.contains(email)){
+				autocompleted = new StringBuilder(request.substring(0, request.length() - words[last].length() - extractAmount)).append(email);
 			}
 			responseItem.append(autocompleted);
 			responseItem.append("</td></tr></table>");
