@@ -79,6 +79,7 @@ var PostCreationViewHelper = {
 				callback: function(reply){
 					closeAllLoadingMessages();
 					humanMsg.displayMsg(reply);
+					jQuery(document).trigger('idega-social-post-sent');
 				}
 			});
 			

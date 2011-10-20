@@ -28,6 +28,7 @@ PostContentViewerHelper.savePost = function(buttonSelector,textSelector){
 		callback: function(reply){
 			humanMsg.displayMsg(reply);
 			jQuery(textSelector).attr("value","");
+			jQuery(document).trigger('idega-social-post-sent');
 			jQuery(textSelector).keyup();
 			closeAllLoadingMessages();
 		}
@@ -133,5 +134,6 @@ jQuery(document).ready(function(){
 	jQuery( ".selector" ).bind( "tabsselect", function(event, ui) {
 		  jQuery(".post-content-ciewer").empty();
 	});
+	jQuery(document).bind('idega-social-post-sent', PostContentViewerHelper.addPosts);
 });
 
