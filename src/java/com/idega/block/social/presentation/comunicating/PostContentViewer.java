@@ -15,7 +15,7 @@ import javax.faces.context.FacesContext;
 import org.directwebremoting.ScriptBuffer;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.idega.block.social.Constants;
+import com.idega.block.social.SocialConstants;
 import com.idega.block.social.bean.PostRequestBean;
 import com.idega.block.social.business.PostBusiness;
 import com.idega.block.social.presentation.SimpleForm;
@@ -84,7 +84,7 @@ public class PostContentViewer extends IWBaseComponent {
 	protected void initializeComponent(FacesContext context) {
 		super.initializeComponent(context);
 		IWContext iwc = IWContext.getIWContext(context);
-		bundle = getBundle(context, Constants.IW_BUNDLE_IDENTIFIER);
+		bundle = getBundle(context, SocialConstants.IW_BUNDLE_IDENTIFIER);
 		this.uiViewRoot = iwc.getViewRoot();
 		isLoggedOn = iwc.isLoggedOn();
 		iwrb = bundle.getResourceBundle(iwc);
@@ -115,7 +115,7 @@ public class PostContentViewer extends IWBaseComponent {
 	}
 
 	public static UIComponent getPostList(IWContext iwc){
-		IWBundle bundle = iwc.getIWMainApplication().getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		IWBundle bundle = iwc.getIWMainApplication().getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 		FaceletComponent facelet = (FaceletComponent)iwc.getApplication().createComponent(FaceletComponent.COMPONENT_TYPE);
 		facelet.setFaceletURI(bundle.getFaceletURI("communicating/postContentViewer.xhtml"));
 		return facelet;
@@ -124,7 +124,7 @@ public class PostContentViewer extends IWBaseComponent {
 	public static UIComponent getPostList(IWContext iwc,String beginUri, Boolean up,
 			String getPrivate, String getGroup, String getSent, int maxResult){
 
-		PostRequestBean postRequestBean = ELUtil.getInstance().getBean(Constants.POST_REQUEST_BEAN_ID);
+		PostRequestBean postRequestBean = ELUtil.getInstance().getBean(SocialConstants.POST_REQUEST_BEAN_ID);
 		postRequestBean.setFirstUri(beginUri);
 		postRequestBean.setGetUp(up ? up.toString() : null);
 		postRequestBean.setShowPrivate(getPrivate);
@@ -132,7 +132,7 @@ public class PostContentViewer extends IWBaseComponent {
 		postRequestBean.setShowSent(getSent);
 		postRequestBean.setMaxToShow(maxResult);
 
-		IWBundle bundle = iwc.getIWMainApplication().getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		IWBundle bundle = iwc.getIWMainApplication().getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 		FaceletComponent facelet = (FaceletComponent)iwc.getApplication().createComponent(FaceletComponent.COMPONENT_TYPE);
 		facelet.setFaceletURI(bundle.getFaceletURI("communicating/postContentViewer.xhtml"));
 		return facelet;
@@ -278,7 +278,7 @@ public class PostContentViewer extends IWBaseComponent {
 		}
 
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
-		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		IWBundle iwb = iwma.getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/PostContentViewerHelper.js"));
 
 		return scripts;
@@ -295,7 +295,7 @@ public class PostContentViewer extends IWBaseComponent {
 		List<String> styles = new ArrayList<String>();
 
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
-		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		IWBundle iwb = iwma.getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 		styles.add(iwb.getVirtualPathWithFileNameString("style/postListStyle.css"));
 		return styles;
 	}

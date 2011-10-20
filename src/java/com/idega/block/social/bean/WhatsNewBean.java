@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.idega.block.social.Constants;
+import com.idega.block.social.SocialConstants;
 import com.idega.block.social.business.SocialServices;
 import com.idega.block.social.presentation.comunicating.WhatsNewView;
 import com.idega.builder.business.BuilderLogic;
@@ -40,7 +40,7 @@ public class WhatsNewBean {
 		newLayerId = SERVICE + socialservices.getUniqueIndex();
 		searchLayerId = SERVICE + socialservices.getUniqueIndex();
 		types = new ArrayList<String>(1);
-		types.add(Constants.SOCIAL_TYPE);
+		types.add(SocialConstants.SOCIAL_TYPE);
 	}
 
 	public String getPopularLayerId() {
