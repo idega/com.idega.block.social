@@ -1,7 +1,35 @@
 @CHARSET "UTF-8";
 
-h1{
-	text-align : center;
+h1.group-info-subcategory{
 	color : black;
-	font-size : 2em;
+	font-size : 1.5em;
+	text-align : center;
+	color : black;	
+}
+
+.group-additional-info{
+	position:relative;	
+}
+.group-info-post-list{
+	position:absolute;
+	top:0;
+	left:0;
+	width:70%;
+}
+.group-info-user-list{
+	position:absolute;
+	top:0;
+	left:70%;
+	width:30%;
+}
+.group-info-user-list ul{
+	padding-left:5px; 
+	list-style : none;
+	color:black;
+	background-color:white;
+}
+
+.group-info-user-list * img{
+	width:30px;
+	height:40px;
 }

@@ -6,9 +6,6 @@ div.post-content-ciewer{
 }
 
 ul.posts-contents-list{
-	/*height : 80%;
-	overflow-y : auto;
-	overflow-x : hidden;*/
 	padding-left:0px; 
 	list-style : none;
 }

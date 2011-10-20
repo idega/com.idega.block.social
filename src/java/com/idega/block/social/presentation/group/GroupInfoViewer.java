@@ -88,8 +88,13 @@ public class GroupInfoViewer extends IWBaseComponent {
 		GroupJoiner groupJoiner = new GroupJoiner(group.getId(),null);
 		layer.add(groupJoiner);
 
+		Layer groupAdditionalInfo = new Layer();
+		main.add(groupAdditionalInfo);
+		groupAdditionalInfo.setStyleClass("group-additional-info");
+		
 		layer = new Layer();
-		main.add(layer);
+		groupAdditionalInfo.add(layer);
+		layer.setStyleClass("group-info-post-list");
 		try{
 			Collection <Group> groups = Collections.emptyList();
 			Collection<Integer> receivers = new ArrayList();
@@ -106,7 +111,7 @@ public class GroupInfoViewer extends IWBaseComponent {
 			title = new Heading1();
 			layer.add(title);
 			title.addToText(iwrb.getLocalizedString("posts", "Posts"));
-			title.setStyleClass("heading-title");
+			title.setStyleClass("group-info-subcategory");
 			PostContentViewer postContentViewer = new PostContentViewer();
 			layer.add(postContentViewer);
 			postContentViewer.setLoadMoreButtonNeeded(false);
@@ -118,11 +123,12 @@ public class GroupInfoViewer extends IWBaseComponent {
 		
 		
 		layer = new Layer();
-		main.add(layer);
+		layer.setStyleClass("group-info-user-list");
+		groupAdditionalInfo.add(layer);
 		title = new Heading1();
 		layer.add(title);
 		title.addToText(iwrb.getLocalizedString("users", "Users"));
-		title.setStyleClass("heading-title");
+		title.setStyleClass("group-info-subcategory");
 		
 		try {
 			GroupBusiness groupbusiness = socialservices.getGroupBusiness();
@@ -134,8 +140,8 @@ public class GroupInfoViewer extends IWBaseComponent {
 				UserDataBean userData = userapp.getUserInfo(user);
 				ListItem li = new ListItem();
 				list.add(li);
-				li.addText(userData.getName());
 				Image image = new Image(userData.getPictureUri());
+				li.addText(userData.getName());
 				li.add(image);
 			}
 		} catch (Exception e) {
@@ -219,7 +225,8 @@ public class GroupInfoViewer extends IWBaseComponent {
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
 		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
 		styles.add(iwb.getVirtualPathWithFileNameString("style/social.css"));
-		styles.add(iwb.getVirtualPathWithFileNameString("style/postListStyle.css"));
+		styles.add(iwb.getVirtualPathWithFileNameString("style/groupInfoViewer.css"));
+		styles.addAll(PostContentViewer.getNeededStyles(iwc));
 		return styles;
 	}
 

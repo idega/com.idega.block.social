@@ -106,6 +106,7 @@ public class PostContentViewer extends IWBaseComponent {
 			button.setValue(iwrb.getLocalizedString("load_more", "Load More"));
 			button.setOnClick("PostContentViewerHelper.addPostsdown()");
 			button.setStyleClass("post-button-load-more");
+			button.setStyleAttribute("display:none");
 		}
 
 		PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, PostContentViewer.getNeededScripts(iwc));
