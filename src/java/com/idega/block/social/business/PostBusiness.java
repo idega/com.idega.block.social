@@ -195,7 +195,7 @@ public class PostBusiness extends DefaultSpringBean {
 				String title = post.getHeadline();
 				if (StringUtil.isEmpty(title))
 					title = getResourceBundle(getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER)).getLocalizedString("private_message_from", "Private message from") +
-						iwc.getDomain().getName();
+						iwc.getDomain().getURL();
 				sendMails(userInfo.getEmail(), usersReceivers, title, body, post.getAttachments());
 				List<Integer> accessUsers = new ArrayList<Integer>(usersReceivers.size()+1);
 				accessUsers.add(creatorId);
