@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 
-import com.idega.block.social.Constants;
+import com.idega.block.social.SocialConstants;
 import com.idega.block.social.presentation.group.GroupInfoViewer;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
@@ -54,7 +54,7 @@ public class WhatsNewView  extends IWBaseComponent{
 
 		this.add(getNewsView(iwc));
 
-		String neededFiles = iwc.getParameter(Constants.NEEDED_SCRIPT_AND_STYLE_FILES);
+		String neededFiles = iwc.getParameter(SocialConstants.NEEDED_SCRIPT_AND_STYLE_FILES);
 		if((neededFiles != null) && (neededFiles.equals(FALSE))){
 			needFiles = false;
 		}
@@ -65,7 +65,7 @@ public class WhatsNewView  extends IWBaseComponent{
 
 	}
 	public static UIComponent getNewsView(IWContext iwc){
-		IWBundle bundle = iwc.getIWMainApplication().getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		IWBundle bundle = iwc.getIWMainApplication().getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 		FaceletComponent facelet = (FaceletComponent)iwc.getApplication().createComponent(FaceletComponent.COMPONENT_TYPE);
 		facelet.setFaceletURI(bundle.getFaceletURI("communicating/WhatsNew.xhtml"));
 		return facelet;
@@ -109,7 +109,7 @@ public class WhatsNewView  extends IWBaseComponent{
 		}
 
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
-		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		IWBundle iwb = iwma.getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/WhatsNewHelper.js"));
 		scripts.add("/dwr/interface/SocialServices.js");
 		scripts.addAll(GroupInfoViewer.getNeededScripts(iwc));
@@ -145,7 +145,7 @@ public class WhatsNewView  extends IWBaseComponent{
 			Logger.getLogger("ContentShareComponent").log(Level.WARNING, "Failed getting Web2Business no jQuery and it's plugins files were added");
 		}
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
-		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		IWBundle iwb = iwma.getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 		styles.add(iwb.getVirtualPathWithFileNameString("style/WhatsNewView.css"));
 		return styles;
 	}
@@ -160,7 +160,7 @@ public class WhatsNewView  extends IWBaseComponent{
 			li.add(groupLink);
 
 			ArrayList <AdvancedProperty> parameters = new ArrayList<AdvancedProperty>();
-			parameters.add(new AdvancedProperty(Constants.NEEDED_SCRIPT_AND_STYLE_FILES,FALSE));
+			parameters.add(new AdvancedProperty(SocialConstants.NEEDED_SCRIPT_AND_STYLE_FILES,FALSE));
 			parameters.add(new AdvancedProperty(GroupInfoViewer.GROUP_ID_PARAMETER,group.getId()));
 
 			String uri = BuilderLogic.getInstance().getUriToObject(GroupInfoViewer.class, parameters);

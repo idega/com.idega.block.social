@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 import org.hsqldb.lib.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.idega.block.social.Constants;
+import com.idega.block.social.SocialConstants;
 import com.idega.block.social.business.SocialServices;
 import com.idega.business.IBOLookup;
 import com.idega.business.IBOLookupException;
@@ -56,7 +56,7 @@ public class SocialGroupCreator extends SimpleGroupCreator{
 
 	@Override
 	public String getBundleIdentifier() {
-		return Constants.IW_BUNDLE_IDENTIFIER;
+		return SocialConstants.IW_BUNDLE_IDENTIFIER;
 	}
 
 	@Override
@@ -75,7 +75,7 @@ public class SocialGroupCreator extends SimpleGroupCreator{
 		}
 
 		setParentGroupId(parentGroupId);
-		this.setType(Constants.SOCIAL_TYPE);
+		this.setType(SocialConstants.SOCIAL_TYPE);
 		super.main(iwc);
 
 		userEditContent = new Layer();

@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 
 import javax.faces.context.FacesContext;
 
-import com.idega.block.social.Constants;
+import com.idega.block.social.SocialConstants;
 import com.idega.block.social.bean.PostRequestBean;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
@@ -49,7 +49,7 @@ public class PostContentSharePublicViewer extends IWBaseComponent {
 		main.setStyleClass("main-content-sharing-layer");
 
 
-		PostRequestBean postRequestBean = ELUtil.getInstance().getBean(Constants.POST_REQUEST_BEAN_ID);
+		PostRequestBean postRequestBean = ELUtil.getInstance().getBean(SocialConstants.POST_REQUEST_BEAN_ID);
 		postRequestBean.setShowGroup("true");
 
 		PostContentViewer viewer = new PostContentViewer();
@@ -91,7 +91,7 @@ public class PostContentSharePublicViewer extends IWBaseComponent {
 		}
 
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
-		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		IWBundle iwb = iwma.getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/ContentSharingHelper.js"));
 		styles.add(iwb.getVirtualPathWithFileNameString("style/contentShare.css"));
 		styles.add(iwb.getVirtualPathWithFileNameString("style/postContentViewerPublic.css"));

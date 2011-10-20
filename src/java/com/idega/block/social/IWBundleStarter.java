@@ -34,23 +34,23 @@ public class IWBundleStarter implements IWBundleStartable {
 			GroupBusiness groupBusiness = IBOLookup.getServiceInstance(iwac, GroupBusiness.class);
 
 			@SuppressWarnings("unchecked")
-			Collection<Group> socialGroups = groupBusiness.getGroupsByGroupName(Constants.SOCIAL_ROOT_GROUP_NAME);
+			Collection<Group> socialGroups = groupBusiness.getGroupsByGroupName(SocialConstants.SOCIAL_ROOT_GROUP_NAME);
 
 			//	Only generate groups if none exist
 			if (ListUtil.isEmpty(socialGroups)){
 
 				GroupTypeHome groupTypeHome = (GroupTypeHome) IDOLookup.getHome(GroupType.class);
 				try{
-					groupTypeHome.findGroupTypeByGroupTypeString(Constants.SOCIAL_TYPE);
+					groupTypeHome.findGroupTypeByGroupTypeString(SocialConstants.SOCIAL_TYPE);
 				}catch (FinderException e){
 					GroupType groupType = groupTypeHome.create();
-					groupType.setType(Constants.SOCIAL_TYPE);
+					groupType.setType(SocialConstants.SOCIAL_TYPE);
 					groupType.store();
 				}
 
-				Group socialGroup = groupBusiness.createGroup(Constants.SOCIAL_ROOT_GROUP_NAME, "This is the root group for social network groups.",
-						Constants.SOCIAL_TYPE, true);
-				iwac.getIWMainApplication().getAccessController().addRoleToGroup(Constants.SOCIAL_ROOT_GROUP_ROLE, socialGroup, iwac);
+				Group socialGroup = groupBusiness.createGroup(SocialConstants.SOCIAL_ROOT_GROUP_NAME, "This is the root group for social network groups.",
+						SocialConstants.SOCIAL_TYPE, true);
+				iwac.getIWMainApplication().getAccessController().addRoleToGroup(SocialConstants.SOCIAL_ROOT_GROUP_ROLE, socialGroup, iwac);
 
 				BuilderLogicWrapper builderLogic = ELUtil.getInstance().getBean(BuilderLogicWrapper.SPRING_BEAN_NAME_BUILDER_LOGIC_WRAPPER);
 				builderLogic.reloadGroupsInCachedDomain(iwac, null);

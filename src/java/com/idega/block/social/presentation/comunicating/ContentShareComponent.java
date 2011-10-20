@@ -11,7 +11,7 @@ import javax.faces.component.UIGraphic;
 import javax.faces.component.html.HtmlOutputLink;
 import javax.faces.context.FacesContext;
 
-import com.idega.block.social.Constants;
+import com.idega.block.social.SocialConstants;
 import com.idega.block.social.bean.PostRequestBean;
 import com.idega.block.social.presentation.TabMenu;
 import com.idega.block.web2.business.JQuery;
@@ -53,7 +53,7 @@ public class ContentShareComponent  extends IWBaseComponent {
 
 		ELUtil.getInstance().autowire(this);
 
-		IWBundle bundle = iwc.getIWMainApplication().getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		IWBundle bundle = iwc.getIWMainApplication().getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 		iwrb = bundle.getResourceBundle(iwc);
 
 
@@ -123,7 +123,7 @@ public class ContentShareComponent  extends IWBaseComponent {
 		link.setOnclick("return false;");
 
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
-		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		IWBundle iwb = iwma.getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 
 		//TODO: add normal image
 		manuList.add(createMenuNode(iwrb.getLocalizedString("post_or_message", "Post Or Message"),
@@ -215,7 +215,7 @@ public class ContentShareComponent  extends IWBaseComponent {
 		}
 
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
-		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		IWBundle iwb = iwma.getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/ContentSharingHelper.js"));
 		styles.add(iwb.getVirtualPathWithFileNameString("style/contentShare.css"));
 

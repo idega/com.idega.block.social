@@ -12,7 +12,7 @@ import javax.faces.context.FacesContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.idega.block.social.Constants;
+import com.idega.block.social.SocialConstants;
 import com.idega.block.social.bean.PostRequestBean;
 import com.idega.block.social.business.SocialServices;
 import com.idega.block.social.presentation.comunicating.PostContentViewer;
@@ -61,11 +61,12 @@ public class GroupInfoViewer extends IWBaseComponent {
 		ELUtil.getInstance().autowire(this);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void initializeComponent(FacesContext context) {
 		super.initializeComponent(context);
 		IWContext iwc = IWContext.getIWContext(context);
-		iwrb = this.getBundle(context, Constants.IW_BUNDLE_IDENTIFIER).getResourceBundle(iwc);
+		iwrb = this.getBundle(context, SocialConstants.IW_BUNDLE_IDENTIFIER).getResourceBundle(iwc);
 
 		main = new Layer();
 		this.add(main);
@@ -97,7 +98,7 @@ public class GroupInfoViewer extends IWBaseComponent {
 		layer.setStyleClass("group-info-post-list");
 		try{
 			Collection <Group> groups = Collections.emptyList();
-			Collection<Integer> receivers = new ArrayList();
+			Collection<Integer> receivers = new ArrayList<Integer>();
 			try{
 				groups = socialservices.getGroupBusiness().getChildGroupsRecursive(group);
 				for(Group g : groups){
@@ -154,7 +155,7 @@ public class GroupInfoViewer extends IWBaseComponent {
 		main.add(layer);
 		layer.setStyleClass("social-buttons-layer");
 		
-		String neededFiles = iwc.getParameter(Constants.NEEDED_SCRIPT_AND_STYLE_FILES);
+		String neededFiles = iwc.getParameter(SocialConstants.NEEDED_SCRIPT_AND_STYLE_FILES);
 		if((neededFiles != null) && (neededFiles.equals(FALSE))){
 			needFiles = false;
 		}
@@ -223,7 +224,7 @@ public class GroupInfoViewer extends IWBaseComponent {
 	public static List<String> getNeededStyles(IWContext iwc){
 		List<String> styles = new ArrayList<String>();
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
-		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		IWBundle iwb = iwma.getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 		styles.add(iwb.getVirtualPathWithFileNameString("style/social.css"));
 		styles.add(iwb.getVirtualPathWithFileNameString("style/groupInfoViewer.css"));
 		styles.addAll(PostContentViewer.getNeededStyles(iwc));

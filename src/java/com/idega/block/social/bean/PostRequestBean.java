@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.idega.block.social.Constants;
+import com.idega.block.social.SocialConstants;
 import com.idega.block.social.business.PostBusiness;
 import com.idega.block.social.business.PostFilterParameters;
 import com.idega.block.social.business.PostInfo;
@@ -36,7 +36,7 @@ import com.idega.util.expression.ELUtil;
 import com.idega.util.text.Item;
 
 @Scope("request")
-@Service(Constants.POST_REQUEST_BEAN_ID)
+@Service(SocialConstants.POST_REQUEST_BEAN_ID)
 public class PostRequestBean extends DefaultSpringBean {
 	private PostRequestBean.ParameterValues parameters = new PostRequestBean.ParameterValues();
 	private static int DEFAULT_MAX_TO_SHOW_VALUE = 10;

@@ -20,7 +20,7 @@ ContentSharingHelper = {
 		}
 		
 		,createInvisibleLink : function(){
-			jQuery('body').append('<a class = "invisibleLink">create</a>');
+			jQuery('body').append('<a class="invisibleLink" style="display: none;">create</a>');
 			jQuery("a.invisibleLink").fancybox({
 				hideOnContentClick: false
 				,zoomSpeedIn: 300

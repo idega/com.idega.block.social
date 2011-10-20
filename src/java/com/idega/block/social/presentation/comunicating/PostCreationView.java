@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 
-import com.idega.block.social.Constants;
+import com.idega.block.social.SocialConstants;
 import com.idega.block.social.business.PostBusiness;
 import com.idega.block.social.presentation.HeaderWithElements;
 import com.idega.block.social.presentation.SimpleForm;
@@ -96,7 +96,7 @@ public class PostCreationView extends IWBaseComponent{
 
 	@Override
 	protected void initializeComponent(FacesContext context) {
-		iwrb = this.getBundle(context, Constants.IW_BUNDLE_IDENTIFIER).getResourceBundle(iwc);
+		iwrb = this.getBundle(context, SocialConstants.IW_BUNDLE_IDENTIFIER).getResourceBundle(iwc);
 
 		form.setId("post-creation-view-main-form");
 
@@ -428,7 +428,7 @@ public class PostCreationView extends IWBaseComponent{
 		}
 
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
-		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		IWBundle iwb = iwma.getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/PostCreationHelper.js"));
 		scripts.add("/dwr/interface/SocialServices.js");
 
@@ -462,7 +462,7 @@ public class PostCreationView extends IWBaseComponent{
 			Logger.getLogger("ContentShareComponent").log(Level.WARNING, "Failed getting Web2Business no jQuery and it's plugins files were added");
 		}
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
-		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		IWBundle iwb = iwma.getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 		styles.add(iwb.getVirtualPathWithFileNameString("style/postCreationView.css"));
 		return styles;
 	}

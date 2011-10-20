@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -23,7 +24,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import com.idega.block.social.Constants;
+import com.idega.block.social.SocialConstants;
 import com.idega.block.social.presentation.comunicating.PostContentViewer;
 import com.idega.block.social.presentation.comunicating.WhatsNewView;
 import com.idega.block.social.presentation.group.SocialGroupCreator;
@@ -173,7 +174,7 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		Collection <Group> foundGroups = null;
 		try{
 			foundGroups = this.getGroupHome()
-					.findGroupsByGroupTypeAndLikeName(Constants.SOCIAL_TYPE,
+					.findGroupsByGroupTypeAndLikeName(SocialConstants.SOCIAL_TYPE,
 					request);
 		}catch(FinderException e){
 			this.getLogger().log(Level.WARNING, CoreConstants.EMPTY, e);
@@ -183,7 +184,7 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 			return Collections.emptyList();
 		}
 		int groupsAmmount = foundGroups.size();
-		ArrayList <String> strings = new ArrayList<String>(groupsAmmount);
+		List <String> strings = new ArrayList<String>(groupsAmmount);
 		for(Group group : foundGroups){
 			StringBuilder responseItem = new StringBuilder("<input type='hidden' name='")
 					.append(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME).append("' value='")
@@ -257,7 +258,7 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		Collection <User> requestedUsers = (this.getUserHome().ejbAutocompleteRequest(request, groupId, maxAmount, startingEntry));
 		UserApplicationEngine userApplicationEngine = this.getUserApplicationEngine();
 		String words[] = request.split(CoreConstants.SPACE);
-		ArrayList <String> strings = new ArrayList<String>();
+		List <String> strings = new ArrayList<String>();
 		int last = words.length - 1;
 		int extractAmount = request.lastIndexOf(CoreConstants.SPACE) == (request.length() - 1) ? 1 : 0;
 
@@ -416,14 +417,14 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 
 
 	@RemoteMethod
-	public String savePost(Map <String,ArrayList<String>> parameters){
+	public String savePost(Map <String, List<String>> parameters){
 		return this.postBusiness.savePost(parameters);
 	}
 
 	public Group getSocialRootGroup(){
 		try{
 			@SuppressWarnings("unchecked")
-			Collection<Group> socialRootGroups = getGroupBusiness().getGroupsByGroupName(Constants.SOCIAL_ROOT_GROUP_NAME);
+			Collection<Group> socialRootGroups = getGroupBusiness().getGroupsByGroupName(SocialConstants.SOCIAL_ROOT_GROUP_NAME);
 			return socialRootGroups.iterator().next();
 		}catch(Exception e){
 			this.getLogger().log(Level.WARNING, "Failed getting social root group", e);
@@ -455,7 +456,7 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 	}
 
 	protected IWResourceBundle getResourceBundle(){
-		return this.getResourceBundle(this.getBundle(Constants.IW_BUNDLE_IDENTIFIER));
+		return this.getResourceBundle(this.getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER));
 	}
 
 	public UserHome getUserHome() {
@@ -491,7 +492,7 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 			amount = -1;
 		}
 		//TODO: make global variable
-		ArrayList<String> types = null;//new ArrayList<String>(1);
+		List<String> types = null;//new ArrayList<String>(1);
 //		types.add(Constants.SOCIAL_TYPE);
 		Collection <Group> groups = getGroupBusiness().getGroupsBySearchRequest(request, types, amount);
 		if(ListUtil.isEmpty(groups)){

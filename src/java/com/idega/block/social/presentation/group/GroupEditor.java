@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 
-import com.idega.block.social.Constants;
+import com.idega.block.social.SocialConstants;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
 import com.idega.builder.business.BuilderLogic;
@@ -52,7 +52,7 @@ public class GroupEditor extends GroupTreeViewer {
 			return userGroups;
 		} else {
 			@SuppressWarnings("unchecked")
-			Collection<Group> socialRootGroups = groupBusiness.getGroupsByGroupName(Constants.SOCIAL_ROOT_GROUP_NAME);
+			Collection<Group> socialRootGroups = groupBusiness.getGroupsByGroupName(SocialConstants.SOCIAL_ROOT_GROUP_NAME);
 			return socialRootGroups;
 		}
 	}
@@ -209,7 +209,7 @@ public class GroupEditor extends GroupTreeViewer {
 		scripts.add(bundle.getVirtualPathWithFileNameString("javascript/SimpleUserAppHelper.js"));
 
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
-		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		IWBundle iwb = iwma.getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/GroupEditorHelper.js"));
 
 

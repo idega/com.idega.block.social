@@ -21,7 +21,7 @@ public class GroupCreatedEventListener extends DefaultSpringBean implements Appl
         if (event instanceof GroupCreatedEvent) {
         	GroupCreatedEvent created = (GroupCreatedEvent) event;
         	Group group = created.getGroup();
-        	if(group.getGroupType().equals(Constants.SOCIAL_TYPE)){
+        	if(group.getGroupType().equals(SocialConstants.SOCIAL_TYPE)){
         		addRole(group);
         	}
         }

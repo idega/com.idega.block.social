@@ -1,6 +1,6 @@
 package com.idega.block.social;
 
-public class Constants {
+public class SocialConstants {
 
 	public static final String IW_BUNDLE_IDENTIFIER = "com.idega.block.social";
 	public static final int UNLIMITED = -1;
