@@ -153,7 +153,7 @@ public class PostContentViewer extends IWBaseComponent {
 
 		GenericButton postButton = new GenericButton();
 		form.add(postButton);
-		postButton.setValue(this.iwrb.getLocalizedString("post", "Post"));
+		postButton.setValue(this.iwrb.getLocalizedString("send", "Send"));
 		StringBuilder action = new StringBuilder("PostContentViewerHelper.savePost('#").append(postButton.getId())
 		.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(CoreConstants.NUMBER_SIGN).append(postBody.getId())
 		.append(CoreConstants.JS_STR_PARAM_END);

@@ -92,7 +92,7 @@ public class GroupEditor extends GroupTreeViewer {
 			.append("','").append(UserConstants.GROUPS_TO_RELOAD_IN_MENU_DROPDOWN_ID_IN_SIMPLE_USER_APPLICATION)	//set to selected group or -1
 			.append("','").append(UserConstants.EDITED_GROUP_MENU_DROPDOWN_ID_IN_SIMPLE_USER_APPLICATION)
 			.append("');");
-			GenericButton create = new GenericButton("buttonCreateGroup", iwrb.getLocalizedString("create", "Create"));
+			GenericButton create = new GenericButton("buttonCreateGroup", iwrb.getLocalizedString("create_group", "Create group"));
 			create.setOnClick(parameters.toString());
 			main.add(create);
 		}

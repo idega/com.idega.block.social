@@ -65,7 +65,7 @@ public class PostContentSharePrivateViewer extends IWBaseComponent {
 		
 		GenericButton advanced = new GenericButton();
 		main.add(advanced);
-		advanced.setValue(iwrb.getLocalizedString("Send_message", "Send message"));
+		advanced.setValue(iwrb.getLocalizedString("compose_message", "Compose message"));
 		StringBuilder action = new StringBuilder("ContentSharingHelper.openInDefaultFancybox('").append(uriToAdvanced)
 		.append(CoreConstants.JS_STR_PARAM_END);
 		advanced.setOnClick(action.toString());

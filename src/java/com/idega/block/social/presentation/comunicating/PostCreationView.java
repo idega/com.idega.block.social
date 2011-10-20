@@ -192,7 +192,7 @@ public class PostCreationView extends IWBaseComponent{
 
 
 		// Submit button
-		GenericButton buttonSubmit = new GenericButton("buttonSubmit", iwrb.getLocalizedString("submit", "Submit"));
+		GenericButton buttonSubmit = new GenericButton("buttonSubmit", iwrb.getLocalizedString("send", "Send"));
 		this.addToButtonsLayer(buttonSubmit);
 		buttonSubmit.setOnClick("PostCreationViewHelper.savePost('#" + this.form.getId() + CoreConstants.JS_STR_PARAM_END);
 //		buttonSubmit.setMarkupAttribute("type", "submit"); //will use revers ajax and js
