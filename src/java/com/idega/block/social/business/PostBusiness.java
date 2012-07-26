@@ -250,7 +250,7 @@ public class PostBusiness extends DefaultSpringBean implements DWRAnnotationPers
 				public String getName() {
 					return RepositoryConstants.SUBJECT_URI_AUTHENTICATED;
 				}
-			}, new RepositoryPrivilege[] {new RepositoryPrivilege(Privilege.JCR_ALL)});
+			}, new RepositoryPrivilege[] {new RepositoryPrivilege(Privilege.JCR_ALL)}, true, null);
 			AccessControlEntry[] aces = {ace};
 
 		    getRepositoryService().createFolderAsRoot(resourcePath);
