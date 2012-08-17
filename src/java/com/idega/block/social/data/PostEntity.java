@@ -17,6 +17,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.CollectionOfElements;
 import org.hibernate.annotations.Index;
 
+import com.google.gson.Gson;
 import com.idega.block.article.data.ArticleEntity;
 
 
@@ -24,14 +25,11 @@ import com.idega.block.article.data.ArticleEntity;
 @Entity
 @Table(name = "social_post")
 public class PostEntity   implements Serializable {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = -7269208873766306969L;
 
 
-	public static final String MESSAGE = "MESSAGE";
-	public static final String PUBLIC = "PUBLIC";
+	public static final String POST_TYPE_MESSAGE = "MESSAGE";
+	public static final String POST_TYPE_PUBLIC = "PUBLIC";
 
 	public static final String idProp = "ID";
 	@Id @GeneratedValue(strategy = GenerationType.AUTO)
@@ -97,5 +95,10 @@ public class PostEntity   implements Serializable {
 	}
 	public void setPostCreator(int postCreator) {
 		this.postCreator = postCreator;
+	}
+	
+	@Override
+	public String toString(){
+		return new Gson().toJson(this);
 	}
 }

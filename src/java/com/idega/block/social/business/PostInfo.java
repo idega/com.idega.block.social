@@ -1,32 +1,30 @@
 package com.idega.block.social.business;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import com.idega.user.bean.UserDataBean;
 import com.idega.util.text.Item;
 
-public class PostInfo {
-	private String uriToAuthorPicture = null;
-	private String author = null;
+public class PostInfo implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2345137556986918953L;
+	private UserDataBean author = null;
 	private String title = null;
 	private String teaser = null;
-	private String uriToBody = null;
+	private String uri = null;
 	private String body = null;
 	private Date date = null;
 	private List <Item> attachments = null;
-	private String uriToBodyPreview = null;
 
-	public String getAuthor() {
+	public UserDataBean getAuthor() {
 		return author;
 	}
-	public void setAuthor(String author) {
+	public void setAuthor(UserDataBean author) {
 		this.author = author;
-	}
-	public String getUriToAuthorPicture() {
-		return uriToAuthorPicture;
-	}
-	public void setUriToAuthorPicture(String uriToAuthorPicture) {
-		this.uriToAuthorPicture = uriToAuthorPicture;
 	}
 	public String getTitle() {
 		return title;
@@ -40,11 +38,11 @@ public class PostInfo {
 	public void setTeaser(String teaser) {
 		this.teaser = teaser;
 	}
-	public String getUriToBody() {
-		return uriToBody;
+	public String getUri() {
+		return uri;
 	}
-	public void setUriToBody(String uriToBody) {
-		this.uriToBody = uriToBody;
+	public void setUri(String uriToBody) {
+		this.uri = uriToBody;
 	}
 	public String getBody() {
 		return body;
@@ -63,11 +61,5 @@ public class PostInfo {
 	}
 	public void setAttachments(List<Item> attachments) {
 		this.attachments = attachments;
-	}
-	public String getUriToBodyPreview() {
-		return uriToBodyPreview;
-	}
-	public void setUriToBodyPreview(String uriToBodyPreview) {
-		this.uriToBodyPreview = uriToBodyPreview;
 	}
 }

@@ -10,24 +10,40 @@ ul.posts-contents-list{
 	list-style : none;
 }
 
+.post-content-view-post-footer *{
+	float:right;
+}
+.post-content-view-post-footer{
+	padding-bottom:2em;
+}
+
+.public-posts-footer{
+	height:2em;
+	text-align:center;	
+}
+
 .post-creation-info{
 	position : relative;
-	background-color: #3B5998;
 	width : 100%;
-	height : 3em;
+	height : 4em;
 	font-weight : bold;
+	background-color: #3B5998;
 	color : white;
 	z-index :0;
 }
 
 .post-creation-info img, .post-creation-info * img{
-	height : 3em;
-	width :	2em;
+	height : 100%;;
+	width :	3em;
 }
 
+.public-post-form{
+	text-align:center;
+}
 .post-content-viewer-post-creation-form-body{
-	width : 100%;
-	height : 1.5em;	
+	display:inline;
+	width:95%;
+	height:3em;	
 }
 
 .post-content-view-post-footer{
@@ -39,8 +55,9 @@ div.post-info{
 	background-color : white;	
 }
 .post-attachments-span{
+	height:2em;
 	cursor : pointer;
-	text-decoration : underline;
+	float:right;
 }
 .post-attachments-span ul{
 	background-color : white;
@@ -48,8 +65,8 @@ div.post-info{
 	display:none;
 	list-style : none;
 	position: absolute;
+	top:1.5em;
 	right:0;
-	top:1em;
 	padding-left:0px; 
 }
 
@@ -57,13 +74,9 @@ div.post-info{
 	display:block;
 }
 
-.post-attachments-span:hover ul li{
+.post-attachments-span:hover ul *{
+	text-align:left;
 	float: none;
-}
-
-.post-attachments-span:hover ul li a{
-	color : blue;
-	text-decoration : underline;
 }
 
 .post-content-view-post-footer *{
@@ -75,5 +88,16 @@ div.post-info{
 	position : absolute;
 	right : 0;
 	top : 0;
-	font-size : 50%;
+	font-size : 75%;
+}
+.post-images * {
+	padding-top:1em;
+	font-size:1.5em;
+	width:5em;
+	height:5em;
+	display:inline;
+	vertical-align:text-bottom;
+}
+.post-images > *{
+	padding:0em 0.5em 0em 0.5em;
 }

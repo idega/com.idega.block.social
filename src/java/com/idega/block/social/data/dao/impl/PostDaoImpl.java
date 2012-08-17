@@ -30,12 +30,12 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 
 	@Override
 	@Transactional(readOnly=false)
-	public boolean updatePost(String uri, Collection<Integer> receivers,
+	public PostEntity updatePost(String uri, Collection<Integer> receivers,
 			String type,int creator) {
 
 		PostEntity post = this.createPostEntity(uri, type,creator);
 		if(post == null){
-			return false;
+			return null;
 		}
 
 		Set <Integer> existingReceivers = post.getReceivers();
@@ -45,26 +45,25 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 		}
 		existingReceivers.addAll(receivers);
 
-		persist(post);
-		return true;
+		PostEntity postEntity = merge(post);
+		return postEntity;
 	}
 
 	private List <PostEntity> getPostsByArticleUriAndPostType(String uri,String type){
-		StringBuilder inlineQuery =
-				new StringBuilder("FROM PostEntity p WHERE (p.postType").append(" = :")
-				.append(PostEntity.postTypeProp).append(") AND (p.article")
-				.append(" IN (FROM ArticleEntity a WHERE a.uri").append(" = :").append(ArticleEntity.uriProp).append("))");
-		Query query = this.getQueryInline(inlineQuery.toString());
-		List <PostEntity> entities = query.getResultList(PostEntity.class,
-				new Param(PostEntity.postTypeProp,type),
-				new Param(ArticleEntity.uriProp,uri));
-		return entities;
+		ArrayList<String> types;
+		if(StringUtil.isEmpty(type)){
+			types = null;
+		}else{
+			types = new ArrayList<String>();
+			types.add(type);
+		}
+		return getPosts(null, null, types, 0, null, false, uri);
 	}
 	
 	@Override
 	@Transactional(readOnly=false)
-	public boolean updatePost(String uri,Collection<Integer> receivers,int creator) {
-		return updatePost(uri, receivers, PostEntity.MESSAGE,creator);
+	public PostEntity updatePost(String uri,Collection<Integer> receivers,int creator) {
+		return updatePost(uri, receivers, PostEntity.POST_TYPE_MESSAGE,creator);
 
 	}
 
@@ -78,10 +77,13 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 				//there can not be two identical posts
 				return null;
 			}
-			post = entities.iterator().next();
+			post = entities.get(0);
 		}
 
-		ArticleEntity article = new ArticleEntity();
+		ArticleEntity article = post.getArticle();
+		if(article == null){
+			article = new ArticleEntity();
+		}
 		article.setModificationDate(new Date());
 		article.setUri(uri);
 		post.setPostType(type);
@@ -93,181 +95,9 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 
 	@Override
 	public boolean deletePost(int id) {
-		// TODO Auto-generated method stub
 		return Boolean.FALSE;
-
 	}
 
-	@Override
-	public Collection <PostEntity> getPostsByReceiversAndType(Collection<Integer> receivers,String type, int max, String uriFrom) {
-
-		StringBuilder inlineQuery =
-				new StringBuilder("SELECT p FROM PostEntity p JOIN p.article a ");
-
-		boolean receiversEmpty = ListUtil.isEmpty(receivers);
-		boolean addedWhere = false;
-		if(!receiversEmpty){
-			addedWhere = true;
-			inlineQuery.append(" JOIN p.receivers r WHERE (r IN (:").append(PostEntity.receiversProp).append(")) ");
-		}
-
-		boolean uriFromEmpty = StringUtil.isEmpty(uriFrom);
-		if(!uriFromEmpty){
-			if(addedWhere){
-				inlineQuery.append(" AND ");
-			}else{
-				addedWhere = true;
-				inlineQuery.append(" WHERE ");
-			}
-			inlineQuery.append("( a.modificationDate <= (SELECT art.modificationDate FROM ArticleEntity art WHERE art.uri = :")
-					.append(ArticleEntity.uriProp).append(")) ");
-		}
-		boolean typeEmpty = StringUtil.isEmpty(type);
-		if(!typeEmpty){
-			if(addedWhere){
-				inlineQuery.append(" AND ");
-			}else{
-				addedWhere = true;
-				inlineQuery.append(" WHERE ");
-			}
-			inlineQuery.append("( p.postType = :").append(PostEntity.postTypeProp).append(") ");
-		}
-		inlineQuery.append(" ORDER BY a.modificationDate DESC");
-		Query query = this.getQueryInline(inlineQuery.toString());
-		if(max > 0){
-			query.setMaxResults(max);
-		}
-		List <PostEntity> entities = null;
-		if(receiversEmpty){
-			if(uriFromEmpty){
-				if(typeEmpty){
-					entities = query.getResultList(PostEntity.class);
-				}
-				else{
-					entities = query.getResultList(PostEntity.class, new Param(PostEntity.postTypeProp, type));
-				}
-			}else{
-				if(typeEmpty){
-					entities = query.getResultList(PostEntity.class, new Param(ArticleEntity.uriProp, uriFrom));
-				}
-				else{
-					entities = query.getResultList(PostEntity.class, new Param(PostEntity.postTypeProp, type),
-							 new Param(ArticleEntity.uriProp, uriFrom));
-				}
-			}
-		}else{
-			if(uriFromEmpty){
-				if(typeEmpty){
-					entities = query.getResultList(PostEntity.class, new Param(PostEntity.receiversProp,receivers));
-				}
-				else{
-					entities = query.getResultList(PostEntity.class, new Param(PostEntity.receiversProp,receivers),
-							 new Param(PostEntity.postTypeProp, type));
-				}
-			}else{
-				if(typeEmpty){
-					entities = query.getResultList(PostEntity.class,
-							new Param(PostEntity.receiversProp,receivers),
-							new Param(ArticleEntity.uriProp, uriFrom));
-				}
-				else{
-					entities = query.getResultList(PostEntity.class,
-							new Param(PostEntity.receiversProp,receivers),
-							new Param(ArticleEntity.uriProp, uriFrom),
-							new Param(PostEntity.postTypeProp, type));
-				}
-			}
-		}
-		return entities;
-	}
-
-	@Override
-	public Collection<PostEntity> getPostsByCreators(
-			Collection<Integer> creators, String type, int max, String uriFrom) {
-
-		StringBuilder inlineQuery =
-				new StringBuilder("SELECT p FROM PostEntity p JOIN p.article a ");
-
-		boolean creatorsEmpty = ListUtil.isEmpty(creators);
-		boolean addedWhere = false;
-		if(!creatorsEmpty){
-			addedWhere = true;
-			inlineQuery.append(" WHERE (p.postCreator IN (:")
-					.append(PostEntity.postCreatorProp).append(")) ");
-		}
-
-		boolean uriFromEmpty = StringUtil.isEmpty(uriFrom);
-		if(!uriFromEmpty){
-			if(uriFrom.startsWith(CoreConstants.WEBDAV_SERVLET_URI)){
-				uriFrom = uriFrom.substring(uriFrom.length() - 1);
-			}
-			if(addedWhere){
-				inlineQuery.append(" AND ");
-			}else{
-				addedWhere = true;
-				inlineQuery.append(" WHERE ");
-			}
-			inlineQuery.append("( a.modificationDate <= (SELECT art.modificationDate FROM ArticleEntity art WHERE art.uri = :")
-					.append(ArticleEntity.uriProp).append(")) ");
-		}
-		boolean typeEmpty = StringUtil.isEmpty(type);
-		if(!typeEmpty){
-			if(addedWhere){
-				inlineQuery.append(" AND ");
-			}else{
-				addedWhere = true;
-				inlineQuery.append(" WHERE ");
-			}
-			inlineQuery.append("( p.postType = :").append(PostEntity.postTypeProp).append(") ");
-		}
-		inlineQuery.append(" ORDER BY a.modificationDate DESC");
-		Query query = this.getQueryInline(inlineQuery.toString());
-		if(max > 0){
-			query.setMaxResults(max);
-		}
-		List <PostEntity> entities = null;
-		if(creatorsEmpty){
-			if(uriFromEmpty){
-				if(typeEmpty){
-					entities = query.getResultList(PostEntity.class);
-				}
-				else{
-					entities = query.getResultList(PostEntity.class, new Param(PostEntity.postTypeProp, type));
-				}
-			}else{
-				if(typeEmpty){
-					entities = query.getResultList(PostEntity.class, new Param(ArticleEntity.uriProp, uriFrom));
-				}
-				else{
-					entities = query.getResultList(PostEntity.class, new Param(PostEntity.postTypeProp, type),
-							 new Param(ArticleEntity.uriProp, uriFrom));
-				}
-			}
-		}else{
-			if(uriFromEmpty){
-				if(typeEmpty){
-					entities = query.getResultList(PostEntity.class, new Param(PostEntity.postCreatorProp,creators));
-				}
-				else{
-					entities = query.getResultList(PostEntity.class, new Param(PostEntity.postCreatorProp,creators),
-							 new Param(PostEntity.postTypeProp, type));
-				}
-			}else{
-				if(typeEmpty){
-					entities = query.getResultList(PostEntity.class,
-							new Param(PostEntity.postCreatorProp,creators),
-							new Param(ArticleEntity.uriProp, uriFrom));
-				}
-				else{
-					entities = query.getResultList(PostEntity.class,
-							new Param(PostEntity.postCreatorProp,creators),
-							new Param(ArticleEntity.uriProp, uriFrom),
-							new Param(PostEntity.postTypeProp, type));
-				}
-			}
-		}
-		return entities;
-	}
 
 	public Collection<PostEntity> getPostsByReceiversAndCreators(Collection<Integer> creators,
 			Collection<Integer> receivers, Collection<String> types, int max, String uriFrom,
@@ -338,10 +168,9 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 		return query.getResultList(PostEntity.class,params);
 	}
 
-	@Override
-	public Collection<PostEntity> getPosts(Collection<Integer> creators,
+	private List<PostEntity> getPosts(Collection<Integer> creators,
 			Collection<Integer> receivers, Collection<String> types, int max, String uriFrom,
-			boolean up) {
+			boolean up, String uri) {
 
 		StringBuilder inlineQuery =
 				new StringBuilder("SELECT DISTINCT p FROM PostEntity p JOIN p.article a ");
@@ -389,6 +218,8 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 				addedWhere = true;
 				inlineQuery.append(" WHERE ");
 			}
+			inlineQuery.append("( a.uri ").append(" <> :")
+			.append(ArticleEntity.uriProp).append(") AND ");
 			String direction = up ? ">=" : "<=";
 			inlineQuery.append("( a.modificationDate ").append(direction).append(" (SELECT art.modificationDate FROM ArticleEntity art WHERE art.uri = :")
 					.append(ArticleEntity.uriProp).append(")) ");
@@ -407,12 +238,48 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 			Param parameter = new Param(PostEntity.postTypeProp,types);
 			params.add(parameter);
 		}
+		if(!StringUtil.isEmpty(uri)){
+			if(addedWhere){
+				inlineQuery.append(" AND ");
+			}else{
+				addedWhere = true;
+				inlineQuery.append(" WHERE ");
+			}
+			String articleUriProp = "articleUriProp";
+			inlineQuery.append("( a.uri = :").append(articleUriProp).append(") ");
+			Param parameter = new Param(articleUriProp,uri);
+			params.add(parameter);
+		}
 		inlineQuery.append(" ORDER BY a.modificationDate DESC");
 		Query query = this.getQueryInline(inlineQuery.toString());
 		if(max > 0){
 			query.setMaxResults(max);
 		}
 		return query.getResultList(PostEntity.class,params);
+	}
+	@Override
+	public List<PostEntity> getPosts(Collection<Integer> creators,
+			Collection<Integer> receivers, Collection<String> types, int max, String uriFrom,
+			boolean up) {
+		return getPosts(creators, receivers, types, max, uriFrom, up, null);
+	}
+
+	@Override
+	public PostEntity getPostByUri(String uri) {
+		if(StringUtil.isEmpty(uri)){
+			return null;
+		}
+		List<PostEntity> entities = getPosts(null, null, null, 1, null, false, uri);
+		if(ListUtil.isEmpty(entities)){
+			return null;
+		}
+		return entities.get(0);
+	}
+	
+	@Override
+	@Transactional(readOnly=false)
+	public PostEntity merge(PostEntity postEntity) {
+		return super.merge(postEntity);
 	}
 
 }

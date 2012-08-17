@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import com.idega.block.social.SocialConstants;
 import com.idega.block.social.business.PostBusiness;
-import com.idega.block.social.business.PostFilterParameters;
 import com.idega.block.social.business.PostInfo;
 import com.idega.block.social.data.PostEntity;
 import com.idega.block.social.presentation.comunicating.PostPreview;
@@ -93,11 +92,11 @@ public class PostRequestBean extends DefaultSpringBean {
 					}
 				}
 			}
-			if(bodyTooLarge){
-				post.setUriToBodyPreview(getUritoPostPreview(post.getUriToBody()));
-			}else{
-				post.setUriToBodyPreview(null);
-			}
+//			if(bodyTooLarge){
+//				post.setUriToBodyPreview(getUritoPostPreview(post.getUriToBody()));
+//			}else{
+//				post.setUriToBodyPreview(null);
+//			}
 		}
 		return posts;
 	}
@@ -129,18 +128,17 @@ public class PostRequestBean extends DefaultSpringBean {
 				parameters.showSent = iwc.getParameter(PostRequestBean.Parameters.SENT);
 			}
 			User user = iwc.getCurrentUser();
-			filterParameters.setUser(user);
 			Integer userId = Integer.valueOf(user.getId());
 			Collection <Integer> receivers = new ArrayList<Integer>();
 			List <String> types = new ArrayList<String>();
 			if(ListUtil.isEmpty(this.getReceivers())){
 				if(this.parameters.showGroup != null){
 					receivers.addAll(this.getUserGroupIds(user));
-					types.add(PostEntity.PUBLIC);
+					types.add(PostEntity.POST_TYPE_PUBLIC);
 				}
 				if(this.parameters.showPrivate != null){
 					receivers.add(userId);
-					types.add(PostEntity.MESSAGE);
+					types.add(PostEntity.POST_TYPE_MESSAGE);
 				}
 			}else{
 				receivers = this.getReceivers();
@@ -154,7 +152,7 @@ public class PostRequestBean extends DefaultSpringBean {
 			filterParameters.setCreators(creators);
 		}else{
 			ArrayList <String> types = new ArrayList<String>(1);
-			types.add(PostEntity.PUBLIC);
+			types.add(PostEntity.POST_TYPE_PUBLIC);
 			filterParameters.setTypes(types);
 			filterParameters.setReceivers(this.getReceivers());
 		}

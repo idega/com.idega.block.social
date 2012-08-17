@@ -5,15 +5,16 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
-import javax.faces.component.UIComponent;
 
 import org.directwebremoting.annotations.Param;
 import org.directwebremoting.annotations.RemoteMethod;
@@ -24,15 +25,19 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import com.google.gson.Gson;
 import com.idega.block.social.SocialConstants;
-import com.idega.block.social.presentation.comunicating.PostContentViewer;
-import com.idega.block.social.presentation.comunicating.WhatsNewView;
+import com.idega.block.social.bean.PostFilterParameters;
+import com.idega.block.social.bean.PostItemBean;
 import com.idega.block.social.presentation.group.SocialGroupCreator;
+import com.idega.block.social.presentation.posts.PostList;
 import com.idega.builder.business.BuilderLogic;
+import com.idega.business.IBOLookup;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.component.bean.RenderedComponent;
 import com.idega.data.IDOLookup;
 import com.idega.dwr.business.DWRAnnotationPersistance;
+import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
@@ -152,20 +157,33 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		return BuilderLogic.getInstance().getRenderedComponent(tableLayer, null);
 	}
 
+	
 	@RemoteMethod
-	public String getPosts(String beginUri, Boolean up,
-			String getPrivate, String getGroup, String getSent, Integer maxResult){
-
-		if(maxResult == null){
-			maxResult = 0;
+	public String getPostListHtml(PostFilterParameters postFilterParameters,Map<String, String> presentationOptions,String postListClass){
+		try {
+			PostList postList = (PostList) Class.forName(postListClass).getDeclaredConstructor(Map.class).newInstance(presentationOptions);
+			postList.setPostFilterParameters(postFilterParameters);
+			return postList.getPostLayersHtml();
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Failed getting post list", e);
 		}
-		IWContext iwc = CoreUtil.getIWContext();
-		UIComponent postList = PostContentViewer.getPostList(iwc, beginUri, up,
-					getPrivate, getGroup, getSent,maxResult);
-		String html = BuilderLogic.getInstance().getRenderedComponent(postList, null).getHtml();
-		return html;
-
+		return null;
 	}
+	
+//	@RemoteMethod
+//	public String getPosts(String beginUri, Boolean up,
+//			String getPrivate, String getGroup, String getSent, Integer maxResult){
+//
+//		if(maxResult == null){
+//			maxResult = 0;
+//		}
+//		IWContext iwc = CoreUtil.getIWContext();
+//		UIComponent postList = PostContentViewer.getPostList(iwc, beginUri, up,
+//					getPrivate, getGroup, getSent,maxResult);
+//		String html = BuilderLogic.getInstance().getRenderedComponent(postList, null).getHtml();
+//		return html;
+//
+//	}
 
 	@SuppressWarnings("unchecked")
 	@RemoteMethod
@@ -416,7 +434,67 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		return parentgroups.iterator().next();
 	}
 
+	@SuppressWarnings("unchecked")
+	public Collection <Integer> getUserGroupIds(User user){
+		Collection <Integer>  receivers = null;
+		if(user != null){
 
+			Collection <Group> userGroups = null;
+			try{
+				UserBusiness userBusiness = IBOLookup.getServiceInstance(IWMainApplication.getDefaultIWApplicationContext(), UserBusiness.class);
+				userGroups = userBusiness.getUserGroups(user);
+			}catch(RemoteException e){
+				Logger.getLogger(this.getClass().getName()).
+						log(Level.WARNING, "failed to get parent groups of user ", e);
+			}
+			if(ListUtil.isEmpty(userGroups)){
+				return Collections.emptyList();
+			}
+
+			receivers = new ArrayList<Integer>();
+			for(Group group : userGroups){
+				receivers.add(Integer.valueOf(group.getId()));
+			}
+		}
+		return receivers;
+	}
+
+	@RemoteMethod
+	public Map <String,String> savePublicPost(Map <String, List<String>> parameters){
+		IWResourceBundle iwrb = getResourceBundle();
+		Map<String,String> response = new HashMap<String, String>();
+		try {
+			// Generate new resource path
+			PostItemBean postItemBean = ELUtil.getInstance().getBean("postItemBean");
+			response.put("newResourcePath", postItemBean.getResourcePath());
+			response.put("newUploadPath", postItemBean.getFilesResourcePath());
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Failed generating new resource path " + new Gson().toJson(parameters), e);
+			response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
+			return response;
+		}
+		IWContext iwc = CoreUtil.getIWContext();
+		try {
+			User user = iwc.getCurrentUser();
+			Collection<Integer> userGroupIds = getUserGroupIds(user);
+			ArrayList<String> stringIds = new ArrayList<String>();
+			for(Integer id : userGroupIds){
+				stringIds.add(String.valueOf(id));
+			}
+			parameters.put(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME, stringIds);
+			String errorMessage = postBusiness.savePost(parameters);
+			if(errorMessage == null){
+				response.put("status", "OK");
+				response.put("message", iwrb.getLocalizedString("saved", "Saved"));
+			}else{
+				response.put("message", errorMessage);
+			}
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Failed saving public post by parameters " + new Gson().toJson(parameters), e);
+			response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
+		}
+		return response;
+	}
 	@RemoteMethod
 	public String savePost(Map <String, List<String>> parameters){
 		return this.postBusiness.savePost(parameters);
@@ -487,20 +565,30 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		return SERVICE + index.toString();
 	}
 
+//	@RemoteMethod
+//	public String getGroupSearchResults(String request, Integer amount){
+//		if(amount == null){
+//			amount = -1;
+//		}
+//		//TODO: make global variable
+//		List<String> types = null;//new ArrayList<String>(1);
+////		types.add(Constants.SOCIAL_TYPE);
+//		Collection <Group> groups = getGroupBusiness().getGroupsBySearchRequest(request, types, amount);
+//		if(ListUtil.isEmpty(groups)){
+//			return "<label>" + this.getResourceBundle().getLocalizedString("no_groups_were_found_by_your_request", "No groups were found by your request") + "</label>";
+//		}
+//		UIComponent groupList = WhatsNewView.getGroupListView(groups);
+//		String html = BuilderLogic.getInstance().getRenderedComponent(groupList, null).getHtml();
+//		return html;
+//	}
+	
 	@RemoteMethod
-	public String getGroupSearchResults(String request, Integer amount){
-		if(amount == null){
-			amount = -1;
+	public List <PostInfo> getPosts(PostFilterParameters filterParameters){
+		try{
+			return postBusiness.getPosts(filterParameters, CoreUtil.getIWContext());
+		}catch(Exception e){
+			getLogger().log(Level.WARNING, "Failed getting posts", e);
 		}
-		//TODO: make global variable
-		List<String> types = null;//new ArrayList<String>(1);
-//		types.add(Constants.SOCIAL_TYPE);
-		Collection <Group> groups = getGroupBusiness().getGroupsBySearchRequest(request, types, amount);
-		if(ListUtil.isEmpty(groups)){
-			return "<label>" + this.getResourceBundle().getLocalizedString("no_groups_were_found_by_your_request", "No groups were found by your request") + "</label>";
-		}
-		UIComponent groupList = WhatsNewView.getGroupListView(groups);
-		String html = BuilderLogic.getInstance().getRenderedComponent(groupList, null).getHtml();
-		return html;
+		return Collections.emptyList();
 	}
 }

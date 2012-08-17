@@ -188,10 +188,10 @@ public class GroupEditor extends GroupTreeViewer {
 			styles.add(web2.getBundleUriToHumanizedMessagesStyleSheet());
 
 			JQuery  jQuery = web2.getJQuery();
-			scripts.add(jQuery.getBundleURIToJQueryUILib("1.8.14","js/jquery-ui-1.8.14.custom.min.js"));
+			scripts.add(jQuery.getBundleURIToJQueryUILib("1.8.17","js/jquery-ui-1.8.17.custom.min.js"));
 			scripts.addAll(web2.getBundleURIsToTageditLib());
 			styles.addAll(web2.getBundleURIsToTageditStyleFiles());
-			styles.add(jQuery.getBundleURIToJQueryUILib("1.8.14","css/ui-lightness/jquery-ui-1.8.14.custom.css"));
+			styles.add(jQuery.getBundleURIToJQueryUILib("1.8.17","themes/smoothness/ui-1.8.17.custom.css"));
 
 			scripts.add(web2.getBundleUriToMootabsScript());
 			styles.add(web2.getBundleUriToMootabsStyle());

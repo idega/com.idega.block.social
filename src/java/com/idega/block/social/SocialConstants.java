@@ -11,5 +11,6 @@ public class SocialConstants {
 	public static final String POST_REQUEST_BEAN_ID = "postRequestBean";
 
 	public static final String NEEDED_SCRIPT_AND_STYLE_FILES = "needed_script_and_style_files";
+	public static final String POST_URI_PARAMETER = "social-post-uri";
 
 }
