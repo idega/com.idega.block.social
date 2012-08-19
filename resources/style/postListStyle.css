@@ -37,14 +37,38 @@ ul.posts-contents-list{
 	width :	3em;
 }
 
+/* Post editor*/
 .public-post-form{
 	text-align:center;
 }
-.post-content-viewer-post-creation-form-body{
+.post-content-editor{
 	display:inline;
+	display:inline-block;
 	width:95%;
-	height:3em;	
+	padding:2px;
+	margin:0px;
 }
+.post-content-viewer-post-creation-form-body{
+	width:100%;
+	height:3em;	
+	padding:0px;
+	margin:0px;
+}
+
+.post-content-editor-controls{
+	width:100%;
+	padding:0px;
+	text-align:left;
+	margin:0px;
+}
+
+.idega-upload-area{
+	display:inline;
+	display:inline-block;
+	overflow:auto;
+}
+/*//////////////////////////////////////////////////*/
+
 
 .post-content-view-post-footer{
 	position : relative;

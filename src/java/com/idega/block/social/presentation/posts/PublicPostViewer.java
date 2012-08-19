@@ -29,7 +29,6 @@ import com.idega.presentation.Layer;
 import com.idega.presentation.ui.Form;
 import com.idega.presentation.ui.GenericButton;
 import com.idega.presentation.ui.HiddenInput;
-import com.idega.presentation.ui.SubmitButton;
 import com.idega.presentation.ui.TextArea;
 import com.idega.util.CoreConstants;
 import com.idega.util.PresentationUtil;
@@ -104,8 +103,13 @@ public class PublicPostViewer extends IWBaseComponent {
 		form.setOnSubmit("return false;");
 
 
+		Layer postContentEditor = new Layer();
+		form.add(postContentEditor);
+		postContentEditor.setStyleClass("post-content-editor navbar-inner");
+		
 		TextArea postBody = new TextArea(PostBusiness.ParameterNames.BODY_PARAMETER_NAME);
-		form.add(postBody);
+		postContentEditor.add(postBody);
+		postBody.setMarkupAttribute("placeholder", iwrb.getLocalizedString("write_text_or_drop_files", "Write text or drop files"));
 		postBody.setContent(CoreConstants.EMPTY);
 		postBody.setStyleClass("empty");
 		String postBodyId = postBody.getId();
@@ -114,8 +118,11 @@ public class PublicPostViewer extends IWBaseComponent {
 		getScriptOnLoad().append("jQuery('#").append(postBodyId).append("').autoResize({extraSpace : 30, animate : false });");
 		postBody.setStyleClass("post-content-viewer-post-creation-form-body");
 		
+		Layer editorControls = new Layer();
+		postContentEditor.add(editorControls);
+		editorControls.setStyleClass("post-content-editor-controls");
 		UploadArea uploadArea = new UploadArea();
-		form.add(uploadArea);
+		editorControls.add(uploadArea);
 		PostItemBean postItemBean = ELUtil.getInstance().getBean("postItemBean");
 		String resourcePath = postItemBean.getResourcePath();
 		
@@ -127,7 +134,7 @@ public class PublicPostViewer extends IWBaseComponent {
 		uploadArea.setAutoUpload(true);
 		uploadArea.setName(PostBusiness.ParameterNames.POST_ATTACHMENTS_PARAMETER_NAME);
 		
-		SubmitButton postButton = new SubmitButton();
+		GenericButton postButton = new GenericButton();
 		form.add(postButton);
 		postButton.setValue(iwrb.getLocalizedString("send", "Send"));
 		postButton.setStyleClass("btn btn-primary start");
@@ -198,6 +205,7 @@ public class PublicPostViewer extends IWBaseComponent {
 		if (web2 != null) {
 			styles.add(web2.getBundleURIToFancyBoxStyleFile());
 			styles.add(web2.getBundleUriToHumanizedMessagesStyleSheet());
+			styles.add(web2.getBundleUriToBootstrapMainStyleFile("2.0.4"));
 		}else{
 			Logger.getLogger(PublicPostViewer.class.getName()).log(Level.WARNING, "Failed getting Web2Business no jQuery and it's plugins files were added");
 		}
