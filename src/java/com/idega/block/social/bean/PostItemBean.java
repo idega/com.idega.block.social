@@ -34,26 +34,34 @@ import com.idega.presentation.IWContext;
 import com.idega.slide.business.IWSlideService;
 import com.idega.slide.util.AccessControlList;
 import com.idega.slide.util.IWSlideConstants;
+import com.idega.user.bean.UserDataBean;
 import com.idega.user.business.GroupBusiness;
 import com.idega.user.data.Group;
+import com.idega.user.data.User;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.IWTimestamp;
 import com.idega.util.ListUtil;
 import com.idega.util.StringUtil;
+import com.idega.util.text.Item;
 
 
-@Component("postItemBean")
+@Component(PostItemBean.BEAN_NAME)
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class PostItemBean extends ArticleItemBean{
+	public static final String BEAN_NAME = "postItemBean";
 	private static final long serialVersionUID = -6743671102226781545L;
+	
+	
+	@Autowired
+	PostBusiness postBusiness;
 	
 	@Autowired
 	private PostDao postDao;
 	
 	private PostEntity postEntity = null;
 	
-	
+	private List<Item> attachmentItems = null;
 	
 	protected String baseFolderLocation = null;
 	public static final String POST_CONTENT_PATH = "/post";
@@ -72,7 +80,6 @@ public class PostItemBean extends ArticleItemBean{
 		Set <Integer> accessGroups = new HashSet<Integer>();
 		accessGroups.add(getCreatedByUserId());
 		accessGroups.addAll(receivers);
-		storePostEntity(postEntity);
 		super.store();
 		try {
 			setAccessRights(getResourcePath(), iwc, accessGroups);
@@ -85,10 +92,6 @@ public class PostItemBean extends ArticleItemBean{
 	@Override
 	public void store() throws IDOStoreException {
 		store(CoreUtil.getIWContext());
-	}
-	
-	private void storePostEntity(PostEntity postEntity){
-		postDao.merge(postEntity);
 	}
 	
 	private void setAccessRights(String resourcePath,IWContext iwc,Collection <Integer> groupIds) throws Exception{
@@ -119,6 +122,13 @@ public class PostItemBean extends ArticleItemBean{
 		return Logger.getLogger(PostItemBean.class.getName());
 	}
 	
+	public List<Item> getAttachmentsAsItems() throws Exception{
+		if(attachmentItems == null){
+			attachmentItems = postBusiness.getAttachments(this); 
+		}
+		return attachmentItems;
+	}
+	
 	@SuppressWarnings("unchecked")
 	private Collection<String> getGroupsRolesForPostsAccess(Collection <Integer> groupIds,IWApplicationContext iwac) throws Exception {
 		List<String> roles = new ArrayList<String>(groupIds.size());
@@ -143,7 +153,7 @@ public class PostItemBean extends ArticleItemBean{
 		}
 
 		for(Group group : groups){
-			roles.add(PostBusiness.getGroupRoleForPostsAccess(group));
+			roles.add(postBusiness.getGroupRoleForPostsAccess(group));
 		}
 		return roles;
 	}
@@ -152,7 +162,7 @@ public class PostItemBean extends ArticleItemBean{
 		return getPostEntity().getPostType();
 	}
 	public void setPostType(String postType) {
-		getPostEntity().getPostType();
+		getPostEntity().setPostType(postType);
 	}
 	public Long getPostId() {
 		return getPostEntity().getId();
@@ -199,17 +209,17 @@ public class PostItemBean extends ArticleItemBean{
 
 	@Override
 	public ArticleEntity getArticleEntity() {
-		ArticleEntity articleEntity = getPostEntity().getArticle();
-		if(articleEntity == null){
-			articleEntity = super.getArticleEntity();
-			setArticleEntity(articleEntity);
-		}
-		return articleEntity;
+		return getPostEntity();
 	}
 
 	@Override
 	public void setArticleEntity(ArticleEntity articleEntity) {
-		getPostEntity().setArticle(articleEntity);
+		if(articleEntity instanceof PostEntity){
+			setPostEntity((PostEntity)articleEntity);
+			return;
+		}
+		PostEntity postEntity = new PostEntity(articleEntity);
+		setPostEntity(postEntity);
 	}
 
 	public PostEntity getPostEntity() {
@@ -245,5 +255,20 @@ public class PostItemBean extends ArticleItemBean{
 			return null;
 		}
 	}
+	
+	public int getAuthorId(){
+		return getPostEntity().getPostCreator();
+	}
+	
+	public UserDataBean getAuthorData() throws RemoteException{
+		User user = postBusiness.getUserBusiness().getUser(getAuthorId());
+		return postBusiness.getUserApplicationEngine().getUserInfo(user);
+	}
 
+
+	@Override
+	public void setAttachment(@SuppressWarnings("rawtypes") List attachments) {
+		attachmentItems = null; // Clearing cached list
+		super.setAttachment(attachments);
+	}
 }

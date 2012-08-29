@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Repository;
@@ -23,9 +22,8 @@ import com.idega.util.CoreConstants;
 import com.idega.util.ListUtil;
 import com.idega.util.StringUtil;
 
-@Repository
+@Repository(PostDao.BEAN_NAME)
 @Scope(BeanDefinition.SCOPE_SINGLETON)
-@Qualifier("PostDao")
 public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 
 	@Override
@@ -80,14 +78,14 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 			post = entities.get(0);
 		}
 
-		ArticleEntity article = post.getArticle();
-		if(article == null){
-			article = new ArticleEntity();
-		}
-		article.setModificationDate(new Date());
-		article.setUri(uri);
+//		ArticleEntity article = post.getArticle();
+//		if(article == null){
+//			article = new ArticleEntity();
+//		}
+		post.setModificationDate(new Date());
+		post.setUri(uri);
 		post.setPostType(type);
-		post.setArticle(article);
+//		post.setArticle(article);
 		post.setPostCreator(creator);
 
 		return post;
@@ -104,7 +102,7 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 			boolean up) {
 
 		StringBuilder inlineQuery =
-				new StringBuilder("SELECT DISTINCT p FROM PostEntity p JOIN p.article a ");
+				new StringBuilder("SELECT DISTINCT p FROM PostEntity p ");
 
 		ArrayList <Param> params = new ArrayList<Param>();
 
@@ -143,7 +141,7 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 				inlineQuery.append(" WHERE ");
 			}
 			String direction = up ? ">=" : "<=";
-			inlineQuery.append("( a.modificationDate ").append(direction).append(" (SELECT art.modificationDate FROM ArticleEntity art WHERE art.uri = :")
+			inlineQuery.append("( p.modificationDate ").append(direction).append(" (SELECT post.modificationDate FROM PostEntity post WHERE p.uri = :")
 					.append(ArticleEntity.uriProp).append(")) ");
 			Param parameter = new Param(ArticleEntity.uriProp,uriFrom);
 			params.add(parameter);
@@ -160,7 +158,7 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 			Param parameter = new Param(PostEntity.postTypeProp,types);
 			params.add(parameter);
 		}
-		inlineQuery.append(" ORDER BY a.modificationDate DESC");
+		inlineQuery.append(" ORDER BY p.modificationDate DESC");
 		Query query = this.getQueryInline(inlineQuery.toString());
 		if(max > 0){
 			query.setMaxResults(max);
@@ -170,10 +168,10 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 
 	private List<PostEntity> getPosts(Collection<Integer> creators,
 			Collection<Integer> receivers, Collection<String> types, int max, String uriFrom,
-			boolean up, String uri) {
+			boolean up, String uri,String order) {
 
 		StringBuilder inlineQuery =
-				new StringBuilder("SELECT DISTINCT p FROM PostEntity p JOIN p.article a ");
+				new StringBuilder("SELECT DISTINCT p FROM PostEntity p ");
 
 		ArrayList <Param> params = new ArrayList<Param>();
 
@@ -218,10 +216,10 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 				addedWhere = true;
 				inlineQuery.append(" WHERE ");
 			}
-			inlineQuery.append("( a.uri ").append(" <> :")
+			inlineQuery.append("( p.uri ").append(" <> :")
 			.append(ArticleEntity.uriProp).append(") AND ");
 			String direction = up ? ">=" : "<=";
-			inlineQuery.append("( a.modificationDate ").append(direction).append(" (SELECT art.modificationDate FROM ArticleEntity art WHERE art.uri = :")
+			inlineQuery.append("( p.modificationDate ").append(direction).append(" (SELECT post.modificationDate FROM PostEntity post WHERE post.uri = :")
 					.append(ArticleEntity.uriProp).append(")) ");
 			Param parameter = new Param(ArticleEntity.uriProp,uriFrom);
 			params.add(parameter);
@@ -246,22 +244,26 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 				inlineQuery.append(" WHERE ");
 			}
 			String articleUriProp = "articleUriProp";
-			inlineQuery.append("( a.uri = :").append(articleUriProp).append(") ");
+			inlineQuery.append("( p.uri = :").append(articleUriProp).append(") ");
 			Param parameter = new Param(articleUriProp,uri);
 			params.add(parameter);
 		}
-		inlineQuery.append(" ORDER BY a.modificationDate DESC");
+		if(order != null){
+			inlineQuery.append(" ORDER BY p.modificationDate ").append(order);
+		}
 		Query query = this.getQueryInline(inlineQuery.toString());
 		if(max > 0){
 			query.setMaxResults(max);
 		}
 		return query.getResultList(PostEntity.class,params);
 	}
+	
+	
 	@Override
 	public List<PostEntity> getPosts(Collection<Integer> creators,
 			Collection<Integer> receivers, Collection<String> types, int max, String uriFrom,
-			boolean up) {
-		return getPosts(creators, receivers, types, max, uriFrom, up, null);
+			boolean up,String order) {
+		return getPosts(creators, receivers, types, max, uriFrom, up, null,order);
 	}
 
 	@Override
@@ -269,7 +271,7 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 		if(StringUtil.isEmpty(uri)){
 			return null;
 		}
-		List<PostEntity> entities = getPosts(null, null, null, 1, null, false, uri);
+		List<PostEntity> entities = getPosts(null, null, null, 1, null, false, uri,null);
 		if(ListUtil.isEmpty(entities)){
 			return null;
 		}
@@ -277,9 +279,11 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 	}
 	
 	@Override
-	@Transactional(readOnly=false)
-	public PostEntity merge(PostEntity postEntity) {
-		return super.merge(postEntity);
+	public Collection<Integer> getReceivers(Long postId){
+		StringBuilder inlineQuery =
+				new StringBuilder("SELECT p.receivers FROM PostEntity p WHERE p.id = :").append(PostEntity.idProp);
+		Query query = this.getQueryInline(inlineQuery.toString());
+		return query.getResultList(Integer.class,new Param(PostEntity.idProp,postId));
 	}
 
 }

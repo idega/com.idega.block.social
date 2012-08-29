@@ -31,6 +31,8 @@ public class PostFilterParameters implements Serializable, DWRAnnotationPersista
 	private String beginUri = null;
 	@RemoteProperty
 	private String getUp = null;
+	@RemoteProperty
+	private String order = "DESC";
 
 	public PostFilterParameters(){
 		super();
@@ -85,8 +87,17 @@ public class PostFilterParameters implements Serializable, DWRAnnotationPersista
 		this.getUp = getUp;
 	}
 	
+	@Override
 	public String toString(){
 		return new Gson().toJson(this);
+	}
+
+	public String getOrder() {
+		return order;
+	}
+
+	public void setOrder(String order) {
+		this.order = order;
 	}
 
 }

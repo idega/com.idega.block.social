@@ -27,7 +27,7 @@
 			   listData.prepending = true;
 //			   showLoadingMessage("");
 			   var firstUri = list.find("." + e.data.postUriClass).first().val();
-			   var additional = {max : 0, beginUri : firstUri, getUp : true};
+			   var additional = {max : -1, beginUri : firstUri, getUp : true};
 			   var parameters = jQuery.extend({}, e.data.filterParameters, additional);
 			   SocialServices.getPostListHtml(parameters,opts.presentationOptions,opts.postListClass,{
 					callback : function(html){
@@ -90,8 +90,25 @@
    }
    
    $.fn.postListHelper.defaults = {};
+   
 })(jQuery);
 
+jQuery.fn.getYYYYMMDDHHMM = function(){
+	   var c = jQuery(this);
+	   var time = c.find("input").val();
+	   time = parseInt(time);
+	   var d = new Date(time);
+	   var getZero = function(n){
+		   if(n < 10){
+			   return '0' + n;
+		   }
+		   return n;
+	   }
+	   var str = ''+d.getFullYear()+'-'+ getZero(d.getMonth()+1) +"-"+ 
+	   		d.getDate() +" "+ getZero(d.getHours()) +":"+ getZero(d.getMinutes());
+	   c.find(".d-text").text(str);
+	   c.find(".d-title").attr("title",str);
+}
 
 var PostListHelper = {};
 

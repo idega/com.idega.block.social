@@ -18,12 +18,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.gson.Gson;
 import com.idega.block.social.SocialConstants;
 import com.idega.block.social.bean.PostFilterParameters;
+import com.idega.block.social.bean.PostItemBean;
 import com.idega.block.social.business.PostBusiness;
-import com.idega.block.social.business.PostInfo;
 import com.idega.block.social.presentation.comunicating.PostPreview;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
 import com.idega.builder.business.BuilderLogic;
+import com.idega.content.business.ThumbnailService;
 import com.idega.content.repository.download.RepositoryItemDownloader;
 import com.idega.core.file.util.MimeTypeUtil;
 import com.idega.idegaweb.IWBundle;
@@ -41,6 +42,7 @@ import com.idega.presentation.text.ListItem;
 import com.idega.presentation.text.Lists;
 import com.idega.presentation.text.Paragraph;
 import com.idega.presentation.text.Text;
+import com.idega.presentation.ui.GenericButton;
 import com.idega.presentation.ui.HiddenInput;
 import com.idega.user.bean.UserDataBean;
 import com.idega.util.CoreConstants;
@@ -57,7 +59,7 @@ public class PostList  extends IWBaseComponent{
 	@Autowired
 	private PostBusiness postBusiness;
 
-	private List<PostInfo> posts = null;
+	private List<PostItemBean> posts = null;
 	
 	private Map<String, String> presentationOptions = null;
 	
@@ -72,6 +74,8 @@ public class PostList  extends IWBaseComponent{
 	private PostFilterParameters postFilterParameters = null;
 	
 	private int maxImagesToShow = 3;
+	
+	private Boolean allShowed = null;
 	
 	public PostList(){
 		super();
@@ -128,6 +132,13 @@ public class PostList  extends IWBaseComponent{
 		iwc = IWContext.getIWContext(context);
 		iwrb = iwc.getIWMainApplication().getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER).getResourceBundle(iwc);
 		add(getList());
+		if(!isAllShowed()){
+			GenericButton loadMore = new GenericButton();
+			add(loadMore);
+			loadMore.setStyleClass("btn btn-success");
+			loadMore.setContent(iwrb.getLocalizedString("load_more", "Load more"));
+			loadMore.setOnClick("jQuery('.post-list').trigger('append-posts')");
+		}
 		Layer script = new Layer();
 		add(script);
 		StringBuilder actionsOnLoad = getScriptOnLoad().append("\n});");
@@ -136,7 +147,7 @@ public class PostList  extends IWBaseComponent{
 		addFiles(iwc);
 	}
 	
-	private UIComponent getList(){
+	protected UIComponent getList(){
 		Layer list = new Layer();
 		list.setStyleClass(getStyleClass());
 		PostFilterParameters postFilterParameters = getPostFilterParameters();
@@ -151,22 +162,30 @@ public class PostList  extends IWBaseComponent{
 		}
 		return list;
 	}
-	
-	private List<Layer> getPostLayers(){
-		List<PostInfo> posts = getPosts();
+	protected List<Layer> getPostLayers(){
+		List<PostItemBean> posts = getPosts();
 		if(ListUtil.isEmpty(posts)){
 			return Collections.emptyList();
 		}
 		List<Layer> layers = new ArrayList<Layer>(posts.size());
-		for(PostInfo post : posts){
-			Layer postLayer = getPostLayer(post);
+		for(PostItemBean post : posts){
+			Layer postLayer;
+			try {
+				postLayer = getPostLayer(post);
+			} catch (Exception e) {
+				getLogger().log(Level.WARNING, "Failed showing post " + post, e);
+				continue;
+			}
 			layers.add(postLayer);
 		}
 		return layers;
 	}
 	
+	protected Logger getLogger(){
+		return Logger.getLogger(getClass().getName());
+	}
 	public String getPostLayersHtml(){
-		Layer container = new Layer();
+		Layer container = new Layer("");
 		for(Layer postLayer : getPostLayers()){
 			container.add(postLayer);
 		}
@@ -177,8 +196,10 @@ public class PostList  extends IWBaseComponent{
 		return html;
 	}
 	
-	private Layer getPostLayer(PostInfo post){
+	
+	protected Layer getPostLayer(PostItemBean post) throws Exception{
 		Layer layer = new Layer();
+		layer.setStyleClass("main-postlayer");
 		String teaser = post.getTeaser();
 		String body = post.getBody();
 		int lastBodyIndex = 0;
@@ -198,49 +219,72 @@ public class PostList  extends IWBaseComponent{
 		
 		HiddenInput postUri = new HiddenInput();
 		layer.add(postUri);
-		postUri.setValue(post.getUri());
+		postUri.setValue(post.getResourcePath());
 		postUri.setStyleClass(SocialConstants.POST_URI_PARAMETER);
 		
-		layer.add(getCreationLayer(post));
-		layer.add(getPostInfoLayer(post));
-		layer.add(getFooter(post));
+		Image athorImage = new Image(post.getAuthorData().getPictureUri());
+		layer.add(athorImage);
+		athorImage.setStyleClass("post-author-image");
+		
+		
+		Layer postInfoLayer = new Layer();
+		layer.add(postInfoLayer);
+		postInfoLayer.setStyleClass("post-info-layer");
+		
+		postInfoLayer.add(getCreationLayer(post));
+		postInfoLayer.add(getPostInfoLayer(post));
+		postInfoLayer.add(getFooter(post));
 		
 		return layer;
 	}
 	
-	private Layer getCreationLayer(PostInfo post){
+	protected Layer getCreationLayer(PostItemBean post) throws Exception{
 		Layer creationLayer = new Layer();
-		UserDataBean author = post.getAuthor();
 		creationLayer.setStyleClass("post-creation-info");
 		
-		Image userImage = new Image(author.getPictureUri());
-		creationLayer.add(userImage);
-		userImage.setStyleClass("user-image");
-	
-		Span name = new Span();
-		creationLayer.add(name);
-		name.add(author.getName());
-		name.setStyleClass("user-name");
-		
-		Date creationDate = post.getDate();
-		if(creationDate != null){
-			String dateString = creationDate.toString();
-			Span date = new Span();
-			creationLayer.add(date);
-			date.setTitle(dateString);
-			date.add(dateString);
-			date.setStyleClass("post-update-date");
-		}
-		
+		creationLayer.add(getUserNamesLayer(post));
+		creationLayer.add(getDateLayer(post));
 		return creationLayer;
 	}
 	
+	protected UIComponent getUserNamesLayer(PostItemBean post) throws Exception{
+		Layer usersLayer = new Layer("");
+		UserDataBean author = post.getAuthorData();
+		
+		Span name = new Span();
+		usersLayer.add(name);
+		name.add(author.getName());
+		name.setStyleClass("user-name");
+		
+		return usersLayer;
+		
+	}
 	
-	private Layer getPostInfoLayer(PostInfo post){
+	protected UIComponent getDateLayer(PostItemBean post) throws Exception{
+		Date creationDate = post.getCreationDateObject();
+		Span date = new Span();
+//		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm",Locale.getDefault()/*,getIwc().getCurrentLocale()*/);
+//		String formattedDate = formatter.toLocalizedPattern();
+//		date.add(formattedDate);
+		date.setStyleClass("post-update-date");
+		HiddenInput dateInput = new HiddenInput();
+		date.add(dateInput);
+		dateInput.setStyleClass("d-val");
+		Span container = new Span();
+		date.add(container);
+		container.setStyleClass("d-text d-title");
+		dateInput.setValue(String.valueOf(creationDate.getTime()));
+//		date.setStyleClass("post-update-date");
+		getScriptOnLoad().append("\n\tjQuery('#").append(date.getId()).append("').getYYYYMMDDHHMM();");
+		return date;
+	}
+	
+	protected Layer getPostInfoLayer(PostItemBean post) throws Exception{
+		IWResourceBundle iwrb = getIwrb();
 		Layer postInfoLayer = new Layer();
 		postInfoLayer.setStyleClass("post-info");
 		
-		Heading1 title = new Heading1(post.getTitle());
+		Heading1 title = new Heading1(post.getHeadline());
 		postInfoLayer.add(title);
 		
 		Paragraph teaserParagraph = new Paragraph();
@@ -250,7 +294,7 @@ public class PostList  extends IWBaseComponent{
 			teaser = StringEscapeUtils.escapeHtml(teaser);
 			teaserParagraph.add(teaser);
 		}
-		List<Item> attachments = post.getAttachments();
+		List<Item> attachments = post.getAttachmentsAsItems();
 		int maxImagesToShow = getMaxImagesToShow();
 		if(!ListUtil.isEmpty(attachments)){
 			int imagesShowed = 0;
@@ -259,6 +303,8 @@ public class PostList  extends IWBaseComponent{
 			imagesParagraph.setStyleClass("post-images");
 			boolean moreImages = false;
 			boolean hasImages = false;
+			ThumbnailService thumbnailService = ELUtil.getInstance().getBean(ThumbnailService.BEAN_NAME);
+			String previewString = iwrb.getLocalizedString("preview", "Preview");
 			for(Item attachment : attachments){
 				String path = attachment.getItemValue();
 				String mimetype = MimeTypeUtil.resolveMimeTypeFromFileName(path);
@@ -267,13 +313,21 @@ public class PostList  extends IWBaseComponent{
 						imagesParagraph.add("<a style=\"display:none;\" rel=\"galery1\" href=\"" + path + "\" >");
 						moreImages = true;
 					}else{
-						imagesParagraph.add("<a rel=\"galery1\" href=\"" + path + "\" >");
+						imagesParagraph.add("<a title=\"" + previewString + "\"rel=\"galery1\" href=\"" + path + "\" >");
 						if(!hasImages){
 							hasImages = true;
 						}
 						imagesShowed++;
-						Image image = new Image(path);
+						String thumbnail;
+						try {
+							thumbnail = thumbnailService.getThumbnail(path, ThumbnailService.THUMBNAIL_MEDIUM, getIwc());
+						} catch (Exception e) {
+							Logger.getLogger(PostList.class.getName()).log(Level.WARNING, "Failed getting thumbnail of " + path, e);
+							thumbnail = CoreConstants.EMPTY;
+						}
+						Image image = new Image(thumbnail);
 						imagesParagraph.add(image);
+						image.setTitle(previewString);
 					}
 					imagesParagraph.add("</a>");
 				}
@@ -290,7 +344,7 @@ public class PostList  extends IWBaseComponent{
 		return postInfoLayer;
 	}
 	
-	private String getTeaser(PostInfo post){
+	protected String getTeaser(PostItemBean post) throws Exception{
 		String teaser = post.getTeaser();
 		if(StringUtil.isEmpty(teaser)){
 			teaser = post.getBody();
@@ -308,25 +362,25 @@ public class PostList  extends IWBaseComponent{
 		return teaser;
 	}
 	
-	private Layer getFooter(PostInfo post){
+	protected Layer getFooter(PostItemBean post) throws Exception{
 		Layer footer = new Layer();
 		footer.setStyleClass("post-content-view-post-footer");
 		
 		
 		int teaserLength = getTeaser(post).length();
 		if(teaserLength > getTeaserLength()){
-			Link postPreview = getPreviewLink(post.getUri());
+			Link postPreview = getPreviewLink(post.getResourcePath());
 			footer.add(postPreview);
 		}
 		
-		List <Item> attachments = post.getAttachments();
+		List <Item> attachments = post.getAttachmentsAsItems();
 		if(!ListUtil.isEmpty(attachments)){
 			footer.add(getAttachmentsLayer(attachments));
 		}
 		return footer;
 	}
 	
-	private Layer getAttachmentsLayer(List <Item> attachments){
+	protected Layer getAttachmentsLayer(List <Item> attachments){
 		Layer attachmentsLayer = new Layer();
 		if(ListUtil.isEmpty(attachments)){
 			return attachmentsLayer;
@@ -338,36 +392,31 @@ public class PostList  extends IWBaseComponent{
 		attachmentsLayer.add(attachmentsLink);
 		Lists attachmentsList = new Lists();
 		attachmentsLayer.add(attachmentsList);
+		
+		ThumbnailService thumbnailService = ELUtil.getInstance().getBean(ThumbnailService.BEAN_NAME);
 		for(Item attachment : attachments){
 			ListItem li = new ListItem();
 			attachmentsList.add(li);
-			DownloadLink downloadLink = new DownloadLink(attachment.getItemLabel());
+			DownloadLink downloadLink = new DownloadLink();
+			li.add(downloadLink);
 			String filePath = attachment.getItemValue();
-			downloadLink.setParameter(RepositoryItemDownloader.PARAMETER_URL, filePath);
-			String mimeType = MimeTypeUtil.resolveMimeTypeFromFileName(filePath);
-			if((!StringUtil.isEmpty(mimeType)) && (mimeType.toLowerCase().contains("image"))){
-				Span span = new Span();
-				li.add(span);
-				span.setStyleAttribute("margin:0;");
-				Image image = new Image(filePath);
-				span.add(image);
-				image.setStyleAttribute("height:1em;width:1em;");
-				span.add(downloadLink);
-				downloadLink.setStyleClass("linkedWithLinker");
-			}else{
-				downloadLink.setMarkupAttribute("rel", "friend");
-				getScriptOnLoad().append("\n\tLinksLinker.linkLinks(false,'").append(attachmentsList.getId()).append(CoreConstants.JS_STR_PARAM_END);
-				li.add(downloadLink);
+			String thumbnailPath;
+			try {
+				thumbnailPath = thumbnailService.getThumbnail(filePath, 2, getIwc());
+			} catch (Exception e) {
+				Logger.getLogger(PostList.class.getName()).log(Level.WARNING, "Failed getting thumbnail of " + filePath, e);
+				thumbnailPath = CoreConstants.EMPTY;
 			}
+			downloadLink.setParameter(RepositoryItemDownloader.PARAMETER_URL, filePath);
+			downloadLink.addToText("<img src=\""+ thumbnailPath +"\" />" + attachment.getItemLabel());
 			downloadLink.setMediaWriterClass(RepositoryItemDownloader.class);
 			attachmentsLink.addParameter(RepositoryItemDownloader.PARAMETER_URL, filePath);
 		}
 		return attachmentsLayer;
 	}
 	
-	private Link getPreviewLink(String postUri){
+	protected Link getPreviewLink(String postUri){
 		Link postLink = new Link(PostPreview.class);
-//		postLink.setURL("/idegaweb/bundles/com.idega.user.bundle/resources/images/user_female.png");
 		postLink.setText(new Text(getIwrb().getLocalizedString("more", "More") + "..."));
 		postLink.addParameter(PostPreview.URI_TO_POST_PARAMETER, postUri);
 		postLink.setStyleClass("post-content-viewer-post-preview");
@@ -428,17 +477,30 @@ public class PostList  extends IWBaseComponent{
 	
 		
 	
-	public List<PostInfo> getPosts() {
+	public List<PostItemBean> getPosts() {
 		if(posts == null){
 			PostFilterParameters postFilterParameters = getPostFilterParameters();
-			if(postFilterParameters != null){
-				posts = getPostBusiness().getPosts(getPostFilterParameters(), getIwc());
+			if(postFilterParameters == null){
+				return Collections.emptyList();
+			}
+			int max = postFilterParameters.getMax();
+			boolean isMax = (max < Integer.MAX_VALUE) && (max > 0);
+			if(isMax){
+				max++; //incrementing to see if there still exists more posts
+				postFilterParameters.setMax(max);
+			}
+			posts = getPostBusiness().getPostItems(postFilterParameters, getIwc());
+			if(!isMax){
+				setAllShowed(true);
+			}else{
+				setAllShowed(posts.size() < max);
 			}
 		}
 		return posts;
 	}
 	
-	public void setPosts(List<PostInfo> posts) {
+	public void setPosts(List<PostItemBean> posts) {
+		setAllShowed(true);
 		this.posts = posts;
 	}
 
@@ -492,6 +554,17 @@ public class PostList  extends IWBaseComponent{
 
 	public void setMaxImagesToShow(int maxImagesToShow) {
 		this.maxImagesToShow = maxImagesToShow;
+	}
+
+	public boolean isAllShowed() {
+		if(allShowed == null){
+			getPosts();
+		}
+		return allShowed;
+	}
+
+	protected void setAllShowed(boolean allShowed) {
+		this.allShowed = allShowed;
 	}
 	
 	

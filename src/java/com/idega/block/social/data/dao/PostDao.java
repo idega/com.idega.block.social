@@ -8,6 +8,8 @@ import com.idega.block.social.data.PostEntity;
 import com.idega.core.persistence.GenericDao;
 
 public interface PostDao  extends GenericDao {
+	
+	public static final String BEAN_NAME = "postDao";
 
 	/**
 	 *
@@ -32,9 +34,9 @@ public interface PostDao  extends GenericDao {
 
 
 	public List <PostEntity> getPosts(Collection <Integer> creators, Collection <Integer> receivers,
-			Collection<String> types,int max,String uriFrom,boolean up);
+			Collection<String> types,int max,String uriFrom,boolean up,String order);
 	
 	public PostEntity getPostByUri(String uri);
 	
-	public PostEntity merge(PostEntity postEntity);
+	public Collection<Integer> getReceivers(Long postId);
 }

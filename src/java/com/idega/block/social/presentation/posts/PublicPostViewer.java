@@ -13,24 +13,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.idega.block.social.SocialConstants;
 import com.idega.block.social.bean.PostFilterParameters;
-import com.idega.block.social.bean.PostItemBean;
-import com.idega.block.social.business.PostBusiness;
 import com.idega.block.social.business.SocialServices;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
 import com.idega.block.web2.business.Web2BusinessBean;
-import com.idega.content.upload.presentation.UploadArea;
 import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWMainApplication;
-import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.IWBaseComponent;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
-import com.idega.presentation.ui.Form;
-import com.idega.presentation.ui.GenericButton;
-import com.idega.presentation.ui.HiddenInput;
-import com.idega.presentation.ui.TextArea;
 import com.idega.util.CoreConstants;
+import com.idega.util.CoreUtil;
 import com.idega.util.PresentationUtil;
 import com.idega.util.expression.ELUtil;
 import com.idega.webface.WFUtil;
@@ -42,26 +35,23 @@ public class PublicPostViewer extends IWBaseComponent {
 	
 	private StringBuilder scriptOnLoad = null;
 	
-	private StringBuilder defaultValuesString = null;
-	
 	private Integer maxToShow = null;
 	
 	private int teaserLength = 200;
 	
 	private static final int DEFAULT_MAX_TO_SHOW = 20;
 	
-	private static final String DEFAULT_VALUES_FUNCTION = "PublicPostViewerHelper.setDefaultValues";
-	
 	@Override
 	protected void initializeComponent(FacesContext context) {
 		super.initializeComponent(context);
 		IWContext iwc = IWContext.getIWContext(context);
-		IWResourceBundle iwrb = iwc.getIWMainApplication().getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER).getResourceBundle(iwc);
+//		IWResourceBundle iwrb = iwc.getIWMainApplication().getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER).getResourceBundle(iwc);
 		
 		ELUtil.getInstance().autowire(this);
 		
 		if(iwc.isLoggedOn()){
-			add(getPostingForm(iwc, iwrb));
+			PostCreator postCreator = new PostCreator();
+			add(postCreator);
 		}
 		PostList postList = new PostList();
 		add(postList);
@@ -74,12 +64,6 @@ public class PublicPostViewer extends IWBaseComponent {
 		footer.setStyleClass("public-posts-footer");
 		add(footer);
 		
-		GenericButton loadMore = new GenericButton();
-		footer.add(loadMore);
-		loadMore.setStyleClass("btn btn-success");
-		loadMore.setContent(iwrb.getLocalizedString("load_more", "Load more"));
-		loadMore.setOnClick("jQuery('.post-list').trigger('append-posts')");
-		
 		addFiles(iwc);
 		addScriptOnLoad(iwc);
 	}
@@ -87,72 +71,18 @@ public class PublicPostViewer extends IWBaseComponent {
 	private void addScriptOnLoad(IWContext iwc){
 		Layer scriptLayer = new Layer();
 		add(scriptLayer);
-		if(defaultValuesString != null){
-			defaultValuesString.append("\n}");
-			scriptLayer.add(PresentationUtil.getJavaScriptAction(defaultValuesString.toString()));
-		}
-		StringBuilder scriptOnLoad = getScriptOnLoad().append("\n\t").append(DEFAULT_VALUES_FUNCTION).append("();");
 		
-		scriptOnLoad.append("\n});");
+		getScriptOnLoad().append("\n});");
 		scriptLayer.add(PresentationUtil.getJavaScriptAction(scriptOnLoad.toString()));
 	}
 	
-	private Form getPostingForm(IWContext iwc, IWResourceBundle iwrb){
-		Form form = new Form();
-		form.setStyleClass("public-post-form");
-		form.setOnSubmit("return false;");
 
-
-		Layer postContentEditor = new Layer();
-		form.add(postContentEditor);
-		postContentEditor.setStyleClass("post-content-editor navbar-inner");
-		
-		TextArea postBody = new TextArea(PostBusiness.ParameterNames.BODY_PARAMETER_NAME);
-		postContentEditor.add(postBody);
-		postBody.setMarkupAttribute("placeholder", iwrb.getLocalizedString("write_text_or_drop_files", "Write text or drop files"));
-		postBody.setContent(CoreConstants.EMPTY);
-		postBody.setStyleClass("empty");
-		String postBodyId = postBody.getId();
-		getDefaultValuesString().append("\n\tjQuery('#").append(postBodyId).append("').val('');");
-		getDefaultValuesString().append("\n\tjQuery('#").append(postBodyId).append("').keyup();"); // to get area small like it was (it is autoresize)
-		getScriptOnLoad().append("jQuery('#").append(postBodyId).append("').autoResize({extraSpace : 30, animate : false });");
-		postBody.setStyleClass("post-content-viewer-post-creation-form-body");
-		
-		Layer editorControls = new Layer();
-		postContentEditor.add(editorControls);
-		editorControls.setStyleClass("post-content-editor-controls");
-		UploadArea uploadArea = new UploadArea();
-		editorControls.add(uploadArea);
-		PostItemBean postItemBean = ELUtil.getInstance().getBean("postItemBean");
-		String resourcePath = postItemBean.getResourcePath();
-		
-		HiddenInput resourcePathInput = new HiddenInput(SocialConstants.POST_URI_PARAMETER,resourcePath);
-		form.add(resourcePathInput);
-		
-		uploadArea.setUploadPath(postItemBean.getFilesResourcePath());
-		uploadArea.setDropZonesSelectionFunction("jQuery('#"+ form.getId() +"')");
-		uploadArea.setAutoUpload(true);
-		uploadArea.setName(PostBusiness.ParameterNames.POST_ATTACHMENTS_PARAMETER_NAME);
-		
-		GenericButton postButton = new GenericButton();
-		form.add(postButton);
-		postButton.setValue(iwrb.getLocalizedString("send", "Send"));
-		postButton.setStyleClass("btn btn-primary start");
-		StringBuilder action = new StringBuilder("PublicPostViewerHelper.createPost('#").append(postButton.getId())
-				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(CoreConstants.NUMBER_SIGN).append(uploadArea.getId())
-				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(CoreConstants.NUMBER_SIGN).append(resourcePathInput.getId())
-				.append(CoreConstants.JS_STR_PARAM_END);
-		postButton.setOnClick(action.toString());
-		
-		
-		return form;
-	}
-
+	@SuppressWarnings("unchecked")
 	private PostFilterParameters getPostFilterParameters(IWContext iwc){
 		PostFilterParameters postFilterParameters = new PostFilterParameters();
 		Collection<Integer> receivers;
 		try{
-			receivers = socialServices.getUserGroupIds(iwc.getCurrentUser());
+			receivers = CoreUtil.getIdsAsIntegers(socialServices.getUserBusiness().getUserGroups(iwc.getCurrentUser()));
 		}catch (Exception e) {
 			receivers = Collections.emptyList();
 		}
@@ -215,13 +145,6 @@ public class PublicPostViewer extends IWBaseComponent {
 	private void addFiles(IWContext iwc){
 		PresentationUtil.addStyleSheetsToHeader(iwc, getStyleFiles(iwc));
 		PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, getScriptFiles(iwc));
-	}
-
-	private StringBuilder getDefaultValuesString() {
-		if(defaultValuesString == null){
-			defaultValuesString = new StringBuilder(DEFAULT_VALUES_FUNCTION).append(" = function(){");
-		}
-		return defaultValuesString;
 	}
 
 	public int getMaxToShow() {

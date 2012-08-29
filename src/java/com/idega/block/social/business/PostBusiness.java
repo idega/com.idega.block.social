@@ -31,6 +31,7 @@ import com.idega.business.IBOLookupException;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
 import com.idega.data.IDOLookup;
+import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.idegaweb.IWUserContext;
 import com.idega.presentation.IWContext;
@@ -51,9 +52,11 @@ import com.idega.util.StringUtil;
 import com.idega.util.expression.ELUtil;
 import com.idega.util.text.Item;
 
-@Service("postBusiness")
+@Service(PostBusiness.BEAN_NAME)
 @Scope(BeanDefinition.SCOPE_SINGLETON)
 public class PostBusiness extends DefaultSpringBean {
+	
+	public static final String BEAN_NAME = "postBusiness";
 
 	private static final String GROUP_ROLE_PREFIX = "social_role_";
 
@@ -123,7 +126,7 @@ public class PostBusiness extends DefaultSpringBean {
 			receivers.addAll(usersReceivers);
 		}
 
-		PostItemBean post = ELUtil.getInstance().getBean("postItemBean");
+		PostItemBean post = ELUtil.getInstance().getBean(PostItemBean.BEAN_NAME);
 		List<String> resourcePath = parameters.get(SocialConstants.POST_URI_PARAMETER);
 		if(!ListUtil.isEmpty(resourcePath)){
 			post.setResourcePath(resourcePath.get(0));
@@ -166,7 +169,7 @@ public class PostBusiness extends DefaultSpringBean {
 		if(!ListUtil.isEmpty(types)){
 			postType = types.get(0);
 		}
-		if(!StringUtil.isEmpty(postType)){
+		if(StringUtil.isEmpty(postType)){
 			if(!ListUtil.isEmpty(userReceiversIds)){
 				postType = PostEntity.POST_TYPE_MESSAGE;
 				String title = post.getHeadline();
@@ -177,6 +180,7 @@ public class PostBusiness extends DefaultSpringBean {
 				postType = PostEntity.POST_TYPE_PUBLIC;
 			}
 		}
+		post.setPostType(postType);
 		try{
 			post.store(iwc);
 		}catch (Exception e) {
@@ -231,10 +235,7 @@ public class PostBusiness extends DefaultSpringBean {
 		this.emailSenderHelper.sendMessage(parameters);
 	}
 
-	public PostInfo getPost(String uri,IWContext iwc){
-		if(StringUtil.isEmpty(uri) || (iwc == null)){
-			return null;
-		}
+	public PostInfo getPost(String uri,IWContext iwc) throws Exception{
 		if(uri.startsWith("/content")){
 			uri = uri.substring("/content".length(), uri.length());
 		}
@@ -243,13 +244,13 @@ public class PostBusiness extends DefaultSpringBean {
 		return getPostInfo(postEntity,iwc,slide);
 	}
 	
-	private PostInfo getPostInfo(PostEntity entity,IWContext iwc,IWSlideService slide){
+	private PostInfo getPostInfo(PostEntity entity,IWContext iwc,IWSlideService slide) throws Exception{
 		if((entity == null) || (iwc == null) || (slide == null)){
 			return null;
 		}
 		List<String> uris = new ArrayList<String>(1);
 		this.articleListManadgedBean.setShowAllItems(true);
-		uris.add(entity.getArticle().getUri());
+		uris.add(entity.getUri());
 		List <ArticleItemBean> articleItems= this.articleListManadgedBean.getArticlesByURIs(uris,
 				iwc);
 		if(ListUtil.isEmpty(articleItems)){
@@ -262,15 +263,22 @@ public class PostBusiness extends DefaultSpringBean {
 			User user = this.getUserBusiness().getUser(userId);
 			UserDataBean userInfo = this.getUserApplicationEngine().getUserInfo(user);
 			post.setAuthor(userInfo);
-			post.setDate(entity.getArticle().getModificationDate());
+			post.setDate(entity.getModificationDate());
 		}catch(RemoteException e){
 			this.getLogger().log(Level.WARNING,"Failed getting user ", e);
 		}
 		post.setTitle(article.getHeadline());
 		post.setUri(article.getResourcePath());
 		post.setBody(article.getBody());
-		List<?> attachments = article.getAttachments();
+		post.setAttachments(getAttachments(article));
 
+		return post;
+		
+	}
+	
+	public List<Item> getAttachments(ArticleItemBean article) throws Exception{
+		IWSlideService slide = IBOLookup.getServiceInstance(IWMainApplication.getDefaultIWApplicationContext(), IWSlideService.class);
+		List<?> attachments = article.getAttachments();
 		List<Item> items = new ArrayList<Item>(attachments.size());
 		for(Object path : attachments) {
 			String uri = path instanceof String ? (String) path : String.valueOf(path);
@@ -286,66 +294,56 @@ public class PostBusiness extends DefaultSpringBean {
 			}
 			items.add(new Item(uri, resource.getDisplayName()));
 		}
-		post.setAttachments(items);
-
-		return post;
-		
+		return items;
 	}
-	public List <PostInfo> getPosts(PostFilterParameters filterParameters,IWContext iwc){
-		Collection <PostEntity> postEntities = null;
+	
+	
+	private List<PostEntity> getPostEntities(PostFilterParameters filterParameters){
 		String getUpString = filterParameters.getGetUp();
 		boolean getUp = (getUpString != null) && (getUpString.toLowerCase().equals("true"));
-		postEntities = this.postDao.getPosts(filterParameters.getCreators(), filterParameters.getReceivers(),
-				filterParameters.getTypes(), filterParameters.getMax(), filterParameters.getBeginUri(), getUp);
+		List <PostEntity> postEntities = this.postDao.getPosts(filterParameters.getCreators(), filterParameters.getReceivers(),
+				filterParameters.getTypes(), filterParameters.getMax(), filterParameters.getBeginUri(), getUp,filterParameters.getOrder());
+		return postEntities;
+	}
+	
+	public List <PostInfo> getPosts(PostFilterParameters filterParameters,IWContext iwc){
+		Collection <PostEntity> postEntities = getPostEntities(filterParameters);
 		List<PostInfo> posts = new ArrayList<PostInfo>(postEntities.size());
-//		List<String> uris = new ArrayList<String>(1);
-		this.articleListManadgedBean.setShowAllItems(true);
 		IWSlideService slide = getServiceInstance(IWSlideService.class);
 		for(PostEntity entity : postEntities){
-			posts.add(getPostInfo(entity, iwc, slide));
-//			uris.add(entity.getArticle().getUri());
-//			List <ArticleItemBean> articleItems= this.articleListManadgedBean.getArticlesByURIs(uris,
-//					iwc);
-//			if(ListUtil.isEmpty(articleItems)){
-//				continue;
-//			}
-//			uris.clear();
-//			ArticleItemBean article = articleItems.get(0);
-//			PostInfo post = new PostInfo();
-//			try{
-//				int userId = entity.getPostCreator();
-//				User user = this.getUserBusiness().getUser(userId);
-//				UserDataBean userInfo = this.getUserApplicationEngine().getUserInfo(user);
-//				post.setAuthor(userInfo);
-//				post.setDate(entity.getArticle().getModificationDate());
-//			}catch(RemoteException e){
-//				this.getLogger().log(Level.WARNING,"Failed getting user ", e);
-//			}
-//			post.setTitle(article.getHeadline());
-//			post.setUri(article.getResourcePath());
-//			post.setBody(article.getBody());
-//			List<?> attachments = article.getAttachments();
-//
-//			List<Item> items = new ArrayList<Item>(attachments.size());
-//			for(Object path : attachments) {
-//				String uri = path instanceof String ? (String) path : String.valueOf(path);
-//				WebdavResource resource = null;
-//				try{
-//					resource = slide.getWebdavResourceAuthenticatedAsRoot(uri);
-//				}catch(Exception e){
-//					this.getLogger().log(Level.WARNING, "failed getting attachment" + uri, e);
-//					continue;
-//				}
-//				if(!StringUtil.isEmpty(uri) && !uri.startsWith(CoreConstants.WEBDAV_SERVLET_URI)){
-//					uri = CoreConstants.WEBDAV_SERVLET_URI + uri;
-//				}
-//				items.add(new Item(uri, resource.getDisplayName()));
-//			}
-//			post.setAttachments(items);
-//
-//			posts.add(post);
+			try {
+				posts.add(getPostInfo(entity, iwc, slide));
+			} catch (Exception e) {
+				getLogger().log(Level.WARNING, "Failed getting post info of postEntity " + entity, e);
+				continue;
+			}
 		}
-
+		return posts;
+	}
+	
+	/**
+	 * Not tested!!!!!
+	 * @param filterParameters
+	 * @param iwc
+	 * @return
+	 */
+	public List<PostItemBean> getPostItems(PostFilterParameters filterParameters,IWContext iwc){
+		Collection <PostEntity> postEntities = getPostEntities(filterParameters);
+		List<PostItemBean> posts = new ArrayList<PostItemBean>(postEntities.size());
+		ELUtil elUtil = ELUtil.getInstance();
+		for(PostEntity entity : postEntities){
+			PostItemBean postItemBean = elUtil.getBean(PostItemBean.BEAN_NAME);
+			String resourcePath = entity.getUri();
+			postItemBean.setResourcePath(resourcePath);
+			try {
+				postItemBean.load();
+			} catch (IOException e) {
+				getLogger().log(Level.WARNING, "Failed loading post " + resourcePath, e);
+				continue;
+			}
+			postItemBean.setPostEntity(entity);
+			posts.add(postItemBean);
+		}
 		return posts;
 	}
 
@@ -402,8 +400,8 @@ public class PostBusiness extends DefaultSpringBean {
 		}
 	}
 
-	public static String getGroupRoleForPostsAccess(Group group){
-		return GROUP_ROLE_PREFIX + group.getId() + StringHandler.stripNonRomanCharacters(group.getName());
+	public String getGroupRoleForPostsAccess(Group group){
+		return new StringBuilder(GROUP_ROLE_PREFIX).append(group.getId()).append(StringHandler.stripNonRomanCharacters(group.getName())).toString();
 	}
 
 	public static class ParameterNames {

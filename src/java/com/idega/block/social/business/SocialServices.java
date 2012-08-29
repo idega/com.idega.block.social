@@ -3,6 +3,7 @@ package com.idega.block.social.business;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
@@ -29,15 +29,14 @@ import com.google.gson.Gson;
 import com.idega.block.social.SocialConstants;
 import com.idega.block.social.bean.PostFilterParameters;
 import com.idega.block.social.bean.PostItemBean;
+import com.idega.block.social.data.PostEntity;
 import com.idega.block.social.presentation.group.SocialGroupCreator;
 import com.idega.block.social.presentation.posts.PostList;
 import com.idega.builder.business.BuilderLogic;
-import com.idega.business.IBOLookup;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.component.bean.RenderedComponent;
 import com.idega.data.IDOLookup;
 import com.idega.dwr.business.DWRAnnotationPersistance;
-import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
@@ -434,30 +433,6 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		return parentgroups.iterator().next();
 	}
 
-	@SuppressWarnings("unchecked")
-	public Collection <Integer> getUserGroupIds(User user){
-		Collection <Integer>  receivers = null;
-		if(user != null){
-
-			Collection <Group> userGroups = null;
-			try{
-				UserBusiness userBusiness = IBOLookup.getServiceInstance(IWMainApplication.getDefaultIWApplicationContext(), UserBusiness.class);
-				userGroups = userBusiness.getUserGroups(user);
-			}catch(RemoteException e){
-				Logger.getLogger(this.getClass().getName()).
-						log(Level.WARNING, "failed to get parent groups of user ", e);
-			}
-			if(ListUtil.isEmpty(userGroups)){
-				return Collections.emptyList();
-			}
-
-			receivers = new ArrayList<Integer>();
-			for(Group group : userGroups){
-				receivers.add(Integer.valueOf(group.getId()));
-			}
-		}
-		return receivers;
-	}
 
 	@RemoteMethod
 	public Map <String,String> savePublicPost(Map <String, List<String>> parameters){
@@ -465,7 +440,7 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		Map<String,String> response = new HashMap<String, String>();
 		try {
 			// Generate new resource path
-			PostItemBean postItemBean = ELUtil.getInstance().getBean("postItemBean");
+			PostItemBean postItemBean = ELUtil.getInstance().getBean(PostItemBean.BEAN_NAME);
 			response.put("newResourcePath", postItemBean.getResourcePath());
 			response.put("newUploadPath", postItemBean.getFilesResourcePath());
 		} catch (Exception e) {
@@ -476,12 +451,10 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		IWContext iwc = CoreUtil.getIWContext();
 		try {
 			User user = iwc.getCurrentUser();
-			Collection<Integer> userGroupIds = getUserGroupIds(user);
-			ArrayList<String> stringIds = new ArrayList<String>();
-			for(Integer id : userGroupIds){
-				stringIds.add(String.valueOf(id));
-			}
+			@SuppressWarnings("unchecked")
+			List<String> stringIds = CoreUtil.getIds(getUserBusiness().getUserGroups(user));
 			parameters.put(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME, stringIds);
+			parameters.put(PostBusiness.ParameterNames.POST_TYPE, Arrays.asList(PostEntity.POST_TYPE_PUBLIC));
 			String errorMessage = postBusiness.savePost(parameters);
 			if(errorMessage == null){
 				response.put("status", "OK");
