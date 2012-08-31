@@ -71,7 +71,7 @@ public class PostBusiness extends DefaultSpringBean {
 	private EmailSenderHelper emailSenderHelper;
 
 	@Autowired
-	private PostDao postDao;
+	private PostDao<PostEntity> postDao;
 
 	public PostBusiness(){
 		this.articleListManadgedBean = new ArticleListManagedBean();
@@ -239,7 +239,7 @@ public class PostBusiness extends DefaultSpringBean {
 		if(uri.startsWith("/content")){
 			uri = uri.substring("/content".length(), uri.length());
 		}
-		PostEntity postEntity = postDao.getPostByUri(uri);
+		PostEntity postEntity = postDao.getByUri(uri);
 		IWSlideService slide = getServiceInstance(IWSlideService.class);
 		return getPostInfo(postEntity,iwc,slide);
 	}

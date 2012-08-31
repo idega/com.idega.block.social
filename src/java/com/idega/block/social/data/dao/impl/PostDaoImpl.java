@@ -2,100 +2,30 @@ package com.idega.block.social.data.dao.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.idega.block.article.data.ArticleEntity;
+import com.idega.block.article.data.dao.impl.ArticleDaoImpl;
 import com.idega.block.social.data.PostEntity;
 import com.idega.block.social.data.dao.PostDao;
 import com.idega.core.persistence.Param;
 import com.idega.core.persistence.Query;
-import com.idega.core.persistence.impl.GenericDaoImpl;
 import com.idega.util.CoreConstants;
 import com.idega.util.ListUtil;
 import com.idega.util.StringUtil;
 
 @Repository(PostDao.BEAN_NAME)
 @Scope(BeanDefinition.SCOPE_SINGLETON)
-public class PostDaoImpl extends GenericDaoImpl implements PostDao{
+public class PostDaoImpl<T extends PostEntity> extends ArticleDaoImpl<T> implements PostDao<T>{
 
 	@Override
-	@Transactional(readOnly=false)
-	public PostEntity updatePost(String uri, Collection<Integer> receivers,
-			String type,int creator) {
-
-		PostEntity post = this.createPostEntity(uri, type,creator);
-		if(post == null){
-			return null;
-		}
-
-		Set <Integer> existingReceivers = post.getReceivers();
-		if(existingReceivers == null){
-			existingReceivers = new HashSet<Integer>();
-			post.setReceivers(existingReceivers);
-		}
-		existingReceivers.addAll(receivers);
-
-		PostEntity postEntity = merge(post);
-		return postEntity;
+	protected Class<T> getEntityClass(){
+		return (Class<T>) PostEntity.class;
 	}
-
-	private List <PostEntity> getPostsByArticleUriAndPostType(String uri,String type){
-		ArrayList<String> types;
-		if(StringUtil.isEmpty(type)){
-			types = null;
-		}else{
-			types = new ArrayList<String>();
-			types.add(type);
-		}
-		return getPosts(null, null, types, 0, null, false, uri);
-	}
-	
-	@Override
-	@Transactional(readOnly=false)
-	public PostEntity updatePost(String uri,Collection<Integer> receivers,int creator) {
-		return updatePost(uri, receivers, PostEntity.POST_TYPE_MESSAGE,creator);
-
-	}
-
-	private PostEntity createPostEntity(String uri, String type,int creator) {
-		List <PostEntity> entities = this.getPostsByArticleUriAndPostType(uri, type);
-		PostEntity post = null;
-		if(ListUtil.isEmpty(entities)){
-			post = new PostEntity();
-		}else{
-			if(entities.size() > 1){
-				//there can not be two identical posts
-				return null;
-			}
-			post = entities.get(0);
-		}
-
-//		ArticleEntity article = post.getArticle();
-//		if(article == null){
-//			article = new ArticleEntity();
-//		}
-		post.setModificationDate(new Date());
-		post.setUri(uri);
-		post.setPostType(type);
-//		post.setArticle(article);
-		post.setPostCreator(creator);
-
-		return post;
-	}
-
-	@Override
-	public boolean deletePost(int id) {
-		return Boolean.FALSE;
-	}
-
 
 	public Collection<PostEntity> getPostsByReceiversAndCreators(Collection<Integer> creators,
 			Collection<Integer> receivers, Collection<String> types, int max, String uriFrom,
@@ -166,12 +96,14 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 		return query.getResultList(PostEntity.class,params);
 	}
 
-	private List<PostEntity> getPosts(Collection<Integer> creators,
+	private List<T> getPosts(Collection<Integer> creators,
 			Collection<Integer> receivers, Collection<String> types, int max, String uriFrom,
 			boolean up, String uri,String order) {
 
+		Class<T> entityClass = getEntityClass();
+		String entityName = entityClass.getSimpleName();
 		StringBuilder inlineQuery =
-				new StringBuilder("SELECT DISTINCT p FROM PostEntity p ");
+				new StringBuilder("SELECT DISTINCT p FROM ").append(entityName).append(" p ");
 
 		ArrayList <Param> params = new ArrayList<Param>();
 
@@ -255,29 +187,17 @@ public class PostDaoImpl extends GenericDaoImpl implements PostDao{
 		if(max > 0){
 			query.setMaxResults(max);
 		}
-		return query.getResultList(PostEntity.class,params);
+		return query.getResultList(entityClass,params);
 	}
 	
 	
 	@Override
-	public List<PostEntity> getPosts(Collection<Integer> creators,
+	public List<T> getPosts(Collection<Integer> creators,
 			Collection<Integer> receivers, Collection<String> types, int max, String uriFrom,
 			boolean up,String order) {
 		return getPosts(creators, receivers, types, max, uriFrom, up, null,order);
 	}
 
-	@Override
-	public PostEntity getPostByUri(String uri) {
-		if(StringUtil.isEmpty(uri)){
-			return null;
-		}
-		List<PostEntity> entities = getPosts(null, null, null, 1, null, false, uri,null);
-		if(ListUtil.isEmpty(entities)){
-			return null;
-		}
-		return entities.get(0);
-	}
-	
 	@Override
 	public Collection<Integer> getReceivers(Long postId){
 		StringBuilder inlineQuery =

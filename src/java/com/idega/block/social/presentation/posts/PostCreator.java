@@ -11,6 +11,7 @@ import javax.faces.context.FacesContext;
 import com.idega.block.social.SocialConstants;
 import com.idega.block.social.bean.PostItemBean;
 import com.idega.block.social.business.PostBusiness;
+import com.idega.block.social.presentation.SocialUIBase;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
 import com.idega.block.web2.business.Web2BusinessBean;
@@ -18,22 +19,18 @@ import com.idega.content.upload.presentation.UploadArea;
 import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWResourceBundle;
-import com.idega.presentation.IWBaseComponent;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
-import com.idega.presentation.ui.Form;
-import com.idega.presentation.ui.GenericButton;
 import com.idega.presentation.ui.HiddenInput;
+import com.idega.presentation.ui.SubmitButton;
 import com.idega.presentation.ui.TextArea;
 import com.idega.util.CoreConstants;
-import com.idega.util.PresentationUtil;
 import com.idega.util.expression.ELUtil;
 import com.idega.webface.WFUtil;
 
-public class PostCreator  extends IWBaseComponent {
+public class PostCreator  extends SocialUIBase {
 	
 	
-	private StringBuilder scriptOnLoad = null;
 	private StringBuilder defaultValuesString = null;
 	
 	private static final String DEFAULT_VALUES_FUNCTION = "PostCreator.setDefaultValues";
@@ -41,26 +38,22 @@ public class PostCreator  extends IWBaseComponent {
 	@Override
 	protected void initializeComponent(FacesContext context) {
 		super.initializeComponent(context);
-		IWContext iwc = IWContext.getIWContext(context);
-		IWResourceBundle iwrb = iwc.getIWMainApplication().getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER).getResourceBundle(iwc);
+		getIwc(context);
+		setTag("form");
+		addUI();
 		
-		add(getPostingForm(iwc, iwrb));
-		
-		addFiles(iwc);
-		addScriptOnLoad(iwc);
 	}
 	
-	private void addScriptOnLoad(IWContext iwc){
+	@Override
+	protected void addScriptOnLoad(){
 		Layer scriptLayer = new Layer();
 		add(scriptLayer);
 		if(defaultValuesString != null){
 			defaultValuesString.append("\n}");
-			scriptLayer.add(PresentationUtil.getJavaScriptAction(defaultValuesString.toString()));
+			getScriptOnLoad().append(defaultValuesString);
 		}
-		StringBuilder scriptOnLoad = getScriptOnLoad().append("\n\t").append(DEFAULT_VALUES_FUNCTION).append("();");
-		
-		scriptOnLoad.append("\n});");
-		scriptLayer.add(PresentationUtil.getJavaScriptAction(scriptOnLoad.toString()));
+		getScriptOnLoad().append("\n\t").append(DEFAULT_VALUES_FUNCTION).append("();");
+		super.addScriptOnLoad();
 	}
 	
 	protected UIComponent getBodyArea(IWResourceBundle iwrb){
@@ -76,14 +69,12 @@ public class PostCreator  extends IWBaseComponent {
 		return postBody;
 	}
 	
-	private UIComponent getPostingForm(IWContext iwc, IWResourceBundle iwrb){
-		Form form = new Form();
-		form.setStyleClass("public-post-form");
-		form.setOnSubmit("return false;");
-
+	private void addUI(){
+		IWResourceBundle iwrb = getIwrb();
+		addStyleClass("post-creation-form");
 
 		Layer postContentEditor = new Layer();
-		form.add(postContentEditor);
+		add(postContentEditor);
 		postContentEditor.setStyleClass("post-content-editor navbar-inner");
 		
 		UIComponent postBody = getBodyArea(iwrb);
@@ -99,10 +90,10 @@ public class PostCreator  extends IWBaseComponent {
 		String resourcePath = postItemBean.getResourcePath();
 		
 		HiddenInput resourcePathInput = new HiddenInput(SocialConstants.POST_URI_PARAMETER,resourcePath);
-		form.add(resourcePathInput);
+		add(resourcePathInput);
 		
 		uploadArea.setUploadPath(postItemBean.getFilesResourcePath());
-		uploadArea.setDropZonesSelectionFunction("jQuery('#"+ form.getId() +"')");
+		uploadArea.setDropZonesSelectionFunction("jQuery('#"+ getId() +"')");
 		uploadArea.setAutoUpload(true);
 		uploadArea.setName(PostBusiness.ParameterNames.POST_ATTACHMENTS_PARAMETER_NAME);
 		
@@ -111,26 +102,25 @@ public class PostCreator  extends IWBaseComponent {
 		uploadArea.setFilesListContainerSelectFunction(new StringBuilder("jQuery('#").append(fileListLayer.getId()).append("');").toString());
 		
 		
-		GenericButton postButton = new GenericButton();
+		SubmitButton postButton = new SubmitButton();
 		editorControls.add(postButton);
 		postButton.setValue(iwrb.getLocalizedString("send", "Send"));
 		postButton.setStyleClass("btn btn-primary send-btn");
-		StringBuilder action = new StringBuilder("PostCreator.createPost('#").append(form.getId())
+		
+		StringBuilder action = new StringBuilder("PostCreator.createPost('#").append(getId())
 				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(CoreConstants.NUMBER_SIGN).append(uploadArea.getId())
 				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(CoreConstants.NUMBER_SIGN).append(resourcePathInput.getId())
-				.append(CoreConstants.JS_STR_PARAM_END);
-		postButton.setOnClick(action.toString());
-		
-		
-		return form;
+				.append(CoreConstants.JS_STR_PARAM_END).append("return false;");
+		this.getAttributes().put("onsubmit", action.toString());
 	}
 	
-	public List<String> getScriptFiles(IWContext iwc){
+	@Override
+	public List<String> getScripts() {
 		List<String> scripts = new ArrayList<String>();
 
 		scripts.add(CoreConstants.DWR_ENGINE_SCRIPT);
 		scripts.add(CoreConstants.DWR_UTIL_SCRIPT);
-
+		IWContext iwc = getIwc();
 		Web2Business web2 = WFUtil.getBeanInstance(iwc, Web2Business.SPRING_BEAN_IDENTIFIER);
 		try{
 			if (web2 != null) {
@@ -162,9 +152,10 @@ public class PostCreator  extends IWBaseComponent {
 		return scripts;
 	}
 	
-	public List<String> getStyleFiles(IWContext iwc){
+	@Override
+	public List<String> getStyleSheets() {
 		List<String> styles = new ArrayList<String>();
-
+		IWContext iwc = getIwc();
 		Web2Business web2 = WFUtil.getBeanInstance(iwc, Web2Business.SPRING_BEAN_IDENTIFIER);
 		if (web2 != null) {
 			styles.add(web2.getBundleURIToFancyBoxStyleFile());
@@ -175,29 +166,16 @@ public class PostCreator  extends IWBaseComponent {
 		return styles;
 	}
 	
-	private void addFiles(IWContext iwc){
-		PresentationUtil.addStyleSheetsToHeader(iwc, getStyleFiles(iwc));
-		PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, getScriptFiles(iwc));
-	}
-
 	private StringBuilder getDefaultValuesString() {
 		if(defaultValuesString == null){
 			defaultValuesString = new StringBuilder(DEFAULT_VALUES_FUNCTION).append(" = function(){");
 		}
 		return defaultValuesString;
 	}
-	protected StringBuilder getScriptOnLoad() {
-		if(scriptOnLoad == null){
-			scriptOnLoad = new StringBuilder("jQuery(document).ready(function(){");
-		}
-		return scriptOnLoad;
-	}
-
-	protected void setScriptOnLoad(StringBuilder scriptOnLoad) {
-		this.scriptOnLoad = scriptOnLoad;
-	}
 	
+	@Override
 	protected Logger getLogger(){
 		return Logger.getLogger(this.getClass().getName());
 	}
+
 }

@@ -57,7 +57,7 @@ public class PostItemBean extends ArticleItemBean{
 	PostBusiness postBusiness;
 	
 	@Autowired
-	private PostDao postDao;
+	private PostDao<PostEntity> postDao;
 	
 	private PostEntity postEntity = null;
 	
@@ -224,7 +224,7 @@ public class PostItemBean extends ArticleItemBean{
 
 	public PostEntity getPostEntity() {
 		if(postEntity == null){
-			postEntity  = postDao.getPostByUri(getResourcePath());
+			postEntity  = postDao.getByUri(getResourcePath());
 		}
 		if(postEntity == null){
 			postEntity = new PostEntity();

@@ -26,14 +26,12 @@ public class PostEntity extends ArticleEntity{
 	public static final String POST_TYPE_PUBLIC = "PUBLIC";
 
 	
-	public static long ARTICLE_TYPE = 8163484471464890L; // Took first generated serial serialVersionUID
-	
 	public PostEntity(){
 		super();
 	}
 	
 	public PostEntity(ArticleEntity article){
-//		super(article);
+		super(article);
 	}
 	
 	public PostEntity(PostEntity post){
