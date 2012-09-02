@@ -71,7 +71,7 @@ public class PostBusiness extends DefaultSpringBean {
 	private EmailSenderHelper emailSenderHelper;
 
 	@Autowired
-	private PostDao<PostEntity> postDao;
+	private PostDao postDao;
 
 	public PostBusiness(){
 		this.articleListManadgedBean = new ArticleListManagedBean();

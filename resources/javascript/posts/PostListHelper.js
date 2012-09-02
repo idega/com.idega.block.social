@@ -105,7 +105,7 @@ jQuery.fn.getYYYYMMDDHHMM = function(){
 		   return n;
 	   }
 	   var str = ''+d.getFullYear()+'-'+ getZero(d.getMonth()+1) +"-"+ 
-	   		d.getDate() +" "+ getZero(d.getHours()) +":"+ getZero(d.getMinutes());
+	   getZero(d.getDate()) +" "+ getZero(d.getHours()) +":"+ getZero(d.getMinutes());
 	   c.find(".d-text").text(str);
 	   c.find(".d-title").attr("title",str);
 }

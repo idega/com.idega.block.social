@@ -41,16 +41,13 @@ public class PostCreator  extends SocialUIBase {
 		getIwc(context);
 		setTag("form");
 		addUI();
-		
 	}
 	
 	@Override
 	protected void addScriptOnLoad(){
-		Layer scriptLayer = new Layer();
-		add(scriptLayer);
 		if(defaultValuesString != null){
-			defaultValuesString.append("\n}");
-			getScriptOnLoad().append(defaultValuesString);
+			defaultValuesString.append("\n\t}");
+			getScriptOnLoad().append("\n\t").append(defaultValuesString);
 		}
 		getScriptOnLoad().append("\n\t").append(DEFAULT_VALUES_FUNCTION).append("();");
 		super.addScriptOnLoad();
@@ -62,9 +59,9 @@ public class PostCreator  extends SocialUIBase {
 		postBody.setContent(CoreConstants.EMPTY);
 		postBody.setStyleClass("empty");
 		String postBodyId = postBody.getId();
-		getDefaultValuesString().append("\n\tjQuery('#").append(postBodyId).append("').val('');");
-		getDefaultValuesString().append("\n\tjQuery('#").append(postBodyId).append("').keyup();"); // to get area small like it was (it is autoresize)
-		getScriptOnLoad().append("jQuery('#").append(postBodyId).append("').autoResize({extraSpace : 30, animate : false });");
+		getDefaultValuesString().append("\n\t\tjQuery('#").append(postBodyId).append("').val('');");
+		getDefaultValuesString().append("\n\t\tjQuery('#").append(postBodyId).append("').keyup();"); // to get area small like it was (it is autoresize)
+		getScriptOnLoad().append("\n\tjQuery('#").append(postBodyId).append("').autoResize({extraSpace : 30, animate : false });");
 		postBody.setStyleClass("post-content-viewer-post-creation-form-body");
 		return postBody;
 	}
@@ -111,7 +108,7 @@ public class PostCreator  extends SocialUIBase {
 				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(CoreConstants.NUMBER_SIGN).append(uploadArea.getId())
 				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(CoreConstants.NUMBER_SIGN).append(resourcePathInput.getId())
 				.append(CoreConstants.JS_STR_PARAM_END).append("return false;");
-		this.getAttributes().put("onsubmit", action.toString());
+		setMarkupAttribute("onsubmit", action.toString());
 	}
 	
 	@Override

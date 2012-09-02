@@ -57,7 +57,7 @@ public class PostItemBean extends ArticleItemBean{
 	PostBusiness postBusiness;
 	
 	@Autowired
-	private PostDao<PostEntity> postDao;
+	private PostDao postDao;
 	
 	private PostEntity postEntity = null;
 	
