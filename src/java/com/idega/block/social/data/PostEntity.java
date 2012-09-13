@@ -19,23 +19,26 @@ import com.idega.util.expression.ELUtil;
 
 @Entity
 @Table(name = "soc_post")
-public class PostEntity extends ArticleEntity{
+public class PostEntity extends ArticleEntity {
 
 	private static final long serialVersionUID = 8163484471464890L;
+
 	public static final String POST_TYPE_MESSAGE = "MESSAGE";
 	public static final String POST_TYPE_PUBLIC = "PUBLIC";
 
-	
-	public PostEntity(){
+	public PostEntity() {
 		super();
+
+		setTheClass(getClass().getSimpleName());
 	}
-	
-	public PostEntity(ArticleEntity article){
+
+	public PostEntity(ArticleEntity article) {
 		super(article);
 	}
-	
+
 	public PostEntity(PostEntity post){
-		this((ArticleEntity)post);
+		this((ArticleEntity) post);
+
 		setPostType(post.getPostType());
 		setReceivers(post.getReceivers());
 		setPostCreator(post.getPostCreator());
@@ -64,7 +67,7 @@ public class PostEntity extends ArticleEntity{
 	public void setPostType(String postType) {
 		this.postType = postType;
 	}
-	
+
 	public Set<Integer> getReceivers(){
 		try{
 			return receivers;
@@ -91,5 +94,5 @@ public class PostEntity extends ArticleEntity{
 	public String toString() {
 		return new Gson().toJson(this);
 	}
-	
+
 }
