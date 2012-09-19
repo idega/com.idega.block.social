@@ -376,9 +376,7 @@ public class SocialGroupCreator extends SimpleGroupCreator{
 	}
 
 	private static String getViewableUserData(UserDataBean userData){
-		StringBuilder data = new StringBuilder(" email: ")
-		.append(userData.getEmail())
-		.append(" login:").append(userData.getLogin());
+		StringBuilder data = new StringBuilder(" email: ").append(userData.getEmail());
 		return data.toString();
 	}
 
