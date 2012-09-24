@@ -29,7 +29,7 @@ public class PostEntity extends ArticleEntity {
 	public PostEntity() {
 		super();
 
-		setTheClass(getClass().getSimpleName());
+//		setTheClass(getClass().getSimpleName());
 	}
 
 	public PostEntity(ArticleEntity article) {
