@@ -160,7 +160,8 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 	@RemoteMethod
 	public String getPostListHtml(PostFilterParameters postFilterParameters,Map<String, String> presentationOptions,String postListClass){
 		try {
-			PostList postList = (PostList) Class.forName(postListClass).getDeclaredConstructor(Map.class).newInstance(presentationOptions);
+			PostList postList = (PostList) Class.forName(postListClass).newInstance();
+			postList.setPresentationOptions(presentationOptions);
 			postList.setPostFilterParameters(postFilterParameters);
 			return postList.getPostLayersHtml();
 		} catch (Exception e) {
@@ -434,7 +435,6 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 	}
 
 
-	@RemoteMethod
 	public Map <String,String> savePublicPost(Map <String, List<String>> parameters){
 		IWResourceBundle iwrb = getResourceBundle();
 		Map<String,String> response = new HashMap<String, String>();
@@ -469,9 +469,66 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		return response;
 	}
 	@RemoteMethod
-	public String savePost(Map <String, List<String>> parameters){
-		return this.postBusiness.savePost(parameters);
+	public Map <String,String> savePost(Map <String, List<String>> parameters){
+		IWResourceBundle iwrb = getResourceBundle();
+		Map<String,String> response = new HashMap<String, String>();
+		try{
+			String postType = parameters.get(PostBusiness.ParameterNames.POST_TYPE).get(0);
+			if(postType.equals(PostEntity.POST_TYPE_PUBLIC)){
+				return savePublicPost(parameters);
+			}
+			if(postType.equals(PostEntity.POST_TYPE_MESSAGE)){
+				return savePrivatePost(parameters);
+			}
+		}catch (Exception e) {
+			getLogger().log(Level.WARNING, "error savin", e);
+		}
+		response.put("status", "BAD REQUEST");
+		response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
+		return response;
 	}
+	
+	public Map <String,String> savePrivatePost(Map <String, List<String>> parameters){
+		IWResourceBundle iwrb = getResourceBundle();
+		Map<String,String> response = new HashMap<String, String>();
+		try {
+			// Generate new resource path
+			PostItemBean postItemBean = ELUtil.getInstance().getBean(PostItemBean.BEAN_NAME);
+			response.put("newResourcePath", postItemBean.getResourcePath());
+			response.put("newUploadPath", postItemBean.getFilesResourcePath());
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Failed generating new resource path " + new Gson().toJson(parameters), e);
+			response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
+			return response;
+		}
+		IWContext iwc = CoreUtil.getIWContext();
+		try {
+			User user = iwc.getCurrentUser();
+			
+			List<String> groupReceivers = parameters.get(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME);
+			if(!ListUtil.isEmpty(groupReceivers)){
+				// Keep only groups that user is allowed to send post to
+				@SuppressWarnings("unchecked")
+				Set<String> stringIds = new HashSet<String>(CoreUtil.getIds(getUserBusiness().getUserGroups(user)));
+				stringIds.retainAll(groupReceivers);
+				parameters.put(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME, new ArrayList<String>(groupReceivers));
+			}
+			parameters.put(PostBusiness.ParameterNames.POST_TYPE, Arrays.asList(PostEntity.POST_TYPE_MESSAGE));
+			String errorMessage = postBusiness.savePost(parameters);
+			if(errorMessage == null){
+				response.put("status", "OK");
+				response.put("message", iwrb.getLocalizedString("saved", "Saved"));
+			}else{
+				response.put("message", errorMessage);
+			}
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Failed saving public post by parameters " + new Gson().toJson(parameters), e);
+			response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
+		}
+		return response;
+	}
+	
+	
 
 	public Group getSocialRootGroup(){
 		try{

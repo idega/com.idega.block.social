@@ -85,7 +85,7 @@ public class PostList  extends IWBaseComponent{
 		setPresentationOptions(presentationOptions);
 	}
 	
-	protected void setPresentationOptions(Map<String, String> presentationOptions){
+	public void setPresentationOptions(Map<String, String> presentationOptions){
 		this.presentationOptions = presentationOptions;
 	}
 	

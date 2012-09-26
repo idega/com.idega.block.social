@@ -17,7 +17,7 @@ PostCreator.createPost = function(formSelector,uploaderSelector,resourcePathSele
 		map[element.name].push(element.value);
 	}
 	
-	SocialServices.savePublicPost(map,{
+	SocialServices.savePost(map,{
 		callback : function(reply){
 			if(reply.status != "OK"){
 				// Actions for saving failure

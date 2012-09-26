@@ -11,6 +11,7 @@ import javax.faces.context.FacesContext;
 import com.idega.block.social.SocialConstants;
 import com.idega.block.social.bean.PostItemBean;
 import com.idega.block.social.business.PostBusiness;
+import com.idega.block.social.data.PostEntity;
 import com.idega.block.social.presentation.SocialUIBase;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
@@ -66,10 +67,15 @@ public class PostCreator  extends SocialUIBase {
 		return postBody;
 	}
 	
+	protected String getPostType(){
+		return PostEntity.POST_TYPE_PUBLIC;
+	}
 	private void addUI(){
 		IWResourceBundle iwrb = getIwrb();
 		addStyleClass("post-creation-form");
 
+		add(new HiddenInput(PostBusiness.ParameterNames.POST_TYPE, getPostType()));
+		
 		Layer postContentEditor = new Layer();
 		add(postContentEditor);
 		postContentEditor.setStyleClass("post-content-editor navbar-inner");

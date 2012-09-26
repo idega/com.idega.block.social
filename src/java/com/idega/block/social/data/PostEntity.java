@@ -9,6 +9,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.Table;
 
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.CollectionOfElements;
 import org.hibernate.annotations.Index;
 
@@ -69,12 +70,11 @@ public class PostEntity extends ArticleEntity {
 	}
 
 	public Set<Integer> getReceivers(){
-		try{
+		if(Hibernate.isInitialized(receivers)){
 			return receivers;
-		}catch (Exception e) {
-			PostDao postDao =  ELUtil.getInstance().getBean(PostDao.BEAN_NAME);
-			receivers = new HashSet<Integer>( postDao.getReceivers(getId()));
 		}
+		PostDao postDao =  ELUtil.getInstance().getBean(PostDao.BEAN_NAME);
+		receivers = new HashSet<Integer>( postDao.getReceivers(getId()));
 		return receivers;
 	}
 

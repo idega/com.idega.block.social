@@ -190,9 +190,10 @@ public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleD
 	@Override
 	public Collection<Integer> getReceivers(Long postId){
 		StringBuilder inlineQuery =
-				new StringBuilder("SELECT p.receivers FROM PostEntity p WHERE p.id = :").append(PostEntity.idProp);
+				new StringBuilder("SELECT r FROM PostEntity p join p.receivers r WHERE p.id = :").append(PostEntity.idProp);
 		Query query = this.getQueryInline(inlineQuery.toString());
-		return query.getResultList(Integer.class,new Param(PostEntity.idProp,postId));
+		List<Integer> results =  query.getResultList(Integer.class,new Param(PostEntity.idProp,postId));//query.getSingleResult(Set.class,new Param(PostEntity.idProp,postId));
+		return results;
 	}
 
 }
