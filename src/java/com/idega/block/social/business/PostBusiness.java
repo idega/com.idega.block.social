@@ -299,10 +299,9 @@ public class PostBusiness extends DefaultSpringBean {
 	
 	
 	private List<PostEntity> getPostEntities(PostFilterParameters filterParameters){
-		String getUpString = filterParameters.getGetUp();
-		boolean getUp = (getUpString != null) && (getUpString.toLowerCase().equals("true"));
-		List <PostEntity> postEntities = this.postDao.getPosts(filterParameters.getCreators(), filterParameters.getReceivers(),
-				filterParameters.getTypes(), filterParameters.getMax(), filterParameters.getBeginUri(), getUp,filterParameters.getOrder());
+		List <PostEntity> postEntities = this.postDao.getPosts(filterParameters.getCreators(), 
+				filterParameters.getReceivers(),filterParameters.getTypes(), filterParameters.getMax(), 
+				filterParameters.getBeginUri(), filterParameters.getGetUp(), filterParameters.getOrder());
 		return postEntities;
 	}
 	
@@ -321,14 +320,34 @@ public class PostBusiness extends DefaultSpringBean {
 		return posts;
 	}
 	
-	/**
-	 * Not tested!!!!!
-	 * @param filterParameters
-	 * @param iwc
-	 * @return
-	 */
-	public List<PostItemBean> getPostItems(PostFilterParameters filterParameters,IWContext iwc){
-		Collection <PostEntity> postEntities = getPostEntities(filterParameters);
+	
+	
+	private List<PostEntity> getLastPostEntities(PostFilterParameters filterParameters,int userId){
+		List <PostEntity> postEntities = this.postDao.getLastPosts(filterParameters.getTypes(), userId,
+				filterParameters.getMax(), filterParameters.getBeginUri(), filterParameters.getGetUp(), filterParameters.getOrder());
+		return postEntities;
+	}
+	
+	public List<PostItemBean> getLastPostItems(PostFilterParameters filterParameters,IWContext iwc){
+		Collection <PostEntity> postEntities = getLastPostEntities(filterParameters,iwc.getCurrentUserId());
+		List<PostItemBean> posts = getPostItems(postEntities, iwc);
+		return posts;
+	}
+	
+	private List<PostEntity> getConversationEntities(PostFilterParameters filterParameters,int userId){
+		List <PostEntity> postEntities = this.postDao.getConversation(userId, filterParameters.getReceivers(), filterParameters.getTypes(), 
+				filterParameters.getMax(), filterParameters.getBeginUri(), filterParameters.getGetUp(), filterParameters.getOrder());
+		return postEntities;
+	}
+	
+	public List<PostItemBean> getConversationPostItems(PostFilterParameters filterParameters,IWContext iwc){
+		Collection <PostEntity> postEntities = getConversationEntities(filterParameters,iwc.getCurrentUserId());
+		List<PostItemBean> posts = getPostItems(postEntities, iwc);
+		return posts;
+	}
+	
+	
+	private List<PostItemBean> getPostItems(Collection <PostEntity> postEntities, IWContext iwc){
 		List<PostItemBean> posts = new ArrayList<PostItemBean>(postEntities.size());
 		ELUtil elUtil = ELUtil.getInstance();
 		for(PostEntity entity : postEntities){
@@ -344,6 +363,16 @@ public class PostBusiness extends DefaultSpringBean {
 			postItemBean.setPostEntity(entity);
 			posts.add(postItemBean);
 		}
+		return posts;
+	}
+	/**
+	 * @param filterParameters
+	 * @param iwc
+	 * @return
+	 */
+	public List<PostItemBean> getPostItems(PostFilterParameters filterParameters,IWContext iwc){
+		Collection <PostEntity> postEntities = getPostEntities(filterParameters);
+		List<PostItemBean> posts = getPostItems(postEntities, iwc);
 		return posts;
 	}
 

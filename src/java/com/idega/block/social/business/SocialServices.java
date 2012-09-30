@@ -15,6 +15,7 @@ import java.util.logging.Level;
 
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
+import javax.ws.rs.core.Response;
 
 import org.directwebremoting.annotations.Param;
 import org.directwebremoting.annotations.RemoteMethod;
@@ -31,6 +32,7 @@ import com.idega.block.social.bean.PostFilterParameters;
 import com.idega.block.social.bean.PostItemBean;
 import com.idega.block.social.data.PostEntity;
 import com.idega.block.social.presentation.group.SocialGroupCreator;
+import com.idega.block.social.presentation.posts.Conversation;
 import com.idega.block.social.presentation.posts.PostList;
 import com.idega.builder.business.BuilderLogic;
 import com.idega.core.business.DefaultSpringBean;
@@ -168,6 +170,27 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 			getLogger().log(Level.WARNING, "Failed getting post list", e);
 		}
 		return null;
+	}
+	
+	@RemoteMethod
+	public Map <String,Object> getMessageCreator(Map <String, String> presentationOptions,Collection<Integer> creators){
+		Map <String,Object> response = new HashMap<String, Object>();
+//		IWContext iwc = CoreUtil.getIWContext();
+		IWResourceBundle iwrb = getResourceBundle();
+		try {
+			Conversation conversation = new Conversation(presentationOptions);
+			conversation.setConversationWith(creators);
+			RenderedComponent renderedComponent = BuilderLogic.getInstance().getRenderedComponent(conversation, null);
+			response.put("status", Response.Status.OK.getReasonPhrase());
+			System.out.println(renderedComponent.getHtml());
+			response.put("content", renderedComponent);
+			return response;
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Failed getting post list", e);
+		}
+		response.put("status", Response.Status.INTERNAL_SERVER_ERROR.getReasonPhrase());
+		response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
+		return response;
 	}
 	
 //	@RemoteMethod
@@ -435,9 +458,9 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 	}
 
 
-	public Map <String,String> savePublicPost(Map <String, List<String>> parameters){
+	public Map <String,Object> savePublicPost(Map <String, List<String>> parameters){
 		IWResourceBundle iwrb = getResourceBundle();
-		Map<String,String> response = new HashMap<String, String>();
+		Map <String,Object> response = new HashMap<String, Object>();
 		try {
 			// Generate new resource path
 			PostItemBean postItemBean = ELUtil.getInstance().getBean(PostItemBean.BEAN_NAME);
@@ -469,9 +492,9 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		return response;
 	}
 	@RemoteMethod
-	public Map <String,String> savePost(Map <String, List<String>> parameters){
+	public Map <String,Object> savePost(Map <String, List<String>> parameters){
 		IWResourceBundle iwrb = getResourceBundle();
-		Map<String,String> response = new HashMap<String, String>();
+		Map <String,Object> response = new HashMap<String, Object>();
 		try{
 			String postType = parameters.get(PostBusiness.ParameterNames.POST_TYPE).get(0);
 			if(postType.equals(PostEntity.POST_TYPE_PUBLIC)){
@@ -483,14 +506,15 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		}catch (Exception e) {
 			getLogger().log(Level.WARNING, "error savin", e);
 		}
-		response.put("status", "BAD REQUEST");
+		response.put("status", "server error");
 		response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
 		return response;
 	}
 	
-	public Map <String,String> savePrivatePost(Map <String, List<String>> parameters){
+	
+	public Map <String,Object> savePrivatePost(Map <String, List<String>> parameters){
 		IWResourceBundle iwrb = getResourceBundle();
-		Map<String,String> response = new HashMap<String, String>();
+		Map <String,Object> response = new HashMap<String, Object>();
 		try {
 			// Generate new resource path
 			PostItemBean postItemBean = ELUtil.getInstance().getBean(PostItemBean.BEAN_NAME);
@@ -621,4 +645,5 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		}
 		return Collections.emptyList();
 	}
+	
 }

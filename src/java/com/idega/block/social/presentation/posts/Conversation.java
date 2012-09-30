@@ -2,18 +2,15 @@ package com.idega.block.social.presentation.posts;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.faces.context.FacesContext;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.idega.block.social.SocialConstants;
 import com.idega.block.social.bean.PostFilterParameters;
-import com.idega.block.social.business.SocialServices;
 import com.idega.block.social.presentation.SocialUIBase;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
@@ -23,28 +20,30 @@ import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
-import com.idega.presentation.Span;
 import com.idega.util.CoreConstants;
-import com.idega.util.CoreUtil;
-import com.idega.util.expression.ELUtil;
+import com.idega.util.ListUtil;
 import com.idega.webface.WFUtil;
 
-public class MessageView extends SocialUIBase {
-	
-	@Autowired
-	private SocialServices socialServices;
+public class Conversation extends SocialUIBase {
 	
 	private StringBuilder scriptOnLoad = null;
 	
-	private Integer maxToShow = null;
+	private Collection<Integer> conversationWith;
 	
-	private int teaserLength = 200;
+	private Map<String,String> presentationOptions;
 	
-	private static final int DEFAULT_MAX_TO_SHOW = 20;
+	public Conversation(){
+		
+	}
+	
+	public Conversation(Map<String,String> presentationOptions){
+		
+	}
 	
 	@Override
 	protected void initializeComponent(FacesContext context) {
 		super.initializeComponent(context);
+		setTag("div");
 		IWContext iwc = getIwc(context);
 		IWResourceBundle iwrb = getIwrb();
 		if(!iwc.isLoggedOn()){
@@ -53,77 +52,50 @@ public class MessageView extends SocialUIBase {
 			msg.add(iwrb.getLocalizedString("not_logged_in", "Not logged in"));
 			return;
 		}
-		ELUtil.getInstance().autowire(this);
-		Layer topControlls = new Layer();
-		add(topControlls);
-		topControlls.setStyleClass("top-controlls");
-		Layer button = new Layer("button");
-		topControlls.add(button);
-		button.setStyleClass("btn btn-primary");
-		Span icon = new Span();
-		button.add(icon);
-		icon.setStyleClass("icon-envelope icon-white");
-		button.setMarkupAttribute("title", iwrb.getLocalizedString("create_message", "Create message"));
-		button.add(iwrb.getLocalizedString("new", "New"));
-//		MessageCreator messageCreator = new MessageCreator();
-//		add(messageCreator);
-		LastMessagesList messageList = new LastMessagesList();
-		add(messageList);
+		Layer content = new Layer();
+		add(content);
+		
+		getScriptOnLoad().append("\n\talert(10);");
+		MessageList messageList = new MessageList();
+		content.add(messageList);
 		messageList.setStyleClass("post-list");
 		messageList.setPostFilterParameters(getPostFilterParameters(iwc));
-		messageList.setTeaserLength(getTeaserLength());
+		messageList.setPresentationOptions(getPresentationOptions());
 		
 		
 		Layer footer = new Layer();
-		footer.setStyleClass("public-posts-footer");
-		add(footer);
+		content.add(footer);
+		footer.setStyleClass("post-editor");
+		
+		MessageCreator messageCreator = new MessageCreator();
+		footer.add(messageCreator);
+		
 	}
 	
-	@SuppressWarnings("unchecked")
 	private PostFilterParameters getPostFilterParameters(IWContext iwc){
 		PostFilterParameters postFilterParameters = new PostFilterParameters();
-		Collection<Integer> receivers;
-		try{
-			receivers = CoreUtil.getIdsAsIntegers(socialServices.getUserBusiness().getUserGroups(iwc.getCurrentUser()));
-		}catch (Exception e) {
-			receivers = Collections.emptyList();
+		if(!ListUtil.isEmpty(conversationWith)){
+			postFilterParameters.setReceivers(conversationWith);
 		}
-		postFilterParameters.setReceivers(receivers);
-		postFilterParameters.setMax(getMaxToShow());
 		return postFilterParameters;
 	}
 	
-	public int getMaxToShow() {
-		if(maxToShow == null){
-			return DEFAULT_MAX_TO_SHOW;
-		}
-		return maxToShow;
-	}
-
-	public void setMaxToShow(int maxToShow) {
-		this.maxToShow = maxToShow;
-	}
 
 	@Override
 	protected StringBuilder getScriptOnLoad() {
-		if(scriptOnLoad == null){
-			scriptOnLoad = new StringBuilder("jQuery(document).ready(function(){");
-		}
-		return scriptOnLoad;
+		return super.getScriptOnLoad();
+//		if(scriptOnLoad == null){
+//			scriptOnLoad = new StringBuilder("jQuery(document).ready(function(){");
+//		}
+//		return scriptOnLoad;
 	}
 
 	@Override
 	protected void setScriptOnLoad(StringBuilder scriptOnLoad) {
-		this.scriptOnLoad = scriptOnLoad;
+		super.setScriptOnLoad(scriptOnLoad);
+//		this.scriptOnLoad = scriptOnLoad;
 	}
 
-	public int getTeaserLength() {
-		return teaserLength;
-	}
-
-	public void setTeaserLength(int teaserLength) {
-		this.teaserLength = teaserLength;
-	}
 
 	@Override
 	public List<String> getScripts() {
@@ -176,5 +148,21 @@ public class MessageView extends SocialUIBase {
 			Logger.getLogger(PublicPostViewer.class.getName()).log(Level.WARNING, "Failed getting Web2Business no jQuery and it's plugins files were added");
 		}
 		return styles;
+	}
+
+	public Collection<Integer> getConversationWith() {
+		return conversationWith;
+	}
+
+	public void setConversationWith(Collection<Integer> conversationWith) {
+		this.conversationWith = conversationWith;
+	}
+
+	public Map<String, String> getPresentationOptions() {
+		return presentationOptions;
+	}
+
+	public void setPresentationOptions(Map<String, String> presentationOptions) {
+		this.presentationOptions = presentationOptions;
 	}
 }

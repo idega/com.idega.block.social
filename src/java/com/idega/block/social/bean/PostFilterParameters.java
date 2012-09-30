@@ -30,9 +30,9 @@ public class PostFilterParameters implements Serializable, DWRAnnotationPersista
 	@RemoteProperty
 	private String beginUri = null;
 	@RemoteProperty
-	private String getUp = null;
+	private Boolean getUp = null;
 	@RemoteProperty
-	private String order = "DESC";
+	private Boolean order = null;
 
 	public PostFilterParameters(){
 		super();
@@ -80,24 +80,34 @@ public class PostFilterParameters implements Serializable, DWRAnnotationPersista
 	public void setBeginUri(String beginUri) {
 		this.beginUri = beginUri;
 	}
-	public String getGetUp() {
-		return getUp;
-	}
-	public void setGetUp(String getUp) {
-		this.getUp = getUp;
-	}
 	
 	@Override
 	public String toString(){
 		return new Gson().toJson(this);
 	}
 
-	public String getOrder() {
+	/**
+	 * 
+	 * @return order if true ascending else descending, null if don't care
+	 */
+	public Boolean getOrder() {
 		return order;
 	}
 
-	public void setOrder(String order) {
+	/**
+	 * 
+	 * @param order if true ascending else descending, null if don't care
+	 */
+	public void setOrder(Boolean order) {
 		this.order = order;
+	}
+
+	public Boolean getGetUp() {
+		return getUp;
+	}
+
+	public void setGetUp(Boolean getUp) {
+		this.getUp = getUp;
 	}
 
 }

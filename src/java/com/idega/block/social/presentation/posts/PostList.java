@@ -476,6 +476,10 @@ public class PostList  extends IWBaseComponent{
 	}
 	
 		
+	protected List<PostItemBean> loadPosts(PostFilterParameters postFilterParameters){
+		posts = getPostBusiness().getPostItems(postFilterParameters, getIwc());
+		return posts;
+	}
 	
 	public List<PostItemBean> getPosts() {
 		if(posts == null){
@@ -489,7 +493,7 @@ public class PostList  extends IWBaseComponent{
 				max++; //incrementing to see if there still exists more posts
 				postFilterParameters.setMax(max);
 			}
-			posts = getPostBusiness().getPostItems(postFilterParameters, getIwc());
+			posts = loadPosts(postFilterParameters);
 			if(!isMax){
 				setAllShowed(true);
 			}else{
@@ -529,6 +533,7 @@ public class PostList  extends IWBaseComponent{
 		this.scriptOnLoad = scriptOnLoad;
 	}
 
+	
 	protected PostFilterParameters getPostFilterParameters() {
 		return postFilterParameters;
 	}

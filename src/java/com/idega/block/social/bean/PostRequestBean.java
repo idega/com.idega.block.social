@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import com.idega.block.social.SocialConstants;
 import com.idega.block.social.business.PostBusiness;
 import com.idega.block.social.business.PostInfo;
-import com.idega.block.social.data.PostEntity;
 import com.idega.block.social.presentation.comunicating.PostPreview;
 import com.idega.builder.bean.AdvancedProperty;
 import com.idega.builder.business.BuilderLogic;
@@ -101,62 +100,63 @@ public class PostRequestBean extends DefaultSpringBean {
 		return posts;
 	}
 	private PostFilterParameters getPostFilterParameters(IWContext iwc){
-		PostFilterParameters filterParameters = new PostFilterParameters();
-
-		if(parameters.getUp == null){
-			parameters.getUp = iwc.getParameter(PostRequestBean.Parameters.GET_UP);
-		}
-		if(parameters.maxToShow == 0){
-			String max = iwc.getParameter(PostRequestBean.Parameters.MAX_TO_SHOW);
-			parameters.maxToShow = max == null ? DEFAULT_MAX_TO_SHOW_VALUE : Integer.valueOf(max);
-		}
-		if(parameters.firstUri == null){
-			parameters.firstUri = iwc.getParameter(PostRequestBean.Parameters.FIRST_URI);
-		}
-
-		filterParameters.setGetUp(parameters.getUp);
-		filterParameters.setMax(parameters.maxToShow);
-		filterParameters.setBeginUri(parameters.firstUri);
-		if(isLoggedOn){
-			if(parameters.showGroup == null){
-				parameters.showGroup = iwc.getParameter(PostRequestBean.Parameters.SHOW_GROUP);
-			}
-			if(parameters.showPrivate == null){
-				parameters.showPrivate = iwc.getParameter(PostRequestBean.Parameters.SHOW_PRIVATE);
-			}
-			if(parameters.showSent == null){
-				parameters.showSent = iwc.getParameter(PostRequestBean.Parameters.SENT);
-			}
-			User user = iwc.getCurrentUser();
-			Integer userId = Integer.valueOf(user.getId());
-			Collection <Integer> receivers = new ArrayList<Integer>();
-			List <String> types = new ArrayList<String>();
-			if(ListUtil.isEmpty(this.getReceivers())){
-				if(this.parameters.showGroup != null){
-					receivers.addAll(this.getUserGroupIds(user));
-					types.add(PostEntity.POST_TYPE_PUBLIC);
-				}
-				if(this.parameters.showPrivate != null){
-					receivers.add(userId);
-					types.add(PostEntity.POST_TYPE_MESSAGE);
-				}
-			}else{
-				receivers = this.getReceivers();
-			}
-			Collection<Integer> creators = new ArrayList<Integer>();
-			if(this.parameters.showSent != null){
-				creators.add(userId);
-			}
-			filterParameters.setTypes(types);
-			filterParameters.setReceivers(receivers);
-			filterParameters.setCreators(creators);
-		}else{
-			ArrayList <String> types = new ArrayList<String>(1);
-			types.add(PostEntity.POST_TYPE_PUBLIC);
-			filterParameters.setTypes(types);
-			filterParameters.setReceivers(this.getReceivers());
-		}
-		return filterParameters;
+//		PostFilterParameters filterParameters = new PostFilterParameters();
+//
+//		if(parameters.getUp == null){
+//			parameters.getUp = iwc.getParameter(PostRequestBean.Parameters.GET_UP);
+//		}
+//		if(parameters.maxToShow == 0){
+//			String max = iwc.getParameter(PostRequestBean.Parameters.MAX_TO_SHOW);
+//			parameters.maxToShow = max == null ? DEFAULT_MAX_TO_SHOW_VALUE : Integer.valueOf(max);
+//		}
+//		if(parameters.firstUri == null){
+//			parameters.firstUri = iwc.getParameter(PostRequestBean.Parameters.FIRST_URI);
+//		}
+//
+//		filterParameters.setGetUp(parameters.getUp);
+//		filterParameters.setMax(parameters.maxToShow);
+//		filterParameters.setBeginUri(parameters.firstUri);
+//		if(isLoggedOn){
+//			if(parameters.showGroup == null){
+//				parameters.showGroup = iwc.getParameter(PostRequestBean.Parameters.SHOW_GROUP);
+//			}
+//			if(parameters.showPrivate == null){
+//				parameters.showPrivate = iwc.getParameter(PostRequestBean.Parameters.SHOW_PRIVATE);
+//			}
+//			if(parameters.showSent == null){
+//				parameters.showSent = iwc.getParameter(PostRequestBean.Parameters.SENT);
+//			}
+//			User user = iwc.getCurrentUser();
+//			Integer userId = Integer.valueOf(user.getId());
+//			Collection <Integer> receivers = new ArrayList<Integer>();
+//			List <String> types = new ArrayList<String>();
+//			if(ListUtil.isEmpty(this.getReceivers())){
+//				if(this.parameters.showGroup != null){
+//					receivers.addAll(this.getUserGroupIds(user));
+//					types.add(PostEntity.POST_TYPE_PUBLIC);
+//				}
+//				if(this.parameters.showPrivate != null){
+//					receivers.add(userId);
+//					types.add(PostEntity.POST_TYPE_MESSAGE);
+//				}
+//			}else{
+//				receivers = this.getReceivers();
+//			}
+//			Collection<Integer> creators = new ArrayList<Integer>();
+//			if(this.parameters.showSent != null){
+//				creators.add(userId);
+//			}
+//			filterParameters.setTypes(types);
+//			filterParameters.setReceivers(receivers);
+//			filterParameters.setCreators(creators);
+//		}else{
+//			ArrayList <String> types = new ArrayList<String>(1);
+//			types.add(PostEntity.POST_TYPE_PUBLIC);
+//			filterParameters.setTypes(types);
+//			filterParameters.setReceivers(this.getReceivers());
+//		}
+//		return filterParameters;
+		return null;
 	}
 
 	public String getUritoPostPreview(String postUri){
