@@ -54,36 +54,39 @@ public class LastMessagesList extends MessageList{
 	}
 
 	@Override
-	public List<String> getScriptFiles() {
+	public List<String> getScripts() {
 		IWContext iwc = getIwc();
-		List<String> scripts = super.getScriptFiles();
+		List<String> scripts = super.getScripts();
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
 		IWBundle iwb = iwma.getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/posts/last-messages-list.js"));
 		
-		//TODO: remove
+		//TODO: this should be load with lazyloading somehow, but it don't work at this time
 		Conversation conversation = new Conversation();
 		MessageList msglist = new MessageList();
 		UploadArea uploadArea = new UploadArea();
 		scripts.addAll(conversation.getScripts());
-		scripts.addAll(msglist.getScriptFiles());
+		scripts.addAll(msglist.getScripts());
 		scripts.addAll(uploadArea.getScriptFiles(getIwc()));
-		
+		MessageCreator msgCreator = new MessageCreator();
+		scripts.addAll(msgCreator.getScripts());
 		
 		return scripts;
 	}
 
 	@Override
-	public List<String> getStyleFiles() {
-		List<String> styles = super.getStyleFiles();
+	public List<String> getStyleSheets() {
+		List<String> styles = super.getStyleSheets();
 		
-		//TODO: remove
+		//TODO: this should be load with lazyloading somehow, but it don't work at this time
 		Conversation conversation = new Conversation();
 		styles.addAll(conversation.getStyleSheets());
 			MessageList msglist = new MessageList();
-			styles.addAll(msglist.getStyleFiles());
+			styles.addAll(msglist.getStyleSheets());
 			UploadArea uploadArea = new UploadArea();
 			styles.addAll(uploadArea.getStyleFiles(getIwc()));
+			MessageCreator msgCreator = new MessageCreator();
+			styles.addAll(msgCreator.getStyleSheets());
 		return styles;
 	}
 

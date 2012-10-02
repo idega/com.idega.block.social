@@ -12,5 +12,6 @@ public class SocialConstants {
 
 	public static final String NEEDED_SCRIPT_AND_STYLE_FILES = "needed_script_and_style_files";
 	public static final String POST_URI_PARAMETER = "social-post-uri";
+	public static final String POST_MODIFICATION_DATE_PARAMETER = "post_modification_date";
 
 }

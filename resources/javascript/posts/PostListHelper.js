@@ -16,9 +16,12 @@
 			   e.data.trigger("append-posts");
 		   });
 		   
-		   list.data("social-post-list-data", {appending : false,prepending : false});
+		   list.data("social-post-list-data", {appending : false,prepending : false, options : opts});
 		   // Local listeners
-		   list.bind("prepend-posts",opts,function(e){
+		   list.bind("prepend-posts",opts,function(e,additionalParameters){
+			   if((additionalParameters == undefined) || (additionalParameters == null)){
+				   additionalParameters = {};
+			   }
 			   var list = e.data.list;
 			   var listData = list.data("social-post-list-data");
 			   if(listData.prepending == true){
@@ -27,8 +30,9 @@
 			   listData.prepending = true;
 //			   showLoadingMessage("");
 			   var firstUri = list.find("." + e.data.postUriClass).first().val();
-			   var additional = {max : -1, beginUri : firstUri, getUp : true};
-			   var parameters = jQuery.extend({}, e.data.filterParameters, additional);
+			   var firstDate = list.find("." + e.data.modificationDateClass).first().val();
+			   var additional = {beginUri : firstUri, getUp : true, order : false,beginDate : firstDate};
+			   var parameters = jQuery.extend({}, listData.options.filterParameters, additional,additionalParameters);
 			   SocialServices.getPostListHtml(parameters,opts.presentationOptions,opts.postListClass,{
 					callback : function(html){
 						if(html == null){
@@ -51,7 +55,10 @@
 				});
 		   });
 		   
-		   list.bind("append-posts",opts,function(e){
+		   list.bind("append-posts",opts,function(e,additionalParameters){
+			   if((additionalParameters == undefined) || (additionalParameters == null)){
+				   additionalParameters = {};
+			   }
 			   var list = e.data.list;
 			   var listData = list.data("social-post-list-data");
 			   if(listData.appending == true){
@@ -61,8 +68,9 @@
 			   showLoadingMessage("");
 			   list.trigger("append-posts");
 			   var lastUri = list.find("." + e.data.postUriClass).last().val();
-			   var additional = {beginUri : lastUri, getUp : false};
-			   var parameters = jQuery.extend({}, e.data.filterParameters, additional);
+			   var lastDate = list.find("." + e.data.modificationDateClass).last().val();
+			   var additional = {beginUri : lastUri, getUp : false, order : false,beginDate : lastDate};
+			   var parameters = jQuery.extend({}, listData.options.filterParameters, additional,additionalParameters);
 			   SocialServices.getPostListHtml(parameters,opts.presentationOptions,opts.postListClass,{
 					callback : function(html){
 						if(html == null){
@@ -71,6 +79,9 @@
 							return;
 						}
 						list.append(html);
+						var loadMoreButton = list.find(".load-more");
+						loadMoreButton.remove();
+						list.append(loadMoreButton);
 						var listData = list.data("social-post-list-data");
 						listData.appending = false;
 						closeAllLoadingMessages();
@@ -83,6 +94,57 @@
 						alert(message);
 					}
 				});
+		   });
+		   
+		   doc.bind("delete-post-by-uri",list,function(e,uri){
+			   e.data.trigger("delete-post-by-uri",uri);
+		   });
+		   
+		   list.bind("delete-post-by-uri",opts,function(e,uri){
+			   var list = e.data.list;
+			   var listData = list.data("social-post-list-data");
+			   if(listData.deleting == true){
+				   return;
+			   }
+			   listData.deleting  = true;
+//			   showLoadingMessage("");
+			   
+			   SocialServices.deletePost(uri,{
+					callback : function(response){
+						listData.deleting  = false;
+						if(response.status != "OK"){
+							// Actions for failure
+							closeAllLoadingMessages();
+							humanMsg.displayMsg(response.message);
+							return;
+						}
+						var uriContainer = list.find("." + e.data.postUriClass).filter("[value='"+ uri +"']");
+						var divToRemove = uriContainer.parent();
+						divToRemove.fadeOut(500,function(){divToRemove.remove();});
+						
+						closeAllLoadingMessages();
+						return;
+					},
+					errorHandler:function(message) {
+						listData.deleting  = false;
+						closeAllLoadingMessages();
+						alert(message);
+					}
+				});
+		   });
+		   
+		   list.bind("set-post-receivers",opts,function(e,receivers){
+			   if(receivers === undefined){
+				   return;
+			   }
+			   if(!jQuery.isArray(receivers)){
+				   var list = [];
+				   list.push(receivers);
+				   receivers = list;
+			   }
+			   var list = e.data.list;
+			   var listData = list.data("social-post-list-data");
+			   listData.options.filterParameters.receivers = receivers;
 		   });
 		   
 	   } ); 
@@ -131,3 +193,4 @@ PostListHelper.prepareImagesPreview = function(paragraphSelector){
 		arrows	:	true
 	});
 }
+

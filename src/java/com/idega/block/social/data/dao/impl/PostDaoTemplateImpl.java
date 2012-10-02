@@ -3,6 +3,7 @@ package com.idega.block.social.data.dao.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import com.idega.block.article.data.ArticleEntity;
@@ -17,10 +18,44 @@ import com.idega.util.StringUtil;
 
 public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleDaoTemplateImpl<T> implements PostDaoTemplate<T>{
 
+	
+	private StringBuilder getDateAndUriCondition(Date beginDate,String uriFrom,String tableAlias,Boolean up,Collection <Param> params,String entityName){
+		StringBuilder condition = new StringBuilder();
+		boolean dateSpecified = beginDate != null;
+		boolean uriSpecified = !StringUtil.isEmpty(uriFrom);
+		String direction;
+		if(up != null){
+			direction = up ? ">=" : "<=";
+		}else{
+			direction = "<=";
+		}
+		if(uriSpecified){
+			if(uriFrom.startsWith(CoreConstants.WEBDAV_SERVLET_URI)){
+				uriFrom = uriFrom.substring(CoreConstants.WEBDAV_SERVLET_URI.length());
+			}
+		}
+		if(dateSpecified){
+			condition.append(" (").append(tableAlias).append(".modificationDate ").append(direction).append(" :")
+					.append(ArticleEntity.modificationDateProp).append(") ");
+			params.add(new Param(ArticleEntity.modificationDateProp, beginDate));
+			if(uriSpecified){
+				condition.append(" AND ( ").append(tableAlias).append(".uri ").append(" <> :")
+						.append(ArticleEntity.uriProp).append(") ");
+				params.add(new Param(ArticleEntity.uriProp, uriFrom));
+			}
+		}else if(uriSpecified){
+			condition.append(" ( ").append(tableAlias).append(".uri ").append(" <> :")
+				.append(ArticleEntity.uriProp).append(") ");
+			condition.append(" AND ( ").append(tableAlias).append(".modificationDate ").append(direction).append(" (SELECT post.modificationDate FROM ").append(entityName)
+					.append(" post WHERE post.uri = :").append(ArticleEntity.uriProp).append(")) ");
+			params.add(new Param(ArticleEntity.uriProp, uriFrom));
+		}
+		return condition;
+	}
 	@Override
 	public List<PostEntity> getConversation(int userId,
 			Collection<Integer> usersTalked, Collection<String> types, int max, String uriFrom,
-			Boolean up,Boolean order) {
+			Boolean up,Boolean order, Date beginDate) {
 
 		if((userId < 0) || (ListUtil.isEmpty(usersTalked))){
 			return Collections.emptyList();
@@ -48,25 +83,29 @@ public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleD
 		inlineQuery.append(" OR ((r IN (:").append(usersTalkedProp).append(")) AND (p.postCreator = :")
 				.append(userIdProp).append(")))");
 
-		boolean uriFromEmpty = StringUtil.isEmpty(uriFrom);
-		if(!uriFromEmpty){
-			if(uriFrom.startsWith(CoreConstants.WEBDAV_SERVLET_URI)){
-				uriFrom = uriFrom.substring(CoreConstants.WEBDAV_SERVLET_URI.length());
-			}
-			inlineQuery.append(" AND ( p.uri ").append(" <> :")
-			.append(ArticleEntity.uriProp).append(") ");
-			String direction;
-			if(up != null){
-				direction = up ? ">=" : "<=";
-			}else{
-				direction = "<=";
-			}
-			inlineQuery.append(" AND ( p.modificationDate ").append(direction).append(" (SELECT post.modificationDate FROM ").append(entityName)
-					.append(" post WHERE post.uri = :")
-					.append(ArticleEntity.uriProp).append(")) ");
-			parameter = new Param(ArticleEntity.uriProp,uriFrom);
-			params.add(parameter);
+		if((beginDate != null) || (!StringUtil.isEmpty(uriFrom))){
+			inlineQuery.append(" AND ");
+			inlineQuery.append(getDateAndUriCondition(beginDate, uriFrom, "p", up, params, entityName));
 		}
+//		boolean uriFromEmpty = StringUtil.isEmpty(uriFrom);
+//		if(!uriFromEmpty){
+//			if(uriFrom.startsWith(CoreConstants.WEBDAV_SERVLET_URI)){
+//				uriFrom = uriFrom.substring(CoreConstants.WEBDAV_SERVLET_URI.length());
+//			}
+//			inlineQuery.append(" AND ( p.uri ").append(" <> :")
+//			.append(ArticleEntity.uriProp).append(") ");
+//			String direction;
+//			if(up != null){
+//				direction = up ? ">=" : "<=";
+//			}else{
+//				direction = "<=";
+//			}
+//			inlineQuery.append(" AND ( p.modificationDate ").append(direction).append(" (SELECT post.modificationDate FROM ").append(entityName)
+//					.append(" post WHERE post.uri = :")
+//					.append(ArticleEntity.uriProp).append(")) ");
+//			parameter = new Param(ArticleEntity.uriProp,uriFrom);
+//			params.add(parameter);
+//		}
 		boolean typeEmpty = ListUtil.isEmpty(types);
 		if(!typeEmpty){
 			inlineQuery.append(" AND ( p.postType IN (:").append(PostEntity.postTypeProp).append(")) ");
@@ -85,7 +124,7 @@ public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleD
 
 	private List<T> getPosts(Collection<Integer> creators,
 			Collection<Integer> receivers, Collection<String> types, int max, String uriFrom,
-			Boolean up, String uri,Boolean order) {
+			Boolean up, String uri,Boolean order,Date beginDate) {
 
 		Class<T> entityClass = getEntityClass();
 		String entityName = entityClass.getSimpleName();
@@ -110,6 +149,7 @@ public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleD
 
 		if(!creatorsEmpty){
 			if(addedWhere){
+				// TODO: ??? don't remember why this way, but it is probably wrong :D
 				inlineQuery.append(" OR ");
 			}else{
 				addedWhere = true;
@@ -124,30 +164,39 @@ public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleD
 			params.add(parameter);
 		}
 
-		boolean uriFromEmpty = StringUtil.isEmpty(uriFrom);
-		if(!uriFromEmpty){
-			if(uriFrom.startsWith(CoreConstants.WEBDAV_SERVLET_URI)){
-				uriFrom = uriFrom.substring(CoreConstants.WEBDAV_SERVLET_URI.length());
-			}
+		if((beginDate != null) || (!StringUtil.isEmpty(uriFrom))){
 			if(addedWhere){
 				inlineQuery.append(" AND ");
 			}else{
 				addedWhere = true;
 				inlineQuery.append(" WHERE ");
 			}
-			inlineQuery.append("( p.uri ").append(" <> :")
-			.append(ArticleEntity.uriProp).append(") AND ");
-			String direction;
-			if(up != null){
-				direction = up ? ">=" : "<=";
-			}else{
-				direction = "<=";
-			}
-			inlineQuery.append("( p.modificationDate ").append(direction).append(" (SELECT post.modificationDate FROM ").append(entityName).append(" post WHERE post.uri = :")
-					.append(ArticleEntity.uriProp).append(")) ");
-			Param parameter = new Param(ArticleEntity.uriProp,uriFrom);
-			params.add(parameter);
+			inlineQuery.append(getDateAndUriCondition(beginDate, uriFrom, "p", up, params, entityName));
 		}
+//		boolean uriFromEmpty = StringUtil.isEmpty(uriFrom);
+//		if(!uriFromEmpty){
+//			if(uriFrom.startsWith(CoreConstants.WEBDAV_SERVLET_URI)){
+//				uriFrom = uriFrom.substring(CoreConstants.WEBDAV_SERVLET_URI.length());
+//			}
+//			if(addedWhere){
+//				inlineQuery.append(" AND ");
+//			}else{
+//				addedWhere = true;
+//				inlineQuery.append(" WHERE ");
+//			}
+//			inlineQuery.append("( p.uri ").append(" <> :")
+//			.append(ArticleEntity.uriProp).append(") AND ");
+//			String direction;
+//			if(up != null){
+//				direction = up ? ">=" : "<=";
+//			}else{
+//				direction = "<=";
+//			}
+//			inlineQuery.append("( p.modificationDate ").append(direction).append(" (SELECT post.modificationDate FROM ").append(entityName).append(" post WHERE post.uri = :")
+//					.append(ArticleEntity.uriProp).append(")) ");
+//			Param parameter = new Param(ArticleEntity.uriProp,uriFrom);
+//			params.add(parameter);
+//		}
 		boolean typeEmpty = ListUtil.isEmpty(types);
 		if(!typeEmpty){
 			if(addedWhere){
@@ -186,8 +235,8 @@ public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleD
 	@Override
 	public List<T> getPosts(Collection<Integer> creators,
 			Collection<Integer> receivers, Collection<String> types, int max, String uriFrom,
-			Boolean up,Boolean order) {
-		return getPosts(creators, receivers, types, max, uriFrom, up, null,order);
+			Boolean up,Boolean order,Date beginDate) {
+		return getPosts(creators, receivers, types, max, uriFrom, up, null,order,beginDate);
 	}
 
 	@Override
@@ -204,7 +253,7 @@ public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleD
 //	TODO: optimize :D http://searchoracle.techtarget.com/answer/Latest-row-for-each-group
 	@Override
 	public List<T> getLastPosts(Collection<String> types, int receiver,
-			int max, String uriFrom, Boolean up, Boolean order) {
+			int max, String uriFrom, Boolean up, Boolean order, Date beginDate) {
 		if(receiver < 0){
 			return Collections.emptyList();
 		}
@@ -224,24 +273,28 @@ public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleD
 			parameter = new Param(PostEntity.postTypeProp,types);
 			params.add(parameter);
 		}
-		boolean uriFromEmpty = StringUtil.isEmpty(uriFrom);
-		if(!uriFromEmpty){
-			if(uriFrom.startsWith(CoreConstants.WEBDAV_SERVLET_URI)){
-				uriFrom = uriFrom.substring(CoreConstants.WEBDAV_SERVLET_URI.length());
-			}
-			inlineQuery.append(" AND ( p.uri ").append(" <> :")
-			.append(ArticleEntity.uriProp).append(") AND ");
-			String direction;
-			if(up != null){
-				direction = up ? ">=" : "<=";
-			}else{
-				direction = "<=";
-			}
-			inlineQuery.append("( p.modificationDate ").append(direction).append(" (SELECT post.modificationDate FROM ").append(entityName).append(" post WHERE post.uri = :")
-					.append(ArticleEntity.uriProp).append(")) ");
-			parameter = new Param(ArticleEntity.uriProp,uriFrom);
-			params.add(parameter);
+		if((beginDate != null) || (!StringUtil.isEmpty(uriFrom))){
+			inlineQuery.append(" AND ");
+			inlineQuery.append(getDateAndUriCondition(beginDate, uriFrom, "p", up, params, entityName));
 		}
+//		boolean uriFromEmpty = StringUtil.isEmpty(uriFrom);
+//		if(!uriFromEmpty){
+//			if(uriFrom.startsWith(CoreConstants.WEBDAV_SERVLET_URI)){
+//				uriFrom = uriFrom.substring(CoreConstants.WEBDAV_SERVLET_URI.length());
+//			}
+//			inlineQuery.append(" AND ( p.uri ").append(" <> :")
+//			.append(ArticleEntity.uriProp).append(") AND ");
+//			String direction;
+//			if(up != null){
+//				direction = up ? ">=" : "<=";
+//			}else{
+//				direction = "<=";
+//			}
+//			inlineQuery.append("( p.modificationDate ").append(direction).append(" (SELECT post.modificationDate FROM ").append(entityName).append(" post WHERE post.uri = :")
+//					.append(ArticleEntity.uriProp).append(")) ");
+//			parameter = new Param(ArticleEntity.uriProp,uriFrom);
+//			params.add(parameter);
+//		}
 		
 		inlineQuery.append(" AND (p.modificationDate = (SELECT max(po.modificationDate) FROM ").append(entityName)
 			.append(" po join p.receivers re WHERE (r = :").append(PostEntity.receiversProp).append(") ");

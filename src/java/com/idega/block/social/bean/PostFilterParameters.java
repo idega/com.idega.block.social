@@ -30,6 +30,8 @@ public class PostFilterParameters implements Serializable, DWRAnnotationPersista
 	@RemoteProperty
 	private String beginUri = null;
 	@RemoteProperty
+	private Long beginDate = null;
+	@RemoteProperty
 	private Boolean getUp = null;
 	@RemoteProperty
 	private Boolean order = null;
@@ -108,6 +110,14 @@ public class PostFilterParameters implements Serializable, DWRAnnotationPersista
 
 	public void setGetUp(Boolean getUp) {
 		this.getUp = getUp;
+	}
+
+	public Long getBeginDate() {
+		return beginDate;
+	}
+
+	public void setBeginDate(Long beginDate) {
+		this.beginDate = beginDate;
 	}
 
 }

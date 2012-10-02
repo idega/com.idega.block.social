@@ -1,19 +1,14 @@
 package com.idega.block.social.presentation.posts;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.faces.context.FacesContext;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.idega.block.social.SocialConstants;
 import com.idega.block.social.bean.PostFilterParameters;
-import com.idega.block.social.business.SocialServices;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
 import com.idega.block.web2.business.Web2BusinessBean;
@@ -23,15 +18,10 @@ import com.idega.presentation.IWBaseComponent;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
 import com.idega.util.CoreConstants;
-import com.idega.util.CoreUtil;
 import com.idega.util.PresentationUtil;
-import com.idega.util.expression.ELUtil;
 import com.idega.webface.WFUtil;
 
 public class PublicPostViewer extends IWBaseComponent {
-	
-	@Autowired
-	private SocialServices socialServices;
 	
 	private StringBuilder scriptOnLoad = null;
 	
@@ -47,13 +37,11 @@ public class PublicPostViewer extends IWBaseComponent {
 		IWContext iwc = IWContext.getIWContext(context);
 //		IWResourceBundle iwrb = iwc.getIWMainApplication().getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER).getResourceBundle(iwc);
 		
-		ELUtil.getInstance().autowire(this);
-		
 		if(iwc.isLoggedOn()){
 			PostCreator postCreator = new PostCreator();
 			add(postCreator);
 		}
-		PostList postList = new PostList();
+		PostList postList = new PublicPostList();
 		add(postList);
 		postList.setStyleClass("post-list");
 		postList.setPostFilterParameters(getPostFilterParameters(iwc));
@@ -77,16 +65,8 @@ public class PublicPostViewer extends IWBaseComponent {
 	}
 	
 
-	@SuppressWarnings("unchecked")
 	private PostFilterParameters getPostFilterParameters(IWContext iwc){
 		PostFilterParameters postFilterParameters = new PostFilterParameters();
-		Collection<Integer> receivers;
-		try{
-			receivers = CoreUtil.getIdsAsIntegers(socialServices.getUserBusiness().getUserGroups(iwc.getCurrentUser()));
-		}catch (Exception e) {
-			receivers = Collections.emptyList();
-		}
-		postFilterParameters.setReceivers(receivers);
 		postFilterParameters.setMax(getMaxToShow());
 		return postFilterParameters;
 	}

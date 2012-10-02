@@ -3,7 +3,7 @@ var PostCreator = {};
 // Implemented by component
 PostCreator.setDefaultValues = function(){}
 
-PostCreator.createPost = function(formSelector,uploaderSelector,resourcePathSelector){
+PostCreator.createPost = function(formSelector,uploaderSelector,resourcePathSelector,theCallback){
 	showLoadingMessage("");
 	var form = jQuery(formSelector);
 	var parameters = form.serializeArray();
@@ -25,7 +25,14 @@ PostCreator.createPost = function(formSelector,uploaderSelector,resourcePathSele
 				humanMsg.displayMsg(reply.message);
 				return;
 			}
-			jQuery('head').trigger("prepend-posts");
+			var post = reply.post;
+			if((theCallback == undefined) || (theCallback == null)){
+				// Default
+				PostCreator.afterPostSent();
+			}else{
+				theCallback = "var clbck = function(post){" + theCallback + "}; clbck(" + post + ");";
+				eval(theCallback);
+			}
 			PostCreator.setDefaultValues();
 			var uploader = jQuery(uploaderSelector);
 			uploader.trigger('clear-downloads');
@@ -45,4 +52,7 @@ PostCreator.createPost = function(formSelector,uploaderSelector,resourcePathSele
 			alert(message);
 		}
 	});
+}
+PostCreator.afterPostSent = function(){
+	jQuery('head').trigger("prepend-posts");
 }

@@ -29,7 +29,11 @@ public class MessageList extends PostList{
 	@Override
 	protected PostFilterParameters getPostFilterParameters() {
 		PostFilterParameters postFilterParameters =  super.getPostFilterParameters();
+		if(postFilterParameters == null){
+			postFilterParameters = new PostFilterParameters();
+		}
 		postFilterParameters.setTypes(TYPES);
+		postFilterParameters.setOrder(Boolean.FALSE);
 		return postFilterParameters;
 	}
 
@@ -88,6 +92,12 @@ public class MessageList extends PostList{
 	protected List<PostItemBean> loadPosts(PostFilterParameters postFilterParameters){
 		List<PostItemBean> posts = getPostBusiness().getConversationPostItems(postFilterParameters, getIwc());
 		return posts;
+	}
+	@Override
+	public List<PostItemBean> getPosts() {
+		List<PostItemBean> postItems = super.getPosts();
+//		Collections.reverse(postItems);
+		return postItems;
 	}
 
 }

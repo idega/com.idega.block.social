@@ -175,14 +175,14 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 	@RemoteMethod
 	public Map <String,Object> getMessageCreator(Map <String, String> presentationOptions,Collection<Integer> creators){
 		Map <String,Object> response = new HashMap<String, Object>();
-//		IWContext iwc = CoreUtil.getIWContext();
+		IWContext iwc = CoreUtil.getIWContext();
 		IWResourceBundle iwrb = getResourceBundle();
 		try {
 			Conversation conversation = new Conversation(presentationOptions);
 			conversation.setConversationWith(creators);
-			RenderedComponent renderedComponent = BuilderLogic.getInstance().getRenderedComponent(conversation, null);
+//			RenderedComponent renderedComponent = BuilderLogic.getInstance().getRenderedComponent(conversation, null);
+			String renderedComponent = BuilderLogic.getInstance().getRenderedComponent(conversation, iwc, false);
 			response.put("status", Response.Status.OK.getReasonPhrase());
-			System.out.println(renderedComponent.getHtml());
 			response.put("content", renderedComponent);
 			return response;
 		} catch (Exception e) {
@@ -190,6 +190,30 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		}
 		response.put("status", Response.Status.INTERNAL_SERVER_ERROR.getReasonPhrase());
 		response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
+		return response;
+	}
+	
+	@RemoteMethod
+	public Map <String,Object> deletePost(String uri){
+		Map <String,Object> response = new HashMap<String, Object>();
+		IWContext iwc = CoreUtil.getIWContext();
+		IWResourceBundle iwrb = getResourceBundle();
+		try {
+			PostItemBean postItemBean = postBusiness.getPostItemBean(uri, iwc);
+			if(postItemBean.getCreatedByUserId() != iwc.getCurrentUserId()){
+				response.put("status", Response.Status.FORBIDDEN.getReasonPhrase());
+				response.put("message", iwrb.getLocalizedString("forbidden", "Forbidden"));
+				return response;
+			}
+			postItemBean.delete();
+			response.put("status", Response.Status.OK.getReasonPhrase());
+			response.put("message", iwrb.getLocalizedString("post_deleted", "Post deleted"));
+			return response;
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Failed getting post list", e);
+		}
+		response.put("status", Response.Status.INTERNAL_SERVER_ERROR.getReasonPhrase());
+		response.put("message", iwrb.getLocalizedString("failed_deleting", "Failed deleting"));
 		return response;
 	}
 	
@@ -458,7 +482,19 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 	}
 
 
-	public Map <String,Object> savePublicPost(Map <String, List<String>> parameters){
+	public PostItemBean savePublicPost(Map <String, List<String>> parameters, IWContext iwc) throws Exception{
+		User user = iwc.getCurrentUser();
+		@SuppressWarnings("unchecked")
+		List<String> stringIds = CoreUtil.getIds(getUserBusiness().getUserGroups(user));
+		parameters.put(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME, stringIds);
+		parameters.put(PostBusiness.ParameterNames.POST_TYPE, Arrays.asList(PostEntity.POST_TYPE_PUBLIC));
+		PostItemBean postItemBean = postBusiness.savePost(parameters);
+		return postItemBean;
+	}
+	
+	@RemoteMethod
+	public Map <String,Object> savePost(Map <String, List<String>> parameters){
+		IWContext iwc = CoreUtil.getIWContext();
 		IWResourceBundle iwrb = getResourceBundle();
 		Map <String,Object> response = new HashMap<String, Object>();
 		try {
@@ -469,87 +505,51 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		} catch (Exception e) {
 			getLogger().log(Level.WARNING, "Failed generating new resource path " + new Gson().toJson(parameters), e);
 			response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
+			response.put("status", Response.Status.INTERNAL_SERVER_ERROR.getReasonPhrase());
 			return response;
 		}
-		IWContext iwc = CoreUtil.getIWContext();
-		try {
-			User user = iwc.getCurrentUser();
-			@SuppressWarnings("unchecked")
-			List<String> stringIds = CoreUtil.getIds(getUserBusiness().getUserGroups(user));
-			parameters.put(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME, stringIds);
-			parameters.put(PostBusiness.ParameterNames.POST_TYPE, Arrays.asList(PostEntity.POST_TYPE_PUBLIC));
-			String errorMessage = postBusiness.savePost(parameters);
-			if(errorMessage == null){
-				response.put("status", "OK");
-				response.put("message", iwrb.getLocalizedString("saved", "Saved"));
-			}else{
-				response.put("message", errorMessage);
-			}
-		} catch (Exception e) {
-			getLogger().log(Level.WARNING, "Failed saving public post by parameters " + new Gson().toJson(parameters), e);
-			response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
-		}
-		return response;
-	}
-	@RemoteMethod
-	public Map <String,Object> savePost(Map <String, List<String>> parameters){
-		IWResourceBundle iwrb = getResourceBundle();
-		Map <String,Object> response = new HashMap<String, Object>();
 		try{
+			PostItemBean postItemBean;
 			String postType = parameters.get(PostBusiness.ParameterNames.POST_TYPE).get(0);
 			if(postType.equals(PostEntity.POST_TYPE_PUBLIC)){
-				return savePublicPost(parameters);
+				postItemBean = savePublicPost(parameters,iwc);
+			}else if(postType.equals(PostEntity.POST_TYPE_MESSAGE)){
+				postItemBean = savePrivatePost(parameters,iwc);
+			}else{
+				postItemBean = null;
 			}
-			if(postType.equals(PostEntity.POST_TYPE_MESSAGE)){
-				return savePrivatePost(parameters);
+			if(postItemBean == null){
+				response.put("status", Response.Status.INTERNAL_SERVER_ERROR.getReasonPhrase());
+				response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
+			}else{
+				response.put("status", Response.Status.OK.getReasonPhrase());
+				response.put("message", iwrb.getLocalizedString("saved", "Saved"));
+				response.put("post", new Gson().toJson(postItemBean.getPostEntity()));
 			}
+			return response;
 		}catch (Exception e) {
 			getLogger().log(Level.WARNING, "error savin", e);
 		}
-		response.put("status", "server error");
+		response.put("status", Response.Status.INTERNAL_SERVER_ERROR.getReasonPhrase());
 		response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
 		return response;
 	}
 	
 	
-	public Map <String,Object> savePrivatePost(Map <String, List<String>> parameters){
-		IWResourceBundle iwrb = getResourceBundle();
-		Map <String,Object> response = new HashMap<String, Object>();
-		try {
-			// Generate new resource path
-			PostItemBean postItemBean = ELUtil.getInstance().getBean(PostItemBean.BEAN_NAME);
-			response.put("newResourcePath", postItemBean.getResourcePath());
-			response.put("newUploadPath", postItemBean.getFilesResourcePath());
-		} catch (Exception e) {
-			getLogger().log(Level.WARNING, "Failed generating new resource path " + new Gson().toJson(parameters), e);
-			response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
-			return response;
+	public PostItemBean savePrivatePost(Map <String, List<String>> parameters,IWContext iwc) throws Exception{
+		User user = iwc.getCurrentUser();
+		
+		List<String> groupReceivers = parameters.get(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME);
+		if(!ListUtil.isEmpty(groupReceivers)){
+			// Keep only groups that user is allowed to send post to
+			@SuppressWarnings("unchecked")
+			Set<String> stringIds = new HashSet<String>(CoreUtil.getIds(getUserBusiness().getUserGroups(user)));
+			stringIds.retainAll(groupReceivers);
+			parameters.put(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME, new ArrayList<String>(groupReceivers));
 		}
-		IWContext iwc = CoreUtil.getIWContext();
-		try {
-			User user = iwc.getCurrentUser();
-			
-			List<String> groupReceivers = parameters.get(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME);
-			if(!ListUtil.isEmpty(groupReceivers)){
-				// Keep only groups that user is allowed to send post to
-				@SuppressWarnings("unchecked")
-				Set<String> stringIds = new HashSet<String>(CoreUtil.getIds(getUserBusiness().getUserGroups(user)));
-				stringIds.retainAll(groupReceivers);
-				parameters.put(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME, new ArrayList<String>(groupReceivers));
-			}
-			parameters.put(PostBusiness.ParameterNames.POST_TYPE, Arrays.asList(PostEntity.POST_TYPE_MESSAGE));
-			String errorMessage = postBusiness.savePost(parameters);
-			if(errorMessage == null){
-				response.put("status", "OK");
-				response.put("message", iwrb.getLocalizedString("saved", "Saved"));
-			}else{
-				response.put("message", errorMessage);
-			}
-		} catch (Exception e) {
-			getLogger().log(Level.WARNING, "Failed saving public post by parameters " + new Gson().toJson(parameters), e);
-			response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
-		}
-		return response;
+		parameters.put(PostBusiness.ParameterNames.POST_TYPE, Arrays.asList(PostEntity.POST_TYPE_MESSAGE));
+		PostItemBean postItemBean = postBusiness.savePost(parameters);
+		return postItemBean;
 	}
 	
 	
@@ -645,5 +645,7 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		}
 		return Collections.emptyList();
 	}
+	
+	
 	
 }

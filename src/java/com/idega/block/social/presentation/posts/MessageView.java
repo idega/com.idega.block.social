@@ -57,6 +57,12 @@ public class MessageView extends SocialUIBase {
 		Layer topControlls = new Layer();
 		add(topControlls);
 		topControlls.setStyleClass("top-controlls");
+		
+		
+		Layer creatorLink = new Layer("a");
+		topControlls.add(creatorLink);
+		creatorLink.setMarkupAttribute("href", "#");
+		
 		Layer button = new Layer("button");
 		topControlls.add(button);
 		button.setStyleClass("btn btn-primary");
@@ -65,6 +71,15 @@ public class MessageView extends SocialUIBase {
 		icon.setStyleClass("icon-envelope icon-white");
 		button.setMarkupAttribute("title", iwrb.getLocalizedString("create_message", "Create message"));
 		button.add(iwrb.getLocalizedString("new", "New"));
+		
+		getScriptOnLoad().append("\n\t\tLastMessagesList.createConversationPreview(jQuery('#").append(creatorLink.getId()).append("'),")
+				.append("{}")
+				.append(",\n\t\t\t[").append(-1).append("]")
+				.append(");")
+				.append("\n\tjQuery('#").append(button.getId()).append("').click(function(){")
+				.append("\n\t\tvar comp = jQuery('#").append(creatorLink.getId()).append("'); \n\t\tcomp.click();")
+				.append("\n\t});");
+		
 //		MessageCreator messageCreator = new MessageCreator();
 //		add(messageCreator);
 		LastMessagesList messageList = new LastMessagesList();
@@ -72,6 +87,7 @@ public class MessageView extends SocialUIBase {
 		messageList.setStyleClass("post-list");
 		messageList.setPostFilterParameters(getPostFilterParameters(iwc));
 		messageList.setTeaserLength(getTeaserLength());
+		messageList.getPostFilterParameters().setMax(10);
 		
 		
 		Layer footer = new Layer();
@@ -106,15 +122,17 @@ public class MessageView extends SocialUIBase {
 
 	@Override
 	protected StringBuilder getScriptOnLoad() {
-		if(scriptOnLoad == null){
-			scriptOnLoad = new StringBuilder("jQuery(document).ready(function(){");
-		}
-		return scriptOnLoad;
+		return super.getScriptOnLoad();
+//		if(scriptOnLoad == null){
+//			scriptOnLoad = new StringBuilder("jQuery(document).ready(function(){");
+//		}
+//		return scriptOnLoad;
 	}
 
 	@Override
 	protected void setScriptOnLoad(StringBuilder scriptOnLoad) {
-		this.scriptOnLoad = scriptOnLoad;
+		super.setScriptOnLoad(scriptOnLoad);
+//		this.scriptOnLoad = scriptOnLoad;
 	}
 
 	public int getTeaserLength() {

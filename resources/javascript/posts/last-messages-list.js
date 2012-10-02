@@ -6,7 +6,7 @@ LastMessagesList.createConversationPreview = function(jQueryElements,presentatio
 		width :		windowinfo.getWindowWidth() * 0.5,
 		height : 	windowinfo.getWindowHeight() * 0.8,
 		autoSize:	false,
-		content : '<div id="' + LastMessagesList.CREATOR_CONTENT_ID +'" style"width:100%;"/>',
+		content : '<div id="' + LastMessagesList.CREATOR_CONTENT_ID +'" style="width:100%; height:100%;"/>',
 		afterShow : function(){LastMessagesList.getPostCreator(presentationOptions, receivers);}
 	});
 }
@@ -23,11 +23,12 @@ LastMessagesList.getPostCreator = function(presentationOptions,receivers){
 				humanMsg.displayMsg(reply.message);
 				return;
 			}
-			content.append("<div id='fake'/>");
-			IWCORE.insertRenderedComponent(reply.content,{
-				container: content,
-				append: true
-			});
+			// Should be rendered like component, but it don't work somehow
+			content.append(reply.content);
+//			IWCORE.insertRenderedComponent(reply.content,{
+//				container: content,
+//				append: true
+//			});
 			closeAllLoadingMessages();
 			return;
 		},
@@ -38,7 +39,3 @@ LastMessagesList.getPostCreator = function(presentationOptions,receivers){
 	});
 }
 
-
-LastMessagesList.testLocale = function(){
-	var lllllllll = locale;
-}

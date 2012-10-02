@@ -30,8 +30,8 @@ import com.idega.core.file.util.MimeTypeUtil;
 import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWResourceBundle;
-import com.idega.presentation.IWBaseComponent;
 import com.idega.presentation.IWContext;
+import com.idega.presentation.IWUIBase;
 import com.idega.presentation.Image;
 import com.idega.presentation.Layer;
 import com.idega.presentation.Span;
@@ -54,7 +54,7 @@ import com.idega.util.expression.ELUtil;
 import com.idega.util.text.Item;
 import com.idega.webface.WFUtil;
 
-public class PostList  extends IWBaseComponent{
+public abstract class PostList  extends IWUIBase{
 	
 	@Autowired
 	private PostBusiness postBusiness;
@@ -66,8 +66,6 @@ public class PostList  extends IWBaseComponent{
 	private IWContext iwc = null;
 	
 	private IWResourceBundle iwrb = null;
-	
-	private StringBuilder scriptOnLoad = null;
 	
 	private String styleClass = "posts-contents-list";
 	
@@ -96,6 +94,7 @@ public class PostList  extends IWBaseComponent{
 		return presentationOptions;
 	}
 	
+	@Override
 	protected IWContext getIwc() {
 		if(iwc == null){
 			iwc = CoreUtil.getIWContext();
@@ -103,6 +102,7 @@ public class PostList  extends IWBaseComponent{
 		return iwc;
 	}
 
+	@Override
 	protected void setIwc(IWContext iwc) {
 		this.iwc = iwc;
 	}
@@ -123,6 +123,9 @@ public class PostList  extends IWBaseComponent{
 	}
 
 	public void setStyleClass(String styleClass) {
+		if("post-list".equals(styleClass)){
+			return;
+		}
 		this.styleClass = styleClass;
 	}
 
@@ -135,27 +138,24 @@ public class PostList  extends IWBaseComponent{
 		if(!isAllShowed()){
 			GenericButton loadMore = new GenericButton();
 			add(loadMore);
-			loadMore.setStyleClass("btn btn-success");
+			loadMore.setStyleClass("btn btn-success load-more");
 			loadMore.setContent(iwrb.getLocalizedString("load_more", "Load more"));
-			loadMore.setOnClick("jQuery('.post-list').trigger('append-posts')");
+			loadMore.setOnClick("jQuery('#" + getId() + "').trigger('append-posts')");
 		}
-		Layer script = new Layer();
-		add(script);
-		StringBuilder actionsOnLoad = getScriptOnLoad().append("\n});");
-		String scriptAction = PresentationUtil.getJavaScriptAction(actionsOnLoad.toString());
-		script.add(scriptAction);
 		addFiles(iwc);
+		setMarkupAttribute("class", " post-list " + getStyleClass());
+		setTag("div");
 	}
 	
 	protected UIComponent getList(){
-		Layer list = new Layer();
-		list.setStyleClass(getStyleClass());
+		Layer list = new Layer("");
 		PostFilterParameters postFilterParameters = getPostFilterParameters();
-		String listLayerId = list.getId();
+		String listLayerId = getId();
 		String presentationOptions = new Gson().toJson(getPresentationOptions());
 		getScriptOnLoad().append("\n\tjQuery('#").append(listLayerId).append("').postListHelper({'listLayerId' : '").append(listLayerId)
-				.append("', 'filterParameters' : ").append(postFilterParameters).append(", 'postUriClass': '")
-				.append(SocialConstants.POST_URI_PARAMETER).append("', presentationOptions : ").append(presentationOptions)
+				.append("', 'filterParameters' : ").append(postFilterParameters)
+				.append(", 'postUriClass': '").append(SocialConstants.POST_URI_PARAMETER)
+				.append("', modificationDateClass : '").append(SocialConstants.POST_MODIFICATION_DATE_PARAMETER).append("', presentationOptions : ").append(presentationOptions)
 				.append(", postListClass : '").append(this.getClass().getName()).append("'});");
 		for(Layer postLayer : getPostLayers()){
 			list.add(postLayer);
@@ -181,6 +181,7 @@ public class PostList  extends IWBaseComponent{
 		return layers;
 	}
 	
+	@Override
 	protected Logger getLogger(){
 		return Logger.getLogger(getClass().getName());
 	}
@@ -222,6 +223,12 @@ public class PostList  extends IWBaseComponent{
 		postUri.setValue(post.getResourcePath());
 		postUri.setStyleClass(SocialConstants.POST_URI_PARAMETER);
 		
+		HiddenInput modificationDate = new HiddenInput();
+		layer.add(modificationDate);
+		modificationDate.setValue(String.valueOf(post.getLastModifiedDate().getTime()));
+		modificationDate.setStyleClass(SocialConstants.POST_MODIFICATION_DATE_PARAMETER);
+		
+		
 		Image athorImage = new Image(post.getAuthorData().getPictureUri());
 		layer.add(athorImage);
 		athorImage.setStyleClass("post-author-image");
@@ -244,6 +251,7 @@ public class PostList  extends IWBaseComponent{
 		
 		creationLayer.add(getUserNamesLayer(post));
 		creationLayer.add(getDateLayer(post));
+		
 		return creationLayer;
 	}
 	
@@ -263,9 +271,6 @@ public class PostList  extends IWBaseComponent{
 	protected UIComponent getDateLayer(PostItemBean post) throws Exception{
 		Date creationDate = post.getCreationDateObject();
 		Span date = new Span();
-//		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm",Locale.getDefault()/*,getIwc().getCurrentLocale()*/);
-//		String formattedDate = formatter.toLocalizedPattern();
-//		date.add(formattedDate);
 		date.setStyleClass("post-update-date");
 		HiddenInput dateInput = new HiddenInput();
 		date.add(dateInput);
@@ -274,7 +279,6 @@ public class PostList  extends IWBaseComponent{
 		date.add(container);
 		container.setStyleClass("d-text d-title");
 		dateInput.setValue(String.valueOf(creationDate.getTime()));
-//		date.setStyleClass("post-update-date");
 		getScriptOnLoad().append("\n\tjQuery('#").append(date.getId()).append("').getYYYYMMDDHHMM();");
 		return date;
 	}
@@ -283,6 +287,22 @@ public class PostList  extends IWBaseComponent{
 		IWResourceBundle iwrb = getIwrb();
 		Layer postInfoLayer = new Layer();
 		postInfoLayer.setStyleClass("post-info");
+		
+		int currentUserId = getIwc().getCurrentUserId();
+		if(post.getCreatedByUserId() == currentUserId){
+			Layer deleteLayer = new Layer();
+			postInfoLayer.add(deleteLayer);
+			deleteLayer.setStyleClass("post-delete-layer");
+			
+			Layer deleteButton = new Layer();
+			deleteLayer.add(deleteButton);
+			deleteButton.setStyleClass("button-div delete-button-div");
+			deleteButton.setMarkupAttribute("title", getIwrb().getLocalizedString("delete", "Delete"));
+			getScriptOnLoad().append("\n\tjQuery('#").append(deleteButton.getId())
+					.append("').click(function(){jQuery(this).parents('.post-list').first().trigger('delete-post-by-uri")
+					.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(post.getResourcePath())
+					.append("');});");
+		}
 		
 		Heading1 title = new Heading1(post.getHeadline());
 		postInfoLayer.add(title);
@@ -309,11 +329,14 @@ public class PostList  extends IWBaseComponent{
 				String path = attachment.getItemValue();
 				String mimetype = MimeTypeUtil.resolveMimeTypeFromFileName(path);
 				if((!StringUtil.isEmpty(mimetype)) && (mimetype.toLowerCase().contains("image"))){
+					Layer previewLink = new Layer("a");
+					imagesParagraph.add(previewLink);
+					previewLink.setMarkupAttribute("rel", "galery1");
+					previewLink.setMarkupAttribute("href", path);
 					if(imagesShowed >= maxImagesToShow){
-						imagesParagraph.add("<a style=\"display:none;\" rel=\"galery1\" href=\"" + path + "\" >");
 						moreImages = true;
 					}else{
-						imagesParagraph.add("<a title=\"" + previewString + "\"rel=\"galery1\" href=\"" + path + "\" >");
+						previewLink.setMarkupAttribute("title", previewString);
 						if(!hasImages){
 							hasImages = true;
 						}
@@ -326,10 +349,9 @@ public class PostList  extends IWBaseComponent{
 							thumbnail = CoreConstants.EMPTY;
 						}
 						Image image = new Image(thumbnail);
-						imagesParagraph.add(image);
+						previewLink.add(image);
 						image.setTitle(previewString);
 					}
-					imagesParagraph.add("</a>");
 				}
 			}
 			if(moreImages){
@@ -424,7 +446,8 @@ public class PostList  extends IWBaseComponent{
 		return postLink;
 	}
 	
-	public List<String> getScriptFiles(){
+	@Override
+	public List<String> getScripts(){
 		IWContext iwc = getIwc();
 		List<String> scripts = new ArrayList<String>();
 
@@ -453,7 +476,8 @@ public class PostList  extends IWBaseComponent{
 		return scripts;
 	}
 	
-	public List<String> getStyleFiles(){
+	@Override
+	public List<String> getStyleSheets(){
 		IWContext iwc = getIwc();
 		List<String> styles = new ArrayList<String>();
 
@@ -470,12 +494,6 @@ public class PostList  extends IWBaseComponent{
 		return styles;
 	}
 	
-	private void addFiles(IWContext iwc){
-		PresentationUtil.addStyleSheetsToHeader(iwc, getStyleFiles());
-		PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, getScriptFiles());
-	}
-	
-		
 	protected List<PostItemBean> loadPosts(PostFilterParameters postFilterParameters){
 		posts = getPostBusiness().getPostItems(postFilterParameters, getIwc());
 		return posts;
@@ -497,7 +515,14 @@ public class PostList  extends IWBaseComponent{
 			if(!isMax){
 				setAllShowed(true);
 			}else{
-				setAllShowed(posts.size() < max);
+				if(posts.size() < max){
+					setAllShowed(true);
+				}else{
+					setAllShowed(false);
+					if(!ListUtil.isEmpty(posts)){
+						posts.remove(posts.size() - 1);
+					}
+				}
 			}
 		}
 		return posts;
@@ -520,17 +545,6 @@ public class PostList  extends IWBaseComponent{
 
 	public void setTeaserLength(int teaserLength) {
 		getPresentationOptions().put("teaserLength", String.valueOf(teaserLength));
-	}
-
-	protected StringBuilder getScriptOnLoad() {
-		if(scriptOnLoad == null){
-			scriptOnLoad = new StringBuilder("jQuery(document).ready(function(){");
-		}
-		return scriptOnLoad;
-	}
-
-	protected void setScriptOnLoad(StringBuilder scriptOnLoad) {
-		this.scriptOnLoad = scriptOnLoad;
 	}
 
 	

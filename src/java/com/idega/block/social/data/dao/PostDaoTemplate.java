@@ -1,6 +1,7 @@
 package com.idega.block.social.data.dao;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import com.idega.block.article.data.dao.ArticleDaoTemplate;
@@ -11,7 +12,7 @@ public interface PostDaoTemplate <T extends PostEntity>  extends ArticleDaoTempl
 	public static final String BEAN_NAME = "postDao";
 
 	public List <T> getPosts(Collection <Integer> creators, Collection <Integer> receivers,
-			Collection<String> types,int max,String uriFrom,Boolean up,Boolean order);
+			Collection<String> types,int max,String uriFrom,Boolean up,Boolean order,Date beginDate);
 	
 	public Collection<Integer> getReceivers(Long postId);
 	
@@ -24,9 +25,9 @@ public interface PostDaoTemplate <T extends PostEntity>  extends ArticleDaoTempl
 	 * @param order if true ascending else descending, null if don't care
 	 * @return
 	 */
-	public List <T> getLastPosts(Collection<String> types,int receiver,int max,String uriFrom,Boolean up,Boolean order);
+	public List <T> getLastPosts(Collection<String> types,int receiver,int max,String uriFrom,Boolean up,Boolean order, Date beginDate);
 	
 	public List<PostEntity> getConversation(int userId,
-			Collection<Integer> usersTalked, Collection<String> types, int max, String uriFrom,Boolean up,Boolean order);
+			Collection<Integer> usersTalked, Collection<String> types, int max, String uriFrom,Boolean up,Boolean order, Date beginDate);
 	
 }

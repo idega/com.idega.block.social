@@ -26,8 +26,6 @@ import com.idega.webface.WFUtil;
 
 public class Conversation extends SocialUIBase {
 	
-	private StringBuilder scriptOnLoad = null;
-	
 	private Collection<Integer> conversationWith;
 	
 	private Map<String,String> presentationOptions;
@@ -52,24 +50,37 @@ public class Conversation extends SocialUIBase {
 			msg.add(iwrb.getLocalizedString("not_logged_in", "Not logged in"));
 			return;
 		}
-		Layer content = new Layer();
-		add(content);
 		
-		getScriptOnLoad().append("\n\talert(10);");
+		setMarkupAttribute("class", "conversation");
+		getScriptOnLoad().append("\n\talert('script loaded TODO: remove this');");
+		
+		
+		MessageCreator messageCreator = new MessageCreator();
+		add(messageCreator);
+		messageCreator.setMarkupAttribute("class", "messages-creator");
+		
 		MessageList messageList = new MessageList();
-		content.add(messageList);
-		messageList.setStyleClass("post-list");
+		add(messageList);
 		messageList.setPostFilterParameters(getPostFilterParameters(iwc));
 		messageList.setPresentationOptions(getPresentationOptions());
 		
+		String msgListId = messageList.getId();
+		StringBuilder callback = new StringBuilder("jQuery(\"#").append(msgListId).append("\").trigger(\"set-post-receivers\",post.receivers);")
+				.append("jQuery(\"#").append(msgListId).append("\").trigger(\"prepend-posts\");");
 		
+		messageCreator.setCallback(callback);
 		Layer footer = new Layer();
-		content.add(footer);
+		add(footer);
 		footer.setStyleClass("post-editor");
 		
-		MessageCreator messageCreator = new MessageCreator();
-		footer.add(messageCreator);
-		
+//		getScriptOnLoad().append("\n\tjQuery('#").append(getId()).append("').resize(function(){")
+//				.append("\n\t\tvar main = jQuery(this);")
+//				.append("\n\t\tvar editor = main.find('.message-creator');")
+//				.append("\n\t\tvar list = main.find('.post-list');")
+//				.append("\n\t\tvar height = main.outerHeight();")
+//				.append("\n\t\teditor.resize();list.height(height - editor.outerHeight() - 50);alert('resized ' + height + ' '+ editor.outerHeight() + ' ' + 50);")
+//				.append("\n\t});")
+//				.append("\n\tjQuery('#").append(getId()).append("').resize();");
 	}
 	
 	private PostFilterParameters getPostFilterParameters(IWContext iwc){
@@ -77,26 +88,10 @@ public class Conversation extends SocialUIBase {
 		if(!ListUtil.isEmpty(conversationWith)){
 			postFilterParameters.setReceivers(conversationWith);
 		}
+		postFilterParameters.setMax(4);
 		return postFilterParameters;
 	}
 	
-
-	@Override
-	protected StringBuilder getScriptOnLoad() {
-		return super.getScriptOnLoad();
-//		if(scriptOnLoad == null){
-//			scriptOnLoad = new StringBuilder("jQuery(document).ready(function(){");
-//		}
-//		return scriptOnLoad;
-	}
-
-	@Override
-	protected void setScriptOnLoad(StringBuilder scriptOnLoad) {
-		super.setScriptOnLoad(scriptOnLoad);
-//		this.scriptOnLoad = scriptOnLoad;
-	}
-
-
 	@Override
 	public List<String> getScripts() {
 		List<String> scripts = new ArrayList<String>();

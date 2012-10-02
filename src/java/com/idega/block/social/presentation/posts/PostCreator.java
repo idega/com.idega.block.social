@@ -23,6 +23,7 @@ import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
 import com.idega.presentation.ui.HiddenInput;
+import com.idega.presentation.ui.SubmitButton;
 import com.idega.presentation.ui.TextArea;
 import com.idega.util.CoreConstants;
 import com.idega.util.expression.ELUtil;
@@ -32,6 +33,8 @@ public class PostCreator  extends SocialUIBase {
 	
 	
 	private StringBuilder defaultValuesString = null;
+	
+	private StringBuilder callback = null;
 	
 	private static final String DEFAULT_VALUES_FUNCTION = "PostCreator.setDefaultValues";
 	
@@ -45,12 +48,12 @@ public class PostCreator  extends SocialUIBase {
 	
 	@Override
 	protected void addScriptOnLoad(){
-//		if(defaultValuesString != null){
-//			defaultValuesString.append("\n\t}");
-//			getScriptOnLoad().append("\n\t").append(defaultValuesString);
-//		}
-//		getScriptOnLoad().append("\n\t").append(DEFAULT_VALUES_FUNCTION).append("();");
-//		super.addScriptOnLoad();
+		if(defaultValuesString != null){
+			defaultValuesString.append("\n\t}");
+			getScriptOnLoad().append("\n\t").append(defaultValuesString);
+		}
+		getScriptOnLoad().append("\n\t").append(DEFAULT_VALUES_FUNCTION).append("();");
+		super.addScriptOnLoad();
 	}
 	
 	protected UIComponent getBodyArea(IWResourceBundle iwrb){
@@ -96,26 +99,31 @@ public class PostCreator  extends SocialUIBase {
 		editorControls.add(uploadArea);
 		
 		
-//		uploadArea.setUploadPath(postItemBean.getFilesResourcePath());
-//		uploadArea.setDropZonesSelectionFunction("jQuery('#"+ getId() +"')");
-//		uploadArea.setAutoUpload(true);
-//		uploadArea.setName(PostBusiness.ParameterNames.POST_ATTACHMENTS_PARAMETER_NAME);
-//		
-//		Layer fileListLayer = new Layer();
-//		postContentEditor.add(fileListLayer);
-//		uploadArea.setFilesListContainerSelectFunction(new StringBuilder("jQuery('#").append(fileListLayer.getId()).append("');").toString());
+		uploadArea.setUploadPath(postItemBean.getFilesResourcePath());
+		uploadArea.setDropZonesSelectionFunction("jQuery('#"+ getId() +"')");
+		uploadArea.setAutoUpload(true);
+		uploadArea.setName(PostBusiness.ParameterNames.POST_ATTACHMENTS_PARAMETER_NAME);
+		
+		Layer fileListLayer = new Layer();
+		postContentEditor.add(fileListLayer);
+		uploadArea.setFilesListContainerSelectFunction(new StringBuilder("jQuery('#").append(fileListLayer.getId()).append("');").toString());
 		
 		
-//		SubmitButton postButton = new SubmitButton();
-//		editorControls.add(postButton);
-//		postButton.setValue(iwrb.getLocalizedString("send", "Send"));
-//		postButton.setStyleClass("btn btn-primary send-btn");
-//		
-//		StringBuilder action = new StringBuilder("PostCreator.createPost('#").append(getId())
-//				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(CoreConstants.NUMBER_SIGN).append(10/*uploadArea.getId()*/)
-//				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(CoreConstants.NUMBER_SIGN).append(resourcePathInput.getId())
-//				.append(CoreConstants.JS_STR_PARAM_END).append("return false;");
-//		setMarkupAttribute("onsubmit", action.toString());
+		SubmitButton postButton = new SubmitButton();
+		editorControls.add(postButton);
+		postButton.setValue(iwrb.getLocalizedString("send", "Send"));
+		postButton.setStyleClass("btn btn-primary send-btn");
+		
+		StringBuilder action = new StringBuilder("PostCreator.createPost('#").append(getId())
+				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(CoreConstants.NUMBER_SIGN).append(uploadArea.getId())
+				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(CoreConstants.NUMBER_SIGN).append(resourcePathInput.getId());
+		
+		StringBuilder callback = getCallback();
+		if(callback != null){
+			action.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(getCallback().toString());
+		}
+		action.append(CoreConstants.JS_STR_PARAM_END).append(" return false;");
+		setMarkupAttribute("onsubmit", action.toString());
 	}
 	
 	@Override
@@ -180,6 +188,14 @@ public class PostCreator  extends SocialUIBase {
 	@Override
 	protected Logger getLogger(){
 		return Logger.getLogger(this.getClass().getName());
+	}
+
+	public StringBuilder getCallback() {
+		return callback;
+	}
+
+	public void setCallback(StringBuilder callback) {
+		this.callback = callback;
 	}
 
 }

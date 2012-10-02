@@ -32,7 +32,6 @@ import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
 import com.idega.data.IDOLookup;
 import com.idega.idegaweb.IWMainApplication;
-import com.idega.idegaweb.IWResourceBundle;
 import com.idega.idegaweb.IWUserContext;
 import com.idega.presentation.IWContext;
 import com.idega.slide.business.IWSlideService;
@@ -78,14 +77,11 @@ public class PostBusiness extends DefaultSpringBean {
 	}
 
 	@SuppressWarnings("unchecked")
-	public String savePost(Map <String,List<String>> parameters) {
-		IWResourceBundle iwrb = getResourceBundle(getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER));
+	public PostItemBean savePost(Map <String,List<String>> parameters) {
 		IWContext iwc = CoreUtil.getIWContext();
 		if(!iwc.isLoggedOn()){
-			String errorMsg = iwrb.getLocalizedString("you_must_be_logged_on_to_perform_this_action", "You must be logged on to perform this action");
-			return errorMsg;
+			return null;
 		}
-		String errorMsg = iwrb.getLocalizedString("failed_to_save_post", "Failed to save post");
 
 		User currentUser = iwc.getCurrentUser();
 		UserApplicationEngine userApplicationEngine = this.getUserApplicationEngine();
@@ -115,7 +111,7 @@ public class PostBusiness extends DefaultSpringBean {
 		
 
 		if((usersReceivers == null) && (ListUtil.isEmpty(groupsReceivers))){
-			return errorMsg + ": " + iwrb.getLocalizedString("post_has_no_receivers", "Post has no receivers");
+			return null;
 		}
 		
 		HashSet<Integer> receivers = new HashSet<Integer>();
@@ -150,10 +146,9 @@ public class PostBusiness extends DefaultSpringBean {
 		List<String> attachments = parameters.get(PostBusiness.ParameterNames.POST_ATTACHMENTS_PARAMETER_NAME);
 		
 		if(StringUtil.isEmpty(body) && StringUtil.isEmpty(headline) && ListUtil.isEmpty(attachments)){
-			return errorMsg + ": " + iwrb.getLocalizedString("post_is_empty", "Post is empty");
+			return null;
 		}
 
-		StringBuilder errors = null;
 		post.setBody(body);
 		post.setHeadline(headline);
 		post.setCreatedByUserId(creatorId);
@@ -185,12 +180,9 @@ public class PostBusiness extends DefaultSpringBean {
 			post.store(iwc);
 		}catch (Exception e) {
 			getLogger().log(Level.WARNING, "Failed storing post " + post.getPostId(), e);
-			return errorMsg;
+			return null;
 		}
-		String successMsg = iwrb.getLocalizedString("post_sent", "Post sent");
-		String returnMsg = errors == null ? null : successMsg + errors.toString();
-		
-		return returnMsg;
+		return post;
 		
 	}
 
@@ -242,6 +234,14 @@ public class PostBusiness extends DefaultSpringBean {
 		PostEntity postEntity = postDao.getByUri(uri);
 		IWSlideService slide = getServiceInstance(IWSlideService.class);
 		return getPostInfo(postEntity,iwc,slide);
+	}
+	
+	public PostItemBean getPostItemBean(String uri, IWContext iwc) throws Exception{
+		PostEntity postEntity = postDao.getByUri(uri);
+		if(postEntity == null){
+			return null;
+		}
+		return getPostItemBean(postEntity);
 	}
 	
 	private PostInfo getPostInfo(PostEntity entity,IWContext iwc,IWSlideService slide) throws Exception{
@@ -299,9 +299,11 @@ public class PostBusiness extends DefaultSpringBean {
 	
 	
 	private List<PostEntity> getPostEntities(PostFilterParameters filterParameters){
+		Long beginDateSeconds = filterParameters.getBeginDate();
+		Date beginDate = beginDateSeconds == null ? null : new Date(beginDateSeconds);
 		List <PostEntity> postEntities = this.postDao.getPosts(filterParameters.getCreators(), 
 				filterParameters.getReceivers(),filterParameters.getTypes(), filterParameters.getMax(), 
-				filterParameters.getBeginUri(), filterParameters.getGetUp(), filterParameters.getOrder());
+				filterParameters.getBeginUri(), filterParameters.getGetUp(), filterParameters.getOrder(),beginDate);
 		return postEntities;
 	}
 	
@@ -323,8 +325,11 @@ public class PostBusiness extends DefaultSpringBean {
 	
 	
 	private List<PostEntity> getLastPostEntities(PostFilterParameters filterParameters,int userId){
+		Long beginDateSeconds = filterParameters.getBeginDate();
+		Date beginDate = beginDateSeconds == null ? null : new Date(beginDateSeconds);
 		List <PostEntity> postEntities = this.postDao.getLastPosts(filterParameters.getTypes(), userId,
-				filterParameters.getMax(), filterParameters.getBeginUri(), filterParameters.getGetUp(), filterParameters.getOrder());
+				filterParameters.getMax(), filterParameters.getBeginUri(), filterParameters.getGetUp(),
+				filterParameters.getOrder(),beginDate);
 		return postEntities;
 	}
 	
@@ -335,8 +340,10 @@ public class PostBusiness extends DefaultSpringBean {
 	}
 	
 	private List<PostEntity> getConversationEntities(PostFilterParameters filterParameters,int userId){
+		Long beginDateSeconds = filterParameters.getBeginDate();
+		Date beginDate = beginDateSeconds == null ? null : new Date(beginDateSeconds);
 		List <PostEntity> postEntities = this.postDao.getConversation(userId, filterParameters.getReceivers(), filterParameters.getTypes(), 
-				filterParameters.getMax(), filterParameters.getBeginUri(), filterParameters.getGetUp(), filterParameters.getOrder());
+				filterParameters.getMax(), filterParameters.getBeginUri(), filterParameters.getGetUp(), filterParameters.getOrder(),beginDate);
 		return postEntities;
 	}
 	
@@ -349,21 +356,25 @@ public class PostBusiness extends DefaultSpringBean {
 	
 	private List<PostItemBean> getPostItems(Collection <PostEntity> postEntities, IWContext iwc){
 		List<PostItemBean> posts = new ArrayList<PostItemBean>(postEntities.size());
-		ELUtil elUtil = ELUtil.getInstance();
-		for(PostEntity entity : postEntities){
-			PostItemBean postItemBean = elUtil.getBean(PostItemBean.BEAN_NAME);
-			String resourcePath = entity.getUri();
-			postItemBean.setResourcePath(resourcePath);
+		
+		for(PostEntity postEntity : postEntities){
 			try {
-				postItemBean.load();
+				posts.add(getPostItemBean(postEntity));
 			} catch (IOException e) {
-				getLogger().log(Level.WARNING, "Failed loading post " + resourcePath, e);
+				getLogger().log(Level.WARNING, "Failed loading post " + postEntity.getUri(), e);
 				continue;
 			}
-			postItemBean.setPostEntity(entity);
-			posts.add(postItemBean);
 		}
 		return posts;
+	}
+	
+	private PostItemBean getPostItemBean(PostEntity postEntity) throws IOException{
+		PostItemBean postItemBean = ELUtil.getInstance().getBean(PostItemBean.BEAN_NAME);
+		String resourcePath = postEntity.getUri();
+		postItemBean.setResourcePath(resourcePath);
+		postItemBean.load();
+		postItemBean.setPostEntity(postEntity);
+		return postItemBean;
 	}
 	/**
 	 * @param filterParameters
