@@ -7,6 +7,16 @@
 	position:absolute;
 	bottom:-2em;
 }*/
+/* last-messages-list*/
+.last-messages .main-postlayer{
+	cursor:pointer;
+	border: solid transparent 1px;
+}
+
+.last-messages .main-postlayer:hover{
+	border-color: #DDDDDD;
+}
+/*-------------------------------------*/
 .main-postlayer{
 	overflow:visible; /*for attachment list to display but there are some issues if images are to large, change to hidden and change attachments list if it happens*/
 	position:relative;

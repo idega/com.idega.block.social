@@ -178,6 +178,12 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		IWContext iwc = CoreUtil.getIWContext();
 		IWResourceBundle iwrb = getResourceBundle();
 		try {
+//			TODO: allow chats for multiple users
+			if((!ListUtil.isEmpty(creators)) && (creators.size() > 1)){
+				Integer first = creators.iterator().next();
+				creators = new ArrayList<Integer>();
+				creators.add(first);
+			}
 			Conversation conversation = new Conversation(presentationOptions);
 			conversation.setConversationWith(creators);
 //			RenderedComponent renderedComponent = BuilderLogic.getInstance().getRenderedComponent(conversation, null);

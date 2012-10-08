@@ -2,10 +2,8 @@ package com.idega.block.social.presentation.posts;
 
 import javax.faces.context.FacesContext;
 
-import com.idega.block.social.business.PostBusiness;
 import com.idega.block.social.data.PostEntity;
 import com.idega.presentation.Layer;
-import com.idega.user.presentation.user.UserAutocomplete;
 
 public class MessageCreator extends PostCreator{
 
@@ -19,9 +17,7 @@ public class MessageCreator extends PostCreator{
 	}
 	
 	protected void addReceiversInputs(Layer receiversLayer){
-		UserAutocomplete userAutocomplete = new UserAutocomplete();
-		userAutocomplete.setMarkupAttribute("name", PostBusiness.ParameterNames.RECEIVERS_PARAMETER_NAME);
-		receiversLayer.add(userAutocomplete);
+//		userAutocomplete.setMarkupAttribute("name", PostBusiness.ParameterNames.RECEIVERS_PARAMETER_NAME);
 	}
 	@Override
 	protected String getPostType(){

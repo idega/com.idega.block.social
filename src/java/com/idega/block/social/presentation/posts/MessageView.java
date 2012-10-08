@@ -24,6 +24,8 @@ import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
 import com.idega.presentation.Span;
+import com.idega.presentation.ui.Label;
+import com.idega.user.presentation.user.UserAutocomplete;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.expression.ELUtil;
@@ -54,31 +56,57 @@ public class MessageView extends SocialUIBase {
 			return;
 		}
 		ELUtil.getInstance().autowire(this);
-		Layer topControlls = new Layer();
+		Layer topControlls = new Layer("form");
 		add(topControlls);
 		topControlls.setStyleClass("top-controlls");
+		topControlls.setMarkupAttribute("onsubmit", "return false;");
 		
 		
 		Layer creatorLink = new Layer("a");
 		topControlls.add(creatorLink);
 		creatorLink.setMarkupAttribute("href", "#");
 		
+		Label messageTo = new Label();
+		topControlls.add(messageTo);
+		messageTo.add(iwrb.getLocalizedString("write_message_to", "Write message to"));
+		
+		String userInputName = "chat-user";
+		UserAutocomplete userAutocomplete = new UserAutocomplete();
+		topControlls.add(userAutocomplete);
+		userAutocomplete.setMarkupAttribute("name", userInputName);
+		
+		
+		
+		StringBuilder receiversFunction = new StringBuilder("function(){")
+		.append("\n\t\n\tvar receiversInputs = jQuery('#").append(topControlls.getId())
+		.append("').find('[name=\"").append(userInputName).append("\"]');")
+		.append("var receivers = [];")
+		.append("for(var i = 0;i<receiversInputs.length;i++){receivers.push(jQuery(receiversInputs[i]).val());}")
+		.append("return receivers;}");
+		ConversationCreator conversationCreator = new ConversationCreator();
+		topControlls.add(conversationCreator);
+		conversationCreator.setReceiversFunction(receiversFunction.toString());
+		
 		Layer button = new Layer("button");
-		topControlls.add(button);
+		conversationCreator.add(button);
 		button.setStyleClass("btn btn-primary");
 		Span icon = new Span();
 		button.add(icon);
 		icon.setStyleClass("icon-envelope icon-white");
 		button.setMarkupAttribute("title", iwrb.getLocalizedString("create_message", "Create message"));
-		button.add(iwrb.getLocalizedString("new", "New"));
+		button.add(iwrb.getLocalizedString("start_chat", "Start chat"));
 		
-		getScriptOnLoad().append("\n\t\tLastMessagesList.createConversationPreview(jQuery('#").append(creatorLink.getId()).append("'),")
-				.append("{}")
-				.append(",\n\t\t\t[").append(-1).append("]")
-				.append(");")
-				.append("\n\tjQuery('#").append(button.getId()).append("').click(function(){")
-				.append("\n\t\tvar comp = jQuery('#").append(creatorLink.getId()).append("'); \n\t\tcomp.click();")
-				.append("\n\t});");
+//		getScriptOnLoad().append("{var getReceivers = function(){")
+//				.append("\n\t\n\tvar receiversInputs = jQuery('#").append(topControlls.getId())
+//				.append("').find('[name=\"").append("chat-user").append("\"]);")
+//				.append("\n\tfor(var i = 0;")
+//				.append("\n\t\tLastMessagesList.createConversationPreview(jQuery('#").append(creatorLink.getId()).append("'),")
+//				.append("{}")
+//				.append(",\n\t\t\[]")
+//				.append(");")
+//				.append("\n\tjQuery('#").append(button.getId()).append("').click(function(){")
+//				.append("\n\t\tvar comp = jQuery('#").append(creatorLink.getId()).append("'); \n\t\tcomp.click();")
+//				.append("\n\t});}");
 		
 //		MessageCreator messageCreator = new MessageCreator();
 //		add(messageCreator);

@@ -119,14 +119,11 @@ public abstract class PostList  extends IWUIBase{
 	}
 
 	public String getStyleClass() {
-		return styleClass;
+		return getMarkupAttribute("class");
 	}
 
 	public void setStyleClass(String styleClass) {
-		if("post-list".equals(styleClass)){
-			return;
-		}
-		this.styleClass = styleClass;
+		setMarkupAttributeMultivalued("class", styleClass, " ");
 	}
 
 	@Override
@@ -142,8 +139,8 @@ public abstract class PostList  extends IWUIBase{
 			loadMore.setContent(iwrb.getLocalizedString("load_more", "Load more"));
 			loadMore.setOnClick("jQuery('#" + getId() + "').trigger('append-posts')");
 		}
+		setStyleClass("post-list");
 		addFiles(iwc);
-		setMarkupAttribute("class", " post-list " + getStyleClass());
 		setTag("div");
 	}
 	

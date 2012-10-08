@@ -81,7 +81,9 @@
 						list.append(html);
 						var loadMoreButton = list.find(".load-more");
 						loadMoreButton.remove();
-						list.append(loadMoreButton);
+						if((parameters.max > 0) && (jQuery(html).find("." + e.data.postUriClass).length >= parameters.max)){
+							list.append(loadMoreButton);
+						}
 						var listData = list.data("social-post-list-data");
 						listData.appending = false;
 						closeAllLoadingMessages();
