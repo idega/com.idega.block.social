@@ -25,7 +25,8 @@ public interface PostDaoTemplate <T extends PostEntity>  extends ArticleDaoTempl
 	 * @param order if true ascending else descending, null if don't care
 	 * @return
 	 */
-	public List <T> getLastPosts(Collection<String> types,int receiver,int max,String uriFrom,Boolean up,Boolean order, Date beginDate);
+	public List<T> getLastPosts(Collection<String> types, Collection<Integer> receivers,
+			int max, String uriFrom, Boolean up, Boolean order, Date beginDate,Integer userId);
 	
 	public List<PostEntity> getConversation(int userId,
 			Collection<Integer> usersTalked, Collection<String> types, int max, String uriFrom,Boolean up,Boolean order, Date beginDate);

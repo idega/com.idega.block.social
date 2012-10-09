@@ -67,8 +67,6 @@ public abstract class PostList  extends IWUIBase{
 	
 	private IWResourceBundle iwrb = null;
 	
-	private String styleClass = "posts-contents-list";
-	
 	private PostFilterParameters postFilterParameters = null;
 	
 	private int maxImagesToShow = 3;
@@ -280,26 +278,33 @@ public abstract class PostList  extends IWUIBase{
 		return date;
 	}
 	
+	protected UIComponent getDeleteButton(PostItemBean post){
+		int currentUserId = getIwc().getCurrentUserId();
+		
+		if(post.getCreatedByUserId() != currentUserId){
+			return new Layer("");
+		}
+		
+		Layer deleteLayer = new Layer();
+		deleteLayer.setStyleClass("post-delete-layer");
+		
+		Layer deleteButton = new Layer();
+		deleteLayer.add(deleteButton);
+		deleteButton.setStyleClass("button-div delete-button-div");
+		deleteButton.setMarkupAttribute("title", getIwrb().getLocalizedString("delete", "Delete"));
+		getScriptOnLoad().append("\n\tjQuery('#").append(deleteButton.getId())
+				.append("').click(function(){jQuery(this).parents('.post-list').first().trigger('delete-post-by-uri")
+				.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(post.getResourcePath())
+				.append("');});");
+		return deleteLayer;
+	}
+	
 	protected Layer getPostInfoLayer(PostItemBean post) throws Exception{
 		IWResourceBundle iwrb = getIwrb();
 		Layer postInfoLayer = new Layer();
 		postInfoLayer.setStyleClass("post-info");
 		
-		int currentUserId = getIwc().getCurrentUserId();
-		if(post.getCreatedByUserId() == currentUserId){
-			Layer deleteLayer = new Layer();
-			postInfoLayer.add(deleteLayer);
-			deleteLayer.setStyleClass("post-delete-layer");
-			
-			Layer deleteButton = new Layer();
-			deleteLayer.add(deleteButton);
-			deleteButton.setStyleClass("button-div delete-button-div");
-			deleteButton.setMarkupAttribute("title", getIwrb().getLocalizedString("delete", "Delete"));
-			getScriptOnLoad().append("\n\tjQuery('#").append(deleteButton.getId())
-					.append("').click(function(){jQuery(this).parents('.post-list').first().trigger('delete-post-by-uri")
-					.append(CoreConstants.JS_STR_PARAM_SEPARATOR).append(post.getResourcePath())
-					.append("');});");
-		}
+		postInfoLayer.add(getDeleteButton(post));
 		
 		Heading1 title = new Heading1(post.getHeadline());
 		postInfoLayer.add(title);

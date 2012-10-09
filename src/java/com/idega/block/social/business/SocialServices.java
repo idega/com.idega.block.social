@@ -529,7 +529,7 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 				response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
 			}else{
 				response.put("status", Response.Status.OK.getReasonPhrase());
-				response.put("message", iwrb.getLocalizedString("saved", "Saved"));
+				response.put("message", iwrb.getLocalizedString("sent", "Sent"));
 				response.put("post", new Gson().toJson(postItemBean.getPostEntity()));
 			}
 			return response;

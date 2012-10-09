@@ -94,7 +94,7 @@ public class MessageView extends SocialUIBase {
 		button.add(icon);
 		icon.setStyleClass("icon-envelope icon-white");
 		button.setMarkupAttribute("title", iwrb.getLocalizedString("create_message", "Create message"));
-		button.add(iwrb.getLocalizedString("start_chat", "Start chat"));
+		button.add(iwrb.getLocalizedString("start_conversation", "Start conversation"));
 		
 //		getScriptOnLoad().append("{var getReceivers = function(){")
 //				.append("\n\t\n\tvar receiversInputs = jQuery('#").append(topControlls.getId())

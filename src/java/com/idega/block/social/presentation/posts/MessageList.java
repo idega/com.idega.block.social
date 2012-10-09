@@ -1,14 +1,20 @@
 package com.idega.block.social.presentation.posts;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import javax.faces.component.UIComponent;
 
 import com.idega.block.social.bean.PostFilterParameters;
 import com.idega.block.social.bean.PostItemBean;
 import com.idega.block.social.data.PostEntity;
+import com.idega.data.IDOLookup;
+import com.idega.user.data.Group;
+import com.idega.user.data.GroupHome;
 
 public class MessageList extends PostList{
 	
@@ -90,8 +96,22 @@ public class MessageList extends PostList{
 	
 	@Override
 	protected List<PostItemBean> loadPosts(PostFilterParameters postFilterParameters){
-		List<PostItemBean> posts = getPostBusiness().getConversationPostItems(postFilterParameters, getIwc());
-		return posts;
+		Collection<Integer> receivers = postFilterParameters.getReceivers();
+		try{
+			Integer receiver = receivers.iterator().next();
+			GroupHome groupHome = (GroupHome) IDOLookup.getHome(Group.class);
+			Group group = groupHome.findByPrimaryKey(receiver);
+			List<PostItemBean> posts;
+			if(group.isUser()){
+				posts = getPostBusiness().getConversationPostItems(postFilterParameters, getIwc());
+			}else{
+				posts = getPostBusiness().getPostItems(postFilterParameters, getIwc());
+			}
+			return posts;
+		}catch (Exception e) {
+			getLogger().log(Level.WARNING, "failed getting groups", e);
+			return Collections.emptyList();
+		}
 	}
 	@Override
 	public List<PostItemBean> getPosts() {

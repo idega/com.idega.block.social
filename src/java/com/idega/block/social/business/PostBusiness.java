@@ -324,17 +324,18 @@ public class PostBusiness extends DefaultSpringBean {
 	
 	
 	
-	private List<PostEntity> getLastPostEntities(PostFilterParameters filterParameters,int userId){
+	private List<PostEntity> getLastPostEntities(PostFilterParameters filterParameters,Collection<Integer> receivers,Integer userId){
 		Long beginDateSeconds = filterParameters.getBeginDate();
 		Date beginDate = beginDateSeconds == null ? null : new Date(beginDateSeconds);
-		List <PostEntity> postEntities = this.postDao.getLastPosts(filterParameters.getTypes(), userId,
+		List <PostEntity> postEntities = this.postDao.getLastPosts(filterParameters.getTypes(), receivers,
 				filterParameters.getMax(), filterParameters.getBeginUri(), filterParameters.getGetUp(),
-				filterParameters.getOrder(),beginDate);
+				filterParameters.getOrder(),beginDate,userId);
 		return postEntities;
 	}
 	
-	public List<PostItemBean> getLastPostItems(PostFilterParameters filterParameters,IWContext iwc){
-		Collection <PostEntity> postEntities = getLastPostEntities(filterParameters,iwc.getCurrentUserId());
+	public List<PostItemBean> getLastPostItems(PostFilterParameters filterParameters,IWContext iwc,Collection<Integer> receivers){
+		// TODO: userId should be taken from filterparameters
+		Collection <PostEntity> postEntities = getLastPostEntities(filterParameters,receivers,iwc.getCurrentUserId());
 		List<PostItemBean> posts = getPostItems(postEntities, iwc);
 		return posts;
 	}

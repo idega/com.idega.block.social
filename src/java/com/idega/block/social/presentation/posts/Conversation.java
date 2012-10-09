@@ -52,7 +52,6 @@ public class Conversation extends SocialUIBase {
 		}
 		
 		setMarkupAttribute("class", "conversation");
-		getScriptOnLoad().append("\n\talert('script loaded TODO: remove this');");
 		
 		
 		MessageCreator messageCreator = new MessageCreator();
