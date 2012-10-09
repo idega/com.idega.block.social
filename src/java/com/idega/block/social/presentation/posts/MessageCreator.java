@@ -3,22 +3,15 @@ package com.idega.block.social.presentation.posts;
 import javax.faces.context.FacesContext;
 
 import com.idega.block.social.data.PostEntity;
-import com.idega.presentation.Layer;
 
 public class MessageCreator extends PostCreator{
 
 	
 	@Override
 	protected void initializeComponent(FacesContext context) {
-		Layer receiversLayer = new Layer();
-		add(receiversLayer);
 		super.initializeComponent(context);
-		addReceiversInputs(receiversLayer);
 	}
 	
-	protected void addReceiversInputs(Layer receiversLayer){
-//		userAutocomplete.setMarkupAttribute("name", PostBusiness.ParameterNames.RECEIVERS_PARAMETER_NAME);
-	}
 	@Override
 	protected String getPostType(){
 //		TODO: remove
@@ -27,4 +20,6 @@ public class MessageCreator extends PostCreator{
 		
 		return PostEntity.POST_TYPE_MESSAGE;
 	}
+
+	
 }

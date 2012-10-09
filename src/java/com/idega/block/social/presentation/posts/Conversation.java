@@ -58,6 +58,7 @@ public class Conversation extends SocialUIBase {
 		MessageCreator messageCreator = new MessageCreator();
 		add(messageCreator);
 		messageCreator.setMarkupAttribute("class", "messages-creator");
+		messageCreator.setReceivers(getConversationWith());
 		
 		MessageList messageList = new MessageList();
 		add(messageList);

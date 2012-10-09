@@ -104,6 +104,19 @@
 	float:right;
 	font-size:120%;
 }
+
+
+.top-controlls > *{
+	display:inline;
+	display:inline-block;
+	margin-bottom:2em;
+}
+.top-controlls > .tagedit-list {
+	width:40%;
+}
+.top-controlls button{
+	margin-bottom:2em;
+}
 /*//////////////////////////////////////////////////*/
 
 

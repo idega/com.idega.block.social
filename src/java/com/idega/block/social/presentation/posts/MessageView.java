@@ -68,7 +68,7 @@ public class MessageView extends SocialUIBase {
 		
 		Label messageTo = new Label();
 		topControlls.add(messageTo);
-		messageTo.add(iwrb.getLocalizedString("write_message_to", "Write message to"));
+		messageTo.add(iwrb.getLocalizedString("write_message_to", "Write message to")+CoreConstants.COLON);
 		
 		String userInputName = "chat-user";
 		UserAutocomplete userAutocomplete = new UserAutocomplete();

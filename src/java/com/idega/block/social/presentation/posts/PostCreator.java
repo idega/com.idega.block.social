@@ -1,6 +1,7 @@
 package com.idega.block.social.presentation.posts;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,6 +27,7 @@ import com.idega.presentation.ui.HiddenInput;
 import com.idega.presentation.ui.SubmitButton;
 import com.idega.presentation.ui.TextArea;
 import com.idega.util.CoreConstants;
+import com.idega.util.ListUtil;
 import com.idega.util.expression.ELUtil;
 import com.idega.webface.WFUtil;
 
@@ -37,6 +39,8 @@ public class PostCreator  extends SocialUIBase {
 	private StringBuilder callback = null;
 	
 	private static final String DEFAULT_VALUES_FUNCTION = "PostCreator.setDefaultValues";
+	
+	private Collection<Integer> receivers;
 	
 	@Override
 	protected void initializeComponent(FacesContext context) {
@@ -73,8 +77,13 @@ public class PostCreator  extends SocialUIBase {
 		return PostEntity.POST_TYPE_PUBLIC;
 	}
 	private void addUI(){
+		
 		IWResourceBundle iwrb = getIwrb();
 		addStyleClass("post-creation-form");
+		
+		Layer receiversLayer = new Layer();
+		add(receiversLayer);
+		addReceiversInputs(receiversLayer);
 
 		add(new HiddenInput(PostBusiness.ParameterNames.POST_TYPE, getPostType()));
 		
@@ -196,6 +205,25 @@ public class PostCreator  extends SocialUIBase {
 
 	public void setCallback(StringBuilder callback) {
 		this.callback = callback;
+	}
+	
+	public Collection<Integer> getReceivers() {
+		return receivers;
+	}
+
+	public void setReceivers(Collection<Integer> receivers) {
+		this.receivers = receivers;
+	}
+	
+	protected void addReceiversInputs(Layer receiversLayer){
+		Collection<Integer> receivers = getReceivers();
+		if(ListUtil.isEmpty(receivers)){
+			return;
+		}
+		for(Integer receiver : receivers){
+			HiddenInput receiversHiddenInput = new HiddenInput(PostBusiness.ParameterNames.RECEIVERS_PARAMETER_NAME, receiver.toString());
+			receiversLayer.add(receiversHiddenInput);
+		}
 	}
 
 }
