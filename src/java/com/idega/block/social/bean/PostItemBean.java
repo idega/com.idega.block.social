@@ -45,13 +45,13 @@ import com.idega.util.ListUtil;
 import com.idega.util.StringUtil;
 import com.idega.util.text.Item;
 
-
 @Component(PostItemBean.BEAN_NAME)
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-public class PostItemBean extends ArticleItemBean{
-	public static final String BEAN_NAME = "postItemBean";
+public class PostItemBean extends ArticleItemBean {
+	
 	private static final long serialVersionUID = -6743671102226781545L;
 	
+	public static final String BEAN_NAME = "postItemBean";
 	
 	@Autowired
 	PostBusiness postBusiness;
@@ -65,16 +65,15 @@ public class PostItemBean extends ArticleItemBean{
 	
 	protected String baseFolderLocation = null;
 	public static final String POST_CONTENT_PATH = "/post";
+	
 	@Override
 	public String getBaseFolderLocation() {
-		if(this.baseFolderLocation == null){
+		if (this.baseFolderLocation == null)
 			this.baseFolderLocation = ContentUtil.getContentBaseFolderPath() + POST_CONTENT_PATH;
-		}
 		return this.baseFolderLocation;
 	}
-	
 
-	public void store(IWContext iwc) throws IDOStoreException{
+	public void store(IWContext iwc) throws IDOStoreException {
 		PostEntity postEntity = getPostEntity();
 		Set <Integer> receivers = postEntity.getReceivers();
 		Set <Integer> accessGroups = new HashSet<Integer>();
@@ -189,7 +188,7 @@ public class PostItemBean extends ArticleItemBean{
 	}
 	
 	public Date getCreationDateObject(){
-		return  getArticleEntity().getModificationDate();
+		return getArticleEntity().getModificationDate();
 	}
 	
 	@Override
@@ -208,27 +207,31 @@ public class PostItemBean extends ArticleItemBean{
 	}
 
 	@Override
-	public ArticleEntity getArticleEntity() {
+	public ArticleEntity getArticleEntity(boolean createIfNotFound) {
 		return getPostEntity();
+	}
+	private ArticleEntity getArticleEntity() {
+		return getArticleEntity(true);
 	}
 
 	@Override
 	public void setArticleEntity(ArticleEntity articleEntity) {
-		if(articleEntity instanceof PostEntity){
-			setPostEntity((PostEntity)articleEntity);
+		if (articleEntity instanceof PostEntity) {
+			setPostEntity((PostEntity) articleEntity);
 			return;
 		}
+		
 		PostEntity postEntity = new PostEntity(articleEntity);
 		setPostEntity(postEntity);
 	}
 
 	public PostEntity getPostEntity() {
-		if(postEntity == null){
+		if (postEntity == null)
 			postEntity  = postDao.getByUri(getResourcePath());
-		}
-		if(postEntity == null){
+		
+		if (postEntity == null)
 			postEntity = new PostEntity();
-		}
+		
 		return postEntity;
 	}
 
@@ -242,6 +245,7 @@ public class PostItemBean extends ArticleItemBean{
 		path.append(now.getYear()).append(CoreConstants.SLASH).append(now.getDateString("MM-dd")).append(CoreConstants.SLASH);
 		return path.toString();
 	}
+	
 	@Override
 	protected String generateArticleResourcePath(IWContext iwc) {
 		try {
