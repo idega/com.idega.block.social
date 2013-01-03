@@ -36,7 +36,7 @@ function setGlobalVariables(NameFieldId,loadingMsg,savingUsersMsg,currentGroupId
 //}
 
 jQuery(document).ready(function(){
-	jQuery('body').append('<a class = "invisibleLink">create</a>');
+	jQuery('body').append('<a class="invisibleLink" style="display: none;">create</a>');
 	jQuery("a.invisibleLink").fancybox({
 		hideOnContentClick: false,
 		zoomSpeedIn: 300,
@@ -55,6 +55,7 @@ jQuery(document).ready(function(){
 		},
 		onClosed:function() {
 			reloadGroupTree();
+			reloadPage();
 		}
 	});
 });

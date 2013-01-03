@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 import org.hsqldb.lib.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.idega.block.social.Constants;
+import com.idega.block.social.SocialConstants;
 import com.idega.block.social.business.SocialServices;
 import com.idega.business.IBOLookup;
 import com.idega.business.IBOLookupException;
@@ -56,7 +56,7 @@ public class SocialGroupCreator extends SimpleGroupCreator{
 
 	@Override
 	public String getBundleIdentifier() {
-		return Constants.IW_BUNDLE_IDENTIFIER;
+		return SocialConstants.IW_BUNDLE_IDENTIFIER;
 	}
 
 	@Override
@@ -71,11 +71,11 @@ public class SocialGroupCreator extends SimpleGroupCreator{
 		String parentGroupId = iwc.getParameter(UserConstants.GROUPS_TO_RELOAD_IN_MENU_DROPDOWN_ID_IN_SIMPLE_USER_APPLICATION);
 
 		if(StringUtil.isEmpty(parentGroupId) || parentGroupId.equals("-1")){
-			parentGroupId = socialServices.getSagaRootGroup().getId();
+			parentGroupId = socialServices.getSocialRootGroup().getId();
 		}
 
 		setParentGroupId(parentGroupId);
-		this.setType(Constants.SOCIAL_TYPE);
+		this.setType(SocialConstants.SOCIAL_TYPE);
 		super.main(iwc);
 
 		userEditContent = new Layer();
@@ -376,9 +376,7 @@ public class SocialGroupCreator extends SimpleGroupCreator{
 	}
 
 	private static String getViewableUserData(UserDataBean userData){
-		StringBuilder data = new StringBuilder(" email: ")
-		.append(userData.getEmail())
-		.append(" login:").append(userData.getLogin());
+		StringBuilder data = new StringBuilder(" email: ").append(userData.getEmail());
 		return data.toString();
 	}
 

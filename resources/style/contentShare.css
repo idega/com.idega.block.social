@@ -123,4 +123,7 @@ background:#000000 none repeat scroll 0 0;
 	overflow:auto;	
 }
 
+.not-displayed{
+	display : none !important;
+}
 

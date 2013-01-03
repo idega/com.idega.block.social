@@ -1,20 +1,18 @@
 package com.idega.block.social.presentation.group;
 
-
-
-
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 
-import com.idega.block.social.Constants;
+import com.idega.block.social.SocialConstants;
 import com.idega.block.web2.business.JQuery;
 import com.idega.block.web2.business.Web2Business;
 import com.idega.builder.business.BuilderLogic;
 import com.idega.business.IBOLookup;
-import com.idega.business.IBOLookupException;
 import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWResourceBundle;
@@ -22,78 +20,95 @@ import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
 import com.idega.presentation.ui.GenericButton;
 import com.idega.user.business.GroupBusiness;
+import com.idega.user.business.UserBusiness;
 import com.idega.user.business.UserConstants;
 import com.idega.user.data.Group;
 import com.idega.user.presentation.group.GroupTreeViewer;
 import com.idega.util.CoreConstants;
+import com.idega.util.ListUtil;
 import com.idega.util.PresentationUtil;
 import com.idega.webface.WFUtil;
 
-public class GroupEditor extends GroupTreeViewer{
+public class GroupEditor extends GroupTreeViewer {
+	
 	private IWResourceBundle iwrb = null;
 	private StringBuilder errorMsg = null;
 
 	private boolean tageditFunctions = true;
 
-	@SuppressWarnings("unchecked")
+	private boolean userGroupsAsRootGroups;
+	
+	private Group rootGroup;
+	
+	private Collection<Group> getRootGroups(IWContext iwc) throws RemoteException {
+		GroupBusiness groupBusiness = IBOLookup.getServiceInstance(iwc, GroupBusiness.class);
+		
+		if (rootGroup != null) {
+			return Arrays.asList(rootGroup);
+		} else if (isUserGroupsAsRootGroups() && iwc.isLoggedOn()) {
+			UserBusiness userBusiness = IBOLookup.getServiceInstance(iwc, UserBusiness.class);
+			@SuppressWarnings("unchecked")
+			Collection<Group> userGroups = userBusiness.getUserGroups(iwc.getCurrentUser());
+			return userGroups;
+		} else {
+			@SuppressWarnings("unchecked")
+			Collection<Group> socialRootGroups = groupBusiness.getGroupsByGroupName(SocialConstants.SOCIAL_ROOT_GROUP_NAME);
+			return socialRootGroups;
+		}
+	}
+	
 	@Override
 	public void main(IWContext iwc) {
 		iwrb = getBundle(iwc).getResourceBundle(iwc);
 
 		Layer main = new Layer();
-		main.setName("GroupEdittor");
+		main.setName("GroupEditor");
 
-		GroupBusiness groupBusiness = null;
-		try{
-			groupBusiness = IBOLookup.getServiceInstance(IWMainApplication.getDefaultIWApplicationContext(),GroupBusiness.class);
-		}catch(IBOLookupException e){
-			this.getLogger().log(Level.WARNING, CoreConstants.EMPTY, e);
-			addErrorMsg(iwrb.getLocalizedString("failed_to_add_script_toload_group_tree","Failed loading group tree"));
+		Collection<Group> groups = null;
+		try {
+			groups = getRootGroups(iwc);
+		} catch (RemoteException e) {
+			e.printStackTrace();
 		}
-		Collection <Group> sagaRootGroups = null;
-		try{
-			sagaRootGroups = groupBusiness.getGroupsByGroupName(Constants.SAGA_ROOT_GROUP_NAME);
-		}catch(RemoteException e){
-			this.getLogger().log(Level.WARNING, "Failed to call remote method", e);
-			String serverError = iwrb.getLocalizedString("server_error", "Server error");
-			String error = iwrb.getLocalizedString("failed_to_call_remote_method", "failed to call remote method");
-			addErrorMsg(serverError + " : " + error);
-		}
-
+		if (groups == null)
+			groups = Collections.emptyList();
+		
 		String containerId = "UniqueGroupTreeContainerId15647989";
 		this.setGroupsTreeViewerId(containerId);
-		StringBuilder treeLoadScript= new StringBuilder("loadSagaBookGroupsTree('")
+		StringBuilder treeLoadScript = new StringBuilder("loadSagaBookGroupsTree('")
 		.append(containerId)
-		.append("', '").append(iwrb.getLocalizedString("there_is_no_groups_in_saga_groups", "There is no groups in saga book"))
-		.append("', '").append(sagaRootGroups.iterator().next().getUniqueId())
+		.append("', '").append(iwrb.getLocalizedString("there_are_no_groups_available", "There are no groups available"))
+		.append("', '").append(groups.iterator().next().getUniqueId())
 		.append("', '").append(this.getStyleClass())
-		.append("'); ");
+		.append("');");
 		this.setLoadRemoteGroupsFunction(treeLoadScript.toString());
 		super.main(iwc);
 
 		//creating "create" button
 		//parameters for button action function
-		StringBuffer parameters = new StringBuffer("openGroupCreationDialog('");
-		parameters.append(BuilderLogic.getInstance().getUriToObject(SocialGroupCreator.class))
-		.append("','").append(UserConstants.GROUPS_TO_RELOAD_IN_MENU_DROPDOWN_ID_IN_SIMPLE_USER_APPLICATION)	//set to selected group or -1
-		.append("','").append(UserConstants.EDITED_GROUP_MENU_DROPDOWN_ID_IN_SIMPLE_USER_APPLICATION)
-		.append("')");
-		GenericButton button = new GenericButton("buttonCreateGroup", iwrb.getLocalizedString("create", "Create"));
-		button.setOnClick(parameters.toString());
-		main.add(button);
-
+		if (!ListUtil.isEmpty(groups)) {
+			StringBuffer parameters = new StringBuffer("openGroupCreationDialog('");
+			parameters.append(BuilderLogic.getInstance().getUriToObject(SocialGroupCreator.class))
+			.append("','").append(UserConstants.GROUPS_TO_RELOAD_IN_MENU_DROPDOWN_ID_IN_SIMPLE_USER_APPLICATION)	//set to selected group or -1
+			.append("','").append(UserConstants.EDITED_GROUP_MENU_DROPDOWN_ID_IN_SIMPLE_USER_APPLICATION)
+			.append("');");
+			GenericButton create = new GenericButton("buttonCreateGroup", iwrb.getLocalizedString("create_group", "Create group"));
+			create.setOnClick(parameters.toString());
+			main.add(create);
+		}
+		
 		//creating "edit" button
 		//parameters for button action function
-		parameters = new StringBuffer("openGroupEditDialog('");
+		StringBuffer parameters = new StringBuffer("openGroupEditDialog('");
 		parameters.append(BuilderLogic.getInstance().getUriToObject(SocialGroupCreator.class))
 		.append("','").append(UserConstants.GROUPS_TO_RELOAD_IN_MENU_DROPDOWN_ID_IN_SIMPLE_USER_APPLICATION)	//set to selected group or -1
 		.append("','").append(UserConstants.EDITED_GROUP_MENU_DROPDOWN_ID_IN_SIMPLE_USER_APPLICATION)
-		.append("')");
-		button = new GenericButton("buttonEditGroup", iwrb.getLocalizedString("edit", "Edit"));
-		button.setOnClick(parameters.toString());
-		button.setStyleClass("editTool");
-		button.setStyleAttribute("display:none");
-		main.add(button);
+		.append("');");
+		GenericButton edit = new GenericButton("buttonEditGroup", iwrb.getLocalizedString("edit", "Edit"));
+		edit.setOnClick(parameters.toString());
+		edit.setStyleClass("editTool");
+		edit.setStyleAttribute("display:none");
+		main.add(edit);
 		add(main);
 
 		addFiles(iwc,main.getId());
@@ -131,13 +146,13 @@ public class GroupEditor extends GroupTreeViewer{
 		treeContainerContent.setStyleAttribute("height :10000px; width:280px;");
 		return treeContainerContent;
 	}
-	private void addErrorMsg(String errorMsg){
-		if(this.errorMsg == null){
-			this.errorMsg = new StringBuilder(errorMsg);
-			return;
-		}
-		this.errorMsg.append(", ").append(errorMsg);
-	}
+//	private void addErrorMsg(String errorMsg){
+//		if(this.errorMsg == null){
+//			this.errorMsg = new StringBuilder(errorMsg);
+//			return;
+//		}
+//		this.errorMsg.append(", ").append(errorMsg);
+//	}
 
 	private void addHumanizedErrorMsgScript(Layer container){
 		if(errorMsg == null){
@@ -173,15 +188,15 @@ public class GroupEditor extends GroupTreeViewer{
 			styles.add(web2.getBundleUriToHumanizedMessagesStyleSheet());
 
 			JQuery  jQuery = web2.getJQuery();
-			scripts.add(jQuery.getBundleURIToJQueryUILib("1.8.14","js/jquery-ui-1.8.14.custom.min.js"));
+			scripts.add(jQuery.getBundleURIToJQueryUILib("1.8.17","js/jquery-ui-1.8.17.custom.min.js"));
 			scripts.addAll(web2.getBundleURIsToTageditLib());
 			styles.addAll(web2.getBundleURIsToTageditStyleFiles());
-			styles.add(jQuery.getBundleURIToJQueryUILib("1.8.14","css/ui-lightness/jquery-ui-1.8.14.custom.css"));
+			styles.add(jQuery.getBundleURIToJQueryUILib("1.8.17","themes/smoothness/ui-1.8.17.custom.css"));
 
 			scripts.add(web2.getBundleUriToMootabsScript());
 			styles.add(web2.getBundleUriToMootabsStyle());
 		}else{
-			this.log(Level.WARNING, "Failed getting Web2Business no jQuery and it's pligins files were added");
+			this.log(Level.WARNING, "Failed getting Web2Business no jQuery and it's plugins files were added");
 		}
 
 		IWBundle bundle = getBundle(iwc);
@@ -194,7 +209,7 @@ public class GroupEditor extends GroupTreeViewer{
 		scripts.add(bundle.getVirtualPathWithFileNameString("javascript/SimpleUserAppHelper.js"));
 
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
-		IWBundle iwb = iwma.getBundle(Constants.IW_BUNDLE_IDENTIFIER);
+		IWBundle iwb = iwma.getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER);
 		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/GroupEditorHelper.js"));
 
 
@@ -216,6 +231,22 @@ public class GroupEditor extends GroupTreeViewer{
 
 	public boolean isTageditFunctions() {
 		return tageditFunctions;
+	}
+
+	public boolean isUserGroupsAsRootGroups() {
+		return userGroupsAsRootGroups;
+	}
+
+	public void setUserGroupsAsRootGroups(boolean userGroupsAsRootGroups) {
+		this.userGroupsAsRootGroups = userGroupsAsRootGroups;
+	}
+
+	public Group getRootGroup() {
+		return rootGroup;
+	}
+
+	public void setRootGroup(Group rootGroup) {
+		this.rootGroup = rootGroup;
 	}
 
 }

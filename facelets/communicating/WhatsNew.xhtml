@@ -15,10 +15,14 @@
 		<li><a href="##{whatsNewBean.searchLayerId}">#{localizedStrings['com.idega.block.social']['search']}</a></li>
 	</ul>
 	<div id ="#{whatsNewBean.popularLayerId}">
-		<!-- #{whatsNewBean.mostPopularGroups} -->
+		<f:verbatim>
+			#{whatsNewBean.mostPopularGroups}
+		</f:verbatim>
 	</div>
 	<div id ="#{whatsNewBean.newLayerId}">
-		<h:outputText value="#{whatsNewBean.newGroups}"/>
+		<f:verbatim>
+			#{whatsNewBean.newGroups}
+		</f:verbatim>
 	</div>
 	<div id ="#{whatsNewBean.searchLayerId}">
 		<input type = "text" class = "whats-new-group-search-input"/>
