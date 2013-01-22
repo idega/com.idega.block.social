@@ -18,8 +18,7 @@ import com.idega.util.expression.ELUtil;
 @Service
 @Scope(BeanDefinition.SCOPE_SINGLETON)
 public class GroupCreatedEventListener extends DefaultSpringBean implements ApplicationListener {
-	
-    @Override
+
     public void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof GroupCreatedEvent) {
         	GroupCreatedEvent created = (GroupCreatedEvent) event;
@@ -41,5 +40,5 @@ public class GroupCreatedEventListener extends DefaultSpringBean implements Appl
     private PostBusiness getPostBusiness(){
     	return ELUtil.getInstance().getBean(PostBusiness.BEAN_NAME);
     }
-    
+
 }

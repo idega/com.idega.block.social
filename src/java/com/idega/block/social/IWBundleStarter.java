@@ -20,12 +20,10 @@ import com.idega.util.expression.ELUtil;
 
 public class IWBundleStarter implements IWBundleStartable {
 
-	@Override
 	public void start(IWBundle bundle) {
 		addSocialRootGroup(bundle.getApplication().getIWApplicationContext());
 	}
 
-	@Override
 	public void stop(IWBundle arg0) {
 	}
 

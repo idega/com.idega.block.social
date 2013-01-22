@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import com.idega.block.article.bean.ArticleItemBean;
 import com.idega.block.article.bean.ArticleListManagedBean;
+import com.idega.block.email.bean.MessageParameters;
+import com.idega.block.email.business.EmailSenderHelper;
 import com.idega.block.social.SocialConstants;
 import com.idega.block.social.bean.PostFilterParameters;
 import com.idega.block.social.bean.PostItemBean;
@@ -27,7 +29,6 @@ import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
 import com.idega.data.IDOLookup;
 import com.idega.presentation.IWContext;
-import com.idega.repository.authentication.AuthenticationBusiness;
 import com.idega.repository.bean.RepositoryItem;
 import com.idega.user.bean.UserDataBean;
 import com.idega.user.business.GroupBusiness;
@@ -66,14 +67,10 @@ public class PostBusiness extends DefaultSpringBean {
 	@Autowired
 	private PostDao postDao;
 
-	@Autowired
-	private AuthenticationBusiness authentication;
-
 	public PostBusiness(){
 		this.articleListManadgedBean = new ArticleListManagedBean();
 	}
 
-	@SuppressWarnings("unchecked")
 	public PostItemBean savePost(Map <String,List<String>> parameters) {
 		IWContext iwc = CoreUtil.getIWContext();
 		if(!iwc.isLoggedOn()){
@@ -161,14 +158,14 @@ public class PostBusiness extends DefaultSpringBean {
 		if(!ListUtil.isEmpty(types)){
 			postType = types.get(0);
 		}
-		if(StringUtil.isEmpty(postType)){
-			if(!ListUtil.isEmpty(userReceiversIds)){
+		if (StringUtil.isEmpty(postType)) {
+			if(!ListUtil.isEmpty(userReceiversIds)) {
 				postType = PostEntity.POST_TYPE_MESSAGE;
 				String title = post.getHeadline();
 				title = getResourceBundle(getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER)).getLocalizedString("private_message_from", "Private message from") +
 						iwc.getDomain().getURL();
-				sendMails(userInfo.getEmail(), usersReceivers, title, body, post.getAttachments());
-			}else{
+				sendMails(userInfo.getEmail(), usersReceivers, title, body, post.getAttachmentsUris());
+			} else {
 				postType = PostEntity.POST_TYPE_PUBLIC;
 			}
 		}
@@ -183,7 +180,7 @@ public class PostBusiness extends DefaultSpringBean {
 
 	}
 
-	private void sendMails(String from, Collection <Integer> userIds, String subject, String body, List<String> attachments) {
+	private void sendMails(String from, Collection<Integer> userIds, String subject, String body, List<String> attachments) {
 		if (StringUtil.isEmpty(from) || ListUtil.isEmpty(userIds))
 			return;
 

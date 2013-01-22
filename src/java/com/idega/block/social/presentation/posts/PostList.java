@@ -55,43 +55,43 @@ import com.idega.util.text.Item;
 import com.idega.webface.WFUtil;
 
 public abstract class PostList  extends IWUIBase{
-	
+
 	@Autowired
 	private PostBusiness postBusiness;
 
 	private List<PostItemBean> posts = null;
-	
+
 	private Map<String, String> presentationOptions = null;
-	
+
 	private IWContext iwc = null;
-	
+
 	private IWResourceBundle iwrb = null;
-	
+
 	private PostFilterParameters postFilterParameters = null;
-	
+
 	private int maxImagesToShow = 3;
-	
+
 	private Boolean allShowed = null;
-	
+
 	public PostList(){
 		super();
 	}
-	
+
 	public PostList(Map<String, String> presentationOptions){
 		setPresentationOptions(presentationOptions);
 	}
-	
+
 	public void setPresentationOptions(Map<String, String> presentationOptions){
 		this.presentationOptions = presentationOptions;
 	}
-	
+
 	protected Map<String, String> getPresentationOptions(){
 		if(presentationOptions == null){
 			presentationOptions = new HashMap<String, String>();
 		}
 		return presentationOptions;
 	}
-	
+
 	@Override
 	protected IWContext getIwc() {
 		if(iwc == null){
@@ -141,7 +141,7 @@ public abstract class PostList  extends IWUIBase{
 		addFiles(iwc);
 		setTag("div");
 	}
-	
+
 	protected UIComponent getList(){
 		Layer list = new Layer("");
 		PostFilterParameters postFilterParameters = getPostFilterParameters();
@@ -175,7 +175,7 @@ public abstract class PostList  extends IWUIBase{
 		}
 		return layers;
 	}
-	
+
 	@Override
 	protected Logger getLogger(){
 		return Logger.getLogger(getClass().getName());
@@ -191,8 +191,8 @@ public abstract class PostList  extends IWUIBase{
 		String html = BuilderLogic.getInstance().getRenderedComponent(container, getIwc(), false);
 		return html;
 	}
-	
-	
+
+
 	protected Layer getPostLayer(PostItemBean post) throws Exception{
 		Layer layer = new Layer();
 		layer.setStyleClass("main-postlayer");
@@ -212,57 +212,57 @@ public abstract class PostList  extends IWUIBase{
 			}
 			post.setTeaser(teaser);
 		}
-		
+
 		HiddenInput postUri = new HiddenInput();
 		layer.add(postUri);
 		postUri.setValue(post.getResourcePath());
 		postUri.setStyleClass(SocialConstants.POST_URI_PARAMETER);
-		
+
 		HiddenInput modificationDate = new HiddenInput();
 		layer.add(modificationDate);
 		modificationDate.setValue(String.valueOf(post.getLastModifiedDate().getTime()));
 		modificationDate.setStyleClass(SocialConstants.POST_MODIFICATION_DATE_PARAMETER);
-		
-		
+
+
 		Image athorImage = new Image(post.getAuthorData().getPictureUri());
 		layer.add(athorImage);
 		athorImage.setStyleClass("post-author-image");
-		
-		
+
+
 		Layer postInfoLayer = new Layer();
 		layer.add(postInfoLayer);
 		postInfoLayer.setStyleClass("post-info-layer");
-		
+
 		postInfoLayer.add(getCreationLayer(post));
 		postInfoLayer.add(getPostInfoLayer(post));
 		postInfoLayer.add(getFooter(post));
-		
+
 		return layer;
 	}
-	
+
 	protected Layer getCreationLayer(PostItemBean post) throws Exception{
 		Layer creationLayer = new Layer();
 		creationLayer.setStyleClass("post-creation-info");
-		
+
 		creationLayer.add(getUserNamesLayer(post));
 		creationLayer.add(getDateLayer(post));
-		
+
 		return creationLayer;
 	}
-	
+
 	protected UIComponent getUserNamesLayer(PostItemBean post) throws Exception{
 		Layer usersLayer = new Layer("");
 		UserDataBean author = post.getAuthorData();
-		
+
 		Span name = new Span();
 		usersLayer.add(name);
 		name.add(author.getName());
 		name.setStyleClass("user-name");
-		
+
 		return usersLayer;
-		
+
 	}
-	
+
 	protected UIComponent getDateLayer(PostItemBean post) throws Exception{
 		Date creationDate = post.getCreationDateObject();
 		Span date = new Span();
@@ -277,17 +277,17 @@ public abstract class PostList  extends IWUIBase{
 		getScriptOnLoad().append("\n\tjQuery('#").append(date.getId()).append("').getYYYYMMDDHHMM();");
 		return date;
 	}
-	
+
 	protected UIComponent getDeleteButton(PostItemBean post){
 		int currentUserId = getIwc().getCurrentUserId();
-		
+
 		if(post.getCreatedByUserId() != currentUserId){
 			return new Layer("");
 		}
-		
+
 		Layer deleteLayer = new Layer();
 		deleteLayer.setStyleClass("post-delete-layer");
-		
+
 		Layer deleteButton = new Layer();
 		deleteLayer.add(deleteButton);
 		deleteButton.setStyleClass("button-div delete-button-div");
@@ -298,17 +298,17 @@ public abstract class PostList  extends IWUIBase{
 				.append("');});");
 		return deleteLayer;
 	}
-	
+
 	protected Layer getPostInfoLayer(PostItemBean post) throws Exception{
 		IWResourceBundle iwrb = getIwrb();
 		Layer postInfoLayer = new Layer();
 		postInfoLayer.setStyleClass("post-info");
-		
+
 		postInfoLayer.add(getDeleteButton(post));
-		
+
 		Heading1 title = new Heading1(post.getHeadline());
 		postInfoLayer.add(title);
-		
+
 		Paragraph teaserParagraph = new Paragraph();
 		postInfoLayer.add(teaserParagraph);
 		String teaser = getTeaser(post);
@@ -345,7 +345,7 @@ public abstract class PostList  extends IWUIBase{
 						imagesShowed++;
 						String thumbnail;
 						try {
-							thumbnail = thumbnailService.getThumbnail(path, ThumbnailService.THUMBNAIL_MEDIUM, getIwc());
+							thumbnail = thumbnailService.getThumbnail(path, ThumbnailService.THUMBNAIL_MEDIUM);
 						} catch (Exception e) {
 							Logger.getLogger(PostList.class.getName()).log(Level.WARNING, "Failed getting thumbnail of " + path, e);
 							thumbnail = CoreConstants.EMPTY;
@@ -367,7 +367,7 @@ public abstract class PostList  extends IWUIBase{
 		}
 		return postInfoLayer;
 	}
-	
+
 	protected String getTeaser(PostItemBean post) throws Exception{
 		String teaser = post.getTeaser();
 		if(StringUtil.isEmpty(teaser)){
@@ -385,25 +385,25 @@ public abstract class PostList  extends IWUIBase{
 		}
 		return teaser;
 	}
-	
+
 	protected Layer getFooter(PostItemBean post) throws Exception{
 		Layer footer = new Layer();
 		footer.setStyleClass("post-content-view-post-footer");
-		
-		
+
+
 		int teaserLength = getTeaser(post).length();
 		if(teaserLength > getTeaserLength()){
 			Link postPreview = getPreviewLink(post.getResourcePath());
 			footer.add(postPreview);
 		}
-		
+
 		List <Item> attachments = post.getAttachmentsAsItems();
 		if(!ListUtil.isEmpty(attachments)){
 			footer.add(getAttachmentsLayer(attachments));
 		}
 		return footer;
 	}
-	
+
 	protected Layer getAttachmentsLayer(List <Item> attachments){
 		Layer attachmentsLayer = new Layer();
 		if(ListUtil.isEmpty(attachments)){
@@ -416,7 +416,7 @@ public abstract class PostList  extends IWUIBase{
 		attachmentsLayer.add(attachmentsLink);
 		Lists attachmentsList = new Lists();
 		attachmentsLayer.add(attachmentsList);
-		
+
 		ThumbnailService thumbnailService = ELUtil.getInstance().getBean(ThumbnailService.BEAN_NAME);
 		for(Item attachment : attachments){
 			ListItem li = new ListItem();
@@ -426,7 +426,7 @@ public abstract class PostList  extends IWUIBase{
 			String filePath = attachment.getItemValue();
 			String thumbnailPath;
 			try {
-				thumbnailPath = thumbnailService.getThumbnail(filePath, 2, getIwc());
+				thumbnailPath = thumbnailService.getThumbnail(filePath, 2);
 			} catch (Exception e) {
 				Logger.getLogger(PostList.class.getName()).log(Level.WARNING, "Failed getting thumbnail of " + filePath, e);
 				thumbnailPath = CoreConstants.EMPTY;
@@ -438,7 +438,7 @@ public abstract class PostList  extends IWUIBase{
 		}
 		return attachmentsLayer;
 	}
-	
+
 	protected Link getPreviewLink(String postUri){
 		Link postLink = new Link(PostPreview.class);
 		postLink.setText(new Text(getIwrb().getLocalizedString("more", "More") + "..."));
@@ -447,7 +447,7 @@ public abstract class PostList  extends IWUIBase{
 		getScriptOnLoad().append("\n\tPostListHelper.preparePostPreview('#").append(postLink.getId()).append(CoreConstants.JS_STR_PARAM_END);
 		return postLink;
 	}
-	
+
 	@Override
 	public List<String> getScripts(){
 		IWContext iwc = getIwc();
@@ -477,7 +477,7 @@ public abstract class PostList  extends IWUIBase{
 
 		return scripts;
 	}
-	
+
 	@Override
 	public List<String> getStyleSheets(){
 		IWContext iwc = getIwc();
@@ -495,12 +495,12 @@ public abstract class PostList  extends IWUIBase{
 		styles.add(iwb.getVirtualPathWithFileNameString("style/postListStyle.css"));
 		return styles;
 	}
-	
+
 	protected List<PostItemBean> loadPosts(PostFilterParameters postFilterParameters){
 		posts = getPostBusiness().getPostItems(postFilterParameters, getIwc());
 		return posts;
 	}
-	
+
 	public List<PostItemBean> getPosts() {
 		if(posts == null){
 			PostFilterParameters postFilterParameters = getPostFilterParameters();
@@ -529,7 +529,7 @@ public abstract class PostList  extends IWUIBase{
 		}
 		return posts;
 	}
-	
+
 	public void setPosts(List<PostItemBean> posts) {
 		setAllShowed(true);
 		this.posts = posts;
@@ -540,7 +540,7 @@ public abstract class PostList  extends IWUIBase{
 			Integer teaserLength = Integer.valueOf(getPresentationOptions().get("teaserLength"));
 			return teaserLength;
 		}catch (Exception e) {
-			
+
 		}
 		return Integer.MAX_VALUE;
 	}
@@ -549,7 +549,7 @@ public abstract class PostList  extends IWUIBase{
 		getPresentationOptions().put("teaserLength", String.valueOf(teaserLength));
 	}
 
-	
+
 	protected PostFilterParameters getPostFilterParameters() {
 		return postFilterParameters;
 	}
@@ -557,7 +557,7 @@ public abstract class PostList  extends IWUIBase{
 	public void setPostFilterParameters(PostFilterParameters postFilterParameters) {
 		this.postFilterParameters = postFilterParameters;
 	}
-	
+
 	protected PostBusiness getPostBusiness() {
 		if(postBusiness == null){
 			ELUtil.getInstance().autowire(this);
@@ -587,7 +587,5 @@ public abstract class PostList  extends IWUIBase{
 	protected void setAllShowed(boolean allShowed) {
 		this.allShowed = allShowed;
 	}
-	
-	
 
 }

@@ -18,7 +18,6 @@ import com.idega.util.StringUtil;
 
 public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleDaoTemplateImpl<T> implements PostDaoTemplate<T>{
 
-	
 	private StringBuilder getDateAndUriCondition(Date beginDate,String uriFrom,String tableAlias,Boolean up,Collection <Param> params,String entityName){
 		StringBuilder condition = new StringBuilder();
 		boolean dateSpecified = beginDate != null;
@@ -52,7 +51,7 @@ public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleD
 		}
 		return condition;
 	}
-	@Override
+
 	public List<PostEntity> getConversation(int userId,
 			Collection<Integer> usersTalked, Collection<String> types, int max, String uriFrom,
 			Boolean up,Boolean order, Date beginDate) {
@@ -60,7 +59,7 @@ public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleD
 		if((userId < 0) || (ListUtil.isEmpty(usersTalked))){
 			return Collections.emptyList();
 		}
-		
+
 		ArrayList <Param> params = new ArrayList<Param>();
 		String usersTalkedProp = PostEntity.postCreatorProp + "_or_receivers_collection";
 		String userIdProp = PostEntity.postCreatorProp + "_user_id";
@@ -68,17 +67,17 @@ public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleD
 		params.add(parameter);
 		parameter = new Param(usersTalkedProp,usersTalked);
 		params.add(parameter);
-		
+
 		Class<T> entityClass = getEntityClass();
 		String entityName = entityClass.getSimpleName();
 		StringBuilder inlineQuery =
 				new StringBuilder("SELECT DISTINCT p FROM ").append(entityName).append(" p ");
 		inlineQuery.append(" JOIN p.receivers r WHERE (((r =:").append(userIdProp).append(")");
-		
-		
+
+
 		inlineQuery.append(" AND (p.postCreator IN (:")
 				.append(usersTalkedProp).append("))) ");
-		
+
 		inlineQuery.append(" OR ((r IN (:").append(usersTalkedProp).append(")) AND (p.postCreator = :")
 				.append(userIdProp).append(")))");
 
@@ -186,16 +185,13 @@ public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleD
 		}
 		return query.getResultList(entityClass,params);
 	}
-	
-	
-	@Override
+
 	public List<T> getPosts(Collection<Integer> creators,
 			Collection<Integer> receivers, Collection<String> types, int max, String uriFrom,
 			Boolean up,Boolean order,Date beginDate) {
 		return getPosts(creators, receivers, types, max, uriFrom, up, null,order,beginDate);
 	}
 
-	@Override
 	public Collection<Integer> getReceivers(Long postId){
 		Class<T> entityClass = getEntityClass();
 		String entityName = entityClass.getSimpleName();
@@ -207,18 +203,17 @@ public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleD
 	}
 
 //	/*example get for user 13 in groups 10,6:*/
-//	SELECT DISTINCT p.*, a.* 
-//	FROM soc_post p, soc_post_receivers r, ic_article a WHERE 
+//	SELECT DISTINCT p.*, a.*
+//	FROM soc_post p, soc_post_receivers r, ic_article a WHERE
 //	(p.id = a.id) AND (r.post_id = p.id)
-//	AND ( r.receiver_id in (13, 10, 6))  AND ( p.social_post_type IN ("MESSAGE"))  
-//	AND (a.modification_date = (SELECT max(ar.modification_date) 
-//	FROM soc_post po, ic_article ar, soc_post_receivers re 
-//	WHERE (po.id = ar.id) AND (re.post_id = po.id) AND 
-//	(re.receiver_id = r.receiver_id)  AND ( po.social_post_type IN ("MESSAGE"))  
-//	AND (po.social_post_creator = p.social_post_creator)))  GROUP BY p.social_post_creator, r.receiver_id  ORDER BY a.modification_date  desc 
-	
+//	AND ( r.receiver_id in (13, 10, 6))  AND ( p.social_post_type IN ("MESSAGE"))
+//	AND (a.modification_date = (SELECT max(ar.modification_date)
+//	FROM soc_post po, ic_article ar, soc_post_receivers re
+//	WHERE (po.id = ar.id) AND (re.post_id = po.id) AND
+//	(re.receiver_id = r.receiver_id)  AND ( po.social_post_type IN ("MESSAGE"))
+//	AND (po.social_post_creator = p.social_post_creator)))  GROUP BY p.social_post_creator, r.receiver_id  ORDER BY a.modification_date  desc
+
 //	TODO: optimize :D http://searchoracle.techtarget.com/answer/Latest-row-for-each-group
-	@Override
 	public List<T> getLastPosts(Collection<String> types, Collection<Integer> receivers,
 			int max, String uriFrom, Boolean up, Boolean order, Date beginDate,Integer userId) {
 		if(ListUtil.isEmpty(receivers)){
@@ -233,8 +228,8 @@ public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleD
 		inlineQuery.append("WHERE ((( r = :").append("userProp").append(") ");
 		Param parameter = new Param("userProp",userId);
 		params.add(parameter);
-		
-		
+
+
 		inlineQuery.append(" AND (p.modificationDate = (SELECT max(po.modificationDate) FROM ").append(entityName)
 			.append(" po join po.receivers re WHERE (re = r) ");
 		if(!ListUtil.isEmpty(types)){
@@ -246,7 +241,7 @@ public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleD
 		inlineQuery.append(" OR ((r IN  (:").append(PostEntity.receiversProp).append("))");
 		parameter = new Param(PostEntity.receiversProp,receivers);
 		params.add(parameter);
-		
+
 		inlineQuery.append(" AND (p.modificationDate = (SELECT max(po.modificationDate) FROM ").append(entityName)
 				.append(" po join po.receivers re WHERE (re = r) ");
 		if(!ListUtil.isEmpty(types)){
@@ -255,9 +250,9 @@ public abstract class PostDaoTemplateImpl<T extends PostEntity> extends ArticleD
 			params.add(parameter);
 		}
 		inlineQuery.append(")))) ");
-		
-		
-		
+
+
+
 		if(!ListUtil.isEmpty(types)){
 			inlineQuery.append(" AND ( p.postType IN (:").append(PostEntity.postTypeProp).append(")) ");
 			parameter = new Param(PostEntity.postTypeProp,types);
