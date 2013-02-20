@@ -61,7 +61,7 @@ import com.idega.util.expression.ELUtil;
 	@Param(name="javascript", value="SocialServices")
 }, name="SocialServices")
 public class SocialServices extends DefaultSpringBean implements DWRAnnotationPersistance {
-	
+
 	public static final String SERVICE = "socialServices";
 
 	private GroupBusiness groupBusiness = null;
@@ -157,7 +157,7 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		return BuilderLogic.getInstance().getRenderedComponent(tableLayer, null);
 	}
 
-	
+
 	@RemoteMethod
 	public String getPostListHtml(PostFilterParameters postFilterParameters,Map<String, String> presentationOptions,String postListClass){
 		try {
@@ -170,7 +170,7 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		}
 		return null;
 	}
-	
+
 	@RemoteMethod
 	public Map <String,Object> getMessageCreator(Map <String, String> presentationOptions,Collection<Integer> creators){
 		Map <String,Object> response = new HashMap<String, Object>();
@@ -197,7 +197,7 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
 		return response;
 	}
-	
+
 	@RemoteMethod
 	public Map <String,Object> deletePost(String uri){
 		Map <String,Object> response = new HashMap<String, Object>();
@@ -221,7 +221,7 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		response.put("message", iwrb.getLocalizedString("failed_deleting", "Failed deleting"));
 		return response;
 	}
-	
+
 //	@RemoteMethod
 //	public String getPosts(String beginUri, Boolean up,
 //			String getPrivate, String getGroup, String getSent, Integer maxResult){
@@ -348,7 +348,7 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 			String lastName = names.length == 2 ? names[1] : names.length > 2 ? names[2] : null;
 
 			String email = data.getEmail().toLowerCase();
-			
+
 			if(name.contains(words[last]) && !request.contains(name)){
 				for(int i = 0;i < names.length;i++){
 					if(!request.contains(names[i])){
@@ -490,14 +490,13 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 
 	public PostItemBean savePublicPost(Map <String, List<String>> parameters, IWContext iwc) throws Exception{
 		User user = iwc.getCurrentUser();
-		@SuppressWarnings("unchecked")
 		List<String> stringIds = CoreUtil.getIds(getUserBusiness().getUserGroups(user));
 		parameters.put(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME, stringIds);
 		parameters.put(PostBusiness.ParameterNames.POST_TYPE, Arrays.asList(PostEntity.POST_TYPE_PUBLIC));
 		PostItemBean postItemBean = postBusiness.savePost(parameters);
 		return postItemBean;
 	}
-	
+
 	@RemoteMethod
 	public Map <String,Object> savePost(Map <String, List<String>> parameters){
 		IWContext iwc = CoreUtil.getIWContext();
@@ -540,15 +539,14 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		response.put("message", iwrb.getLocalizedString("failed_saving", "Failed saving"));
 		return response;
 	}
-	
-	
-	public PostItemBean savePrivatePost(Map <String, List<String>> parameters,IWContext iwc) throws Exception{
+
+
+	public PostItemBean savePrivatePost(Map<String, List<String>> parameters, IWContext iwc) throws Exception {
 		User user = iwc.getCurrentUser();
-		
+
 		List<String> groupReceivers = parameters.get(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME);
 		if(!ListUtil.isEmpty(groupReceivers)){
 			// Keep only groups that user is allowed to send post to
-			@SuppressWarnings("unchecked")
 			Set<String> stringIds = new HashSet<String>(CoreUtil.getIds(getUserBusiness().getUserGroups(user)));
 			stringIds.retainAll(groupReceivers);
 			parameters.put(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME, new ArrayList<String>(groupReceivers));
@@ -557,8 +555,8 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		PostItemBean postItemBean = postBusiness.savePost(parameters);
 		return postItemBean;
 	}
-	
-	
+
+
 
 	public Group getSocialRootGroup(){
 		try{
@@ -641,7 +639,7 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 //		String html = BuilderLogic.getInstance().getRenderedComponent(groupList, null).getHtml();
 //		return html;
 //	}
-	
+
 	@RemoteMethod
 	public List <PostInfo> getPosts(PostFilterParameters filterParameters){
 		try{
