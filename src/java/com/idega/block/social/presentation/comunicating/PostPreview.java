@@ -2,7 +2,6 @@ package com.idega.block.social.presentation.comunicating;
 
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.faces.context.FacesContext;
 
@@ -33,9 +32,9 @@ public class PostPreview  extends IWBaseComponent {
 	protected void initializeComponent(FacesContext context) {
 		IWContext iwc = CoreUtil.getIWContext();
 		IWResourceBundle iwrb = iwc.getIWMainApplication().getBundle(SocialConstants.IW_BUNDLE_IDENTIFIER).getResourceBundle(iwc);
-		
+
 		String uri = iwc.getParameter(URI_TO_POST_PARAMETER);
-		
+
 		PostBusiness postBusiness = ELUtil.getInstance().getBean("postBusiness");
 		PostInfo post;
 		try {
@@ -47,10 +46,10 @@ public class PostPreview  extends IWBaseComponent {
 			add(error);
 			return;
 		}
-	
+
 		Layer main = new Layer();
 		this.add(main);
-	
+
 		String articleTitle = post.getTitle();
 		if(!StringUtil.isEmpty(articleTitle)){
 			Heading1 title = new Heading1();
@@ -58,7 +57,7 @@ public class PostPreview  extends IWBaseComponent {
 			articleTitle = StringEscapeUtils.escapeHtml(articleTitle);
 			title.addToText(articleTitle);
 		}
-	
+
 		String body = post.getBody();
 		if(StringUtil.isEmpty(body)){
 			body = post.getTeaser();
@@ -70,25 +69,21 @@ public class PostPreview  extends IWBaseComponent {
 			bodyLayer.addText(body);
 			bodyLayer.setStyleAttribute("text-align:justify; margin:2em;");
 		}
-		
+
 		main.add(getAttachmentsLayer(post,iwrb));
-		
-		
-		
-		
+
+
+
+
 		main.setStyleAttribute("overflow : auto; font-size : 18;width:100%;");
-	
+
 //		StringBuilder script = new StringBuilder("jQuery(document).ready(function(){jQuery('#").append(main.getId())
 //				.append("').height(windowinfo.getWindowHeight() * 0.8).width(windowinfo.getWindowWidth() * 0.8);});");
 //		String scriptAction = PresentationUtil.getJavaScriptAction(script.toString());
 //		main.add(scriptAction);
 
 	}
-	
-	private Logger getLogger(){
-		return Logger.getLogger(getClass().getName());
-	}
-	
+
 	private Layer getAttachmentsLayer(PostInfo post,IWResourceBundle iwrb){
 		List <Item> attachments = post.getAttachments();
 		Layer attachmentsLayer = new Layer();
@@ -119,7 +114,7 @@ public class PostPreview  extends IWBaseComponent {
 				//TODO: pass iwc
 				thumbnail = thumbnailService.getThumbnail(filePath, ThumbnailService.THUMBNAIL_MEDIUM, CoreUtil.getIWContext());
 			} catch (Exception e) {
-				Logger.getLogger(PostPreview.class.getName()).log(Level.WARNING, "Failed getting thumbnail of " + filePath, e);
+				getLogger().log(Level.WARNING, "Failed getting thumbnail of " + filePath, e);
 				thumbnail = CoreConstants.EMPTY;
 			}
 			StringBuilder image = new StringBuilder("<img src='").append(thumbnail).append("'");
