@@ -4,13 +4,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.Table;
 
 import org.hibernate.Hibernate;
-import org.hibernate.annotations.CollectionOfElements;
 import org.hibernate.annotations.Index;
 
 import com.google.gson.Gson;
@@ -51,7 +51,7 @@ public class PostEntity extends ArticleEntity {
 	private String postType;
 
 	public static final String receiversProp = "receiversProp";
-	@CollectionOfElements
+	@ElementCollection
 	@JoinTable(name = "soc_post_receivers", joinColumns = @JoinColumn(name = "POST_ID"))
 	@Column(name = "RECEIVER_ID", nullable = false)
 	private Set<Integer> receivers;
