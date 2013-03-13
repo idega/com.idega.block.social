@@ -2,7 +2,6 @@ package com.idega.block.social.presentation.comunicating;
 
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.faces.context.FacesContext;
 
@@ -85,10 +84,6 @@ public class PostPreview  extends IWBaseComponent {
 
 	}
 
-	private Logger getLogger(){
-		return Logger.getLogger(getClass().getName());
-	}
-
 	private Layer getAttachmentsLayer(PostInfo post,IWResourceBundle iwrb){
 		List <Item> attachments = post.getAttachments();
 		Layer attachmentsLayer = new Layer();
@@ -119,7 +114,7 @@ public class PostPreview  extends IWBaseComponent {
 				//TODO: pass iwc
 				thumbnail = thumbnailService.getThumbnail(filePath, ThumbnailService.THUMBNAIL_MEDIUM);
 			} catch (Exception e) {
-				Logger.getLogger(PostPreview.class.getName()).log(Level.WARNING, "Failed getting thumbnail of " + filePath, e);
+				getLogger().log(Level.WARNING, "Failed getting thumbnail of " + filePath, e);
 				thumbnail = CoreConstants.EMPTY;
 			}
 			StringBuilder image = new StringBuilder("<img src='").append(thumbnail).append("'");
