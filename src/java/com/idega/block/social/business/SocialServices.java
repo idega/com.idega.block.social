@@ -490,7 +490,6 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 
 	public PostItemBean savePublicPost(Map <String, List<String>> parameters, IWContext iwc) throws Exception{
 		User user = iwc.getCurrentUser();
-		@SuppressWarnings("unchecked")
 		List<String> stringIds = CoreUtil.getIds(getUserBusiness().getUserGroups(user));
 		parameters.put(PostBusiness.ParameterNames.GROUP_RECEIVERS_PARAMETER_NAME, stringIds);
 		parameters.put(PostBusiness.ParameterNames.POST_TYPE, Arrays.asList(PostEntity.POST_TYPE_PUBLIC));

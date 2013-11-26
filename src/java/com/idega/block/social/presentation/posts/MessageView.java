@@ -123,7 +123,6 @@ public class MessageView extends SocialUIBase {
 		add(footer);
 	}
 	
-	@SuppressWarnings("unchecked")
 	private PostFilterParameters getPostFilterParameters(IWContext iwc){
 		PostFilterParameters postFilterParameters = new PostFilterParameters();
 		Collection<Integer> receivers;
