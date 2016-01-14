@@ -480,11 +480,17 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 
 	@RemoteMethod
 	public int getParentGroup(Integer groupId){
-		Collection <Integer> parentgroups = this.getGroupHome().findParentGroupKeys(groupId);
+		Collection<Group> parentgroups = null;
+		try {
+			parentgroups = this.getGroupHome().findParentGroups(groupId);
+		} catch (FinderException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if(ListUtil.isEmpty(parentgroups)){
 			return -1;
 		}
-		return parentgroups.iterator().next();
+		return Integer.valueOf(parentgroups.iterator().next().getId());
 	}
 
 
