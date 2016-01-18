@@ -483,8 +483,7 @@ public class SocialServices extends DefaultSpringBean implements DWRAnnotationPe
 		Collection<Group> parentgroups = null;
 		try {
 			parentgroups = this.getGroupHome().findParentGroups(groupId);
-		} catch (FinderException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		if(ListUtil.isEmpty(parentgroups)){
